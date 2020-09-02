@@ -1,0 +1,641 @@
+/* globals describe, it, beforeEach, afterEach */
+
+const nock = require('nock');
+const _ = require('lodash');
+const { expect } = require('chai');
+const errors = require('../../../../../src/services/syncer/strategies/transifex/utils/errors');
+const transifexData = require('../../../../../src/services/syncer/strategies/transifex/data');
+const dataHelper = require('./helpers/api');
+const config = require('../../../../../src/config');
+
+const options = {
+  token: {
+    original: 'sometoken:token',
+  },
+};
+
+const extendedOptions = {
+  token: {
+    original: 'sometoken:token',
+  },
+  organization_slug: 'oslug',
+  project_slug: 'pslug',
+  resource_slug: 'rslug',
+};
+
+const urls = {
+  api: config.get('transifex:api_host'),
+  organizations: '/organizations',
+  projects: '/projects?filter[organization]=o:oslug',
+  resources: '/resources?filter[project]=o:oslug:p:pslug',
+  languages: '/projects/o:oslug:p:pslug/languages',
+  translations: '/resource_translations?filter[resource]=o:oslug:p:pslug'
+    + ':r:rslug&filter[language]=l:lcode&include=resource_string',
+  source_strings: '/resource_strings?filter[resource]='
+    + 'o:oslug:p:pslug:r:rslug',
+  resource_strings: '/resource_strings',
+};
+
+describe('Get token information', () => {
+  it('should retrieve token information', async () => {
+    nock(urls.api)
+      .get(urls.organizations)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'oslug',
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.projects)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'pslug',
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.resources)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'rslug',
+          },
+        }],
+      }));
+
+    const result = await transifexData.getTokenInformation(options);
+    expect(result).to.eql({
+      token: {
+        original: 'sometoken:token',
+        organization_slug: 'oslug',
+        project_slug: 'pslug',
+        resource_slug: 'rslug',
+      },
+    });
+  });
+
+  it('should throw 404 error if there is no organization result', async () => {
+    nock(urls.api)
+      .get(urls.organizations)
+      .reply(200, JSON.stringify({
+        data: [],
+      }));
+    try {
+      await transifexData.getTokenInformation(options);
+    } catch (e) {
+      expect(e.status).to.eql(404);
+    }
+  });
+
+  it('should throw 404 error if there is no project result', async () => {
+    nock(urls.api)
+      .get(urls.organizations)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'oslug',
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.projects)
+      .reply(200, JSON.stringify({
+        data: [],
+      }));
+    try {
+      await transifexData.getTokenInformation(options);
+    } catch (e) {
+      expect(e.status).to.eql(404);
+    }
+  });
+
+  it('should throw 404 error if there is no project result', async () => {
+    nock(urls.api)
+      .get(urls.organizations)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'oslug',
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.projects)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'pslug',
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.resources)
+      .reply(200, JSON.stringify({
+        data: [],
+      }));
+    try {
+      await transifexData.getTokenInformation(options);
+    } catch (e) {
+      expect(e.status).to.eql(404);
+    }
+  });
+
+  it('should throw 500 error if there is unknown error', async () => {
+    nock(urls.api)
+      .get(urls.organizations)
+      .reply(200, JSON.stringify({
+        nodata: {},
+      }));
+
+    try {
+      await transifexData.getTokenInformation(options);
+    } catch (e) {
+      expect(e.status).to.eql(500);
+    }
+  });
+});
+
+describe('Get languages', () => {
+  beforeEach(async () => {
+    nock(urls.api)
+      .get(urls.organizations)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'oslug',
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.projects)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'pslug',
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.resources)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'rslug',
+          },
+        }],
+      }));
+  });
+
+  it('should get languages', async () => {
+    nock(urls.api)
+      .get(urls.languages)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            code: 'l_code',
+            name: 'l_name',
+            rtl: true,
+            localized_name: 'L Code',
+          },
+        }, {
+          attributes: {
+            code: 'l_code2',
+            name: 'l_name2',
+            rtl: false,
+          },
+        }],
+      }));
+
+    const result = await transifexData.getLanguages(options);
+
+    expect(result).to.eql({
+      data: [
+        {
+          code: 'l_code',
+          name: 'l_name',
+          rtl: true,
+          localized_name: 'L Code',
+        }, {
+          code: 'l_code2',
+          name: 'l_name2',
+          rtl: false,
+          localized_name: 'l_code2',
+        },
+      ],
+    });
+  });
+
+  it('should throw an error', async () => {
+    nock(urls.api)
+      .get(urls.languages)
+      .reply(400);
+    try {
+      await transifexData.getLanguages(options);
+    } catch (e) {
+      expect(e.status).to.eql(400);
+      expect(true).to.eql(e instanceof errors.APIError);
+    }
+  });
+});
+
+describe('Get Project Language Translations', () => {
+  beforeEach(async () => {
+    nock(urls.api)
+      .get(urls.organizations)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'oslug',
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.projects)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'pslug',
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.resources)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'rslug',
+          },
+        }],
+      }));
+  });
+
+  it('should get translations', async () => {
+    nock(urls.api)
+      .get(urls.translations)
+      .reply(200, dataHelper.getProjectLanguageTranslations());
+
+    const result = await transifexData
+      .getProjectLanguageTranslations(extendedOptions, 'lcode');
+
+    expect(result).to.eqls({
+      data: {
+        hello_world: {
+          string: '{???, plural, one {hello} other {world}}',
+        },
+      },
+    });
+  });
+});
+
+describe('Push source Content', () => {
+  beforeEach(async () => {
+    nock(urls.api)
+      .get(urls.organizations)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'oslug',
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.projects)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'pslug',
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.resources)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'rslug',
+          },
+        }],
+      }));
+  });
+
+  afterEach(async () => {
+    nock.cleanAll();
+  });
+
+  it('should push new strings', async () => {
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, { data: [], links: {} });
+
+    nock(urls.api).post(urls.resource_strings)
+      .reply(200, {
+        data: [
+          {
+            somekey: 'somevalue',
+          },
+          {
+            someotherkey: 'somevalue',
+          },
+        ],
+      });
+    const data = dataHelper.getPushSourceContent();
+    const result = await transifexData.pushSourceContent(options, data);
+
+    expect(result).to.eql({
+      created: 2,
+      updated: 0,
+      skipped: 0,
+      deleted: 0,
+      failed: 0,
+      errors: [],
+    });
+  });
+
+  it('should return correct report on errors', async () => {
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, { data: [], links: {} });
+
+    nock(urls.api).post(urls.resource_strings)
+      .reply(400, {
+        errors: [
+          {
+            status: '400',
+            code: 'invalid',
+            title: 'Field `context` is invalid',
+            detail: 'asd is not of type array',
+            source: {
+              pointer: '/data/0/attributes/context',
+            },
+          },
+        ],
+      });
+
+    const data = dataHelper.getPushSourceContent();
+    const result = await transifexData.pushSourceContent(options, data);
+
+    expect(result).to.eql({
+      created: 0,
+      updated: 0,
+      skipped: 0,
+      deleted: 0,
+      failed: 2,
+      errors: [{
+        status: '400',
+        code: 'invalid',
+        title: 'Field `context` is invalid',
+        detail: 'asd is not of type array',
+        source: {
+          pointer: '/data/0/attributes/context',
+        },
+      }],
+    });
+  });
+
+  it('should delete strings when purge is added', async () => {
+    const sourceData = dataHelper.getSourceString();
+    // get strings from TX
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, sourceData);
+
+    // mock from cds -> api
+    nock(urls.api).post(urls.resource_strings)
+      .reply(200, {
+        data: [
+          {
+            somekey: 'somevalue',
+          },
+        ],
+      });
+
+    // mock of delete from cds -> api
+    nock(urls.api)
+      .delete(urls.resource_strings)
+      .reply(204);
+
+    // push from sdk -> cds
+    let data = dataHelper.getPushSourceContent();
+    data = _.omit(data, 'hello_world');
+    const result = await transifexData.pushSourceContent(options, data, {
+      purge: true,
+    });
+
+    expect(result).to.eql({
+      created: 1,
+      updated: 0,
+      skipped: 0,
+      deleted: 1,
+      failed: 0,
+      errors: [],
+    });
+  });
+
+  it('should skip 1 string when purge is added', async () => {
+    const sourceData = dataHelper.getSourceString();
+    // get strings from TX
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, sourceData);
+
+    // mock from cds -> api
+    nock(urls.api).post(urls.resource_strings)
+      .reply(200, {
+        data: [
+          {
+            somekey: 'somevalue',
+          },
+        ],
+      });
+
+    // mock of delete from cds -> api
+    nock(urls.api)
+      .delete(urls.resource_strings)
+      .reply(204);
+
+    // push from sdk -> cds
+    const data = dataHelper.getPushSourceContent();
+    const result = await transifexData.pushSourceContent(options, data, {
+      purge: true,
+    });
+
+    expect(result).to.eql({
+      created: 1,
+      updated: 0,
+      skipped: 1,
+      deleted: 0,
+      failed: 0,
+      errors: [],
+    });
+  });
+
+  it('should skip already saved strings with no changes', async () => {
+    const sourceData = dataHelper.getSourceString();
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, sourceData);
+
+    nock(urls.api).post(urls.resource_strings)
+      .reply(200, {
+        data: [
+          {
+            somekey: 'somevalue',
+          },
+        ],
+      });
+
+    const data = dataHelper.getPushSourceContent();
+    const result = await transifexData.pushSourceContent(options, data, {});
+
+    expect(result).to.eql({
+      created: 1,
+      updated: 0,
+      skipped: 1,
+      deleted: 0,
+      failed: 0,
+      errors: [],
+    });
+  });
+
+  it('should update changed strings', async () => {
+    const sourceData = dataHelper.getSourceString();
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, sourceData);
+
+    nock(urls.api)
+      .post(urls.resource_strings)
+      .reply(200, {
+        data: [
+          {
+            somekey: 'somevalue',
+          },
+        ],
+      });
+
+    const data = dataHelper.getPushSourceContent();
+    data.hello_world.meta.tags = ['onetag'];
+    nock(urls.api)
+      .patch(`${urls.resource_strings}/${sourceData.data[0].id}`)
+      .reply(200, {
+        data: [{
+          someotherkey: 'someothervalue',
+        }],
+      });
+
+    const result = await transifexData.pushSourceContent(options, data);
+
+    expect(result).to.eql({
+      created: 1,
+      updated: 1,
+      deleted: 0,
+      skipped: 0,
+      failed: 0,
+      errors: [],
+    });
+  });
+
+  it('should update changed strings when purge is added', async () => {
+    const sourceData = dataHelper.getSourceString();
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, sourceData);
+
+    nock(urls.api).post(urls.resource_strings)
+      .reply(200, {
+        data: [
+          {
+            somekey: 'somevalue',
+          },
+        ],
+      });
+
+    const data = dataHelper.getPushSourceContent();
+    data.hello_world.meta.tags = ['onetag'];
+    nock(urls.api)
+      .patch(`${urls.resource_strings}/${sourceData.data[0].id}`)
+      .reply(200, {
+        data: [{
+          someotherkey: 'someothervalue',
+        }],
+      });
+
+    const result = await transifexData.pushSourceContent(options, data, {
+      purge: true,
+    });
+
+    expect(result).to.eql({
+      created: 1,
+      updated: 1,
+      deleted: 0,
+      skipped: 0,
+      failed: 0,
+      errors: [],
+    });
+  });
+
+  it('should add to errors when something goes wrong', async () => {
+    const sourceData = dataHelper.getSourceString();
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, sourceData);
+
+    // cds -> api
+    nock(urls.api)
+      .post(urls.resource_strings)
+      .reply(400, {
+        errors: [{
+          message: 'something1',
+        }],
+      });
+    // cds -> api
+    nock(urls.api)
+      .delete(urls.resource_strings)
+      .reply(400, {
+        errors: [{
+          message: 'something2',
+        }],
+      });
+    let data = dataHelper.getPushSourceContent();
+    data = _.omit(data, 'hello_world');
+    const result = await transifexData.pushSourceContent(options, data, {
+      purge: true,
+    });
+
+    expect(result).to.eql({
+      created: 0,
+      updated: 0,
+      skipped: 0,
+      deleted: 0,
+      failed: 2,
+      errors: [
+        { message: 'something1' },
+        { message: 'something2' },
+      ],
+    });
+  });
+});
+
+describe('Get Project Language Status', () => {
+  it('should throw an error', async () => {
+    try {
+      await transifexData.getProjectLanguageStatus();
+    } catch (e) {
+      expect(e.message).to.eql('Not Implemented');
+    }
+  });
+});

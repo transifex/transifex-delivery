@@ -1,0 +1,30 @@
+app:
+  name: transifex-delivery
+  port: 10300
+
+settings:
+  request_size_limit: '50mb'
+  upload_timeout_min: 10
+  cache_ttl: 5400
+  disk_storage_path: '/tmp'
+  token_whitelist: ''
+  syncer: transifex
+  cache: redis
+
+transifex:
+  api_host: https://rest.api.transifex.com
+
+redis:
+  host: redis://transifex-delivery-redis
+  expire_min: 21600
+
+metrics:
+  enabled: true
+  port: 9090
+
+log:
+  transports:
+    console:
+      level: info
+
+workers: 1

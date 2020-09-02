@@ -1,0 +1,13 @@
+version: "3.7"
+services:
+
+  transifex-delivery:
+    volumes:
+      - ./src:/usr/app/src
+      - ./config:/usr/app/config
+      - ./tests:/usr/app/tests
+      - ./coverage:/usr/app/coverage
+      - ./package.json:/usr/app/package.json
+    ports:
+      - "10300:10300"
+      - "9229:9229"

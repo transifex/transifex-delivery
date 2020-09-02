@@ -1,0 +1,4 @@
+log:
+  silent: true
+
+workers: 0
