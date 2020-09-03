@@ -10,5 +10,5 @@ services:
       - transifex-delivery-redis
 
   transifex-delivery-redis:
-    image: redis:5.0-alpine
+    image: redis:latest
     command: redis-server

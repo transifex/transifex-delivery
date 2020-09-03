@@ -1,0 +1,11 @@
+language: generic
+dist: xenial
+services:
+  - docker
+
+before_script:
+  - make build
+
+script:
+  - make eslint
+  - make test

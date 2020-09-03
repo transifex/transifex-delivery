@@ -1,7 +1,7 @@
 #####################
 ### builder image ###
 
-FROM node:14.8-alpine as builder
+FROM node:14-alpine as builder
 
 ARG USER_ID
 ARG GROUP_ID
@@ -43,5 +43,6 @@ RUN npm ci
 COPY --chown=node:node config /usr/app/config
 COPY --chown=node:node ./src /usr/app/src
 COPY --chown=node:node ./tests /usr/app/tests
+COPY --chown=node:node ./.eslintrc.json /usr/app
 
 CMD ["npm", "run", "start-dev"]

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/transifex/transifex-delivery.svg?branch=master)](https://travis-ci.org/transifex/transifex-delivery) ![GitHub](https://img.shields.io/github/license/transifex/transifex-delivery)
+
 # Transifex Content Delivery Service
 
 A service that caches and serves content for Transifex Native app localization.

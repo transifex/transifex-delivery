@@ -13,8 +13,7 @@ build_prod:
 	make _build TARGET_TAG=latest TARGET_IMAGE=transifex-delivery
 
 _build:
-	DOCKER_BUILDKIT=1 docker build \
-		--progress=plain \
+	docker build \
 		--build-arg USER_ID=${USER_ID} \
 		--build-arg GROUP_ID=${GROUP_ID} \
 		--target ${TARGET_IMAGE} \
@@ -23,10 +22,10 @@ _build:
 up:
 	docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 
-test:
-	docker-compose -f docker-compose.yml -f docker-compose.dev.yml run --rm transifex-delivery npm test
+eslint:
+	docker-compose run --rm transifex-delivery npm run eslint
 
-citest:
+test:
 	docker-compose run --rm transifex-delivery npm test
 
 stop:
