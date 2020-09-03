@@ -14,7 +14,7 @@ async function initialize() {
   if (isInitialized) return;
   isInitialized = true;
   // spawn workers
-  const numWorkers = parseInt(config.get('workers'), 16);
+  const numWorkers = parseInt(config.get('workers'), 10);
   if (numWorkers > 0) {
     logger.info(`Spawning ${numWorkers} workers`);
     queue.process(numWorkers, path.join(__dirname, 'worker.js'));

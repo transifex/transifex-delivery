@@ -1,5 +1,3 @@
-/* eslint no-restricted-syntax:0 */
-
 const axios = require('axios');
 const _ = require('lodash');
 const apiUrls = require('./api_urls');
@@ -166,13 +164,15 @@ async function postSourceContent(token, options) {
   let createdStrings = [];
   let errors = [];
 
-  for (const payload in payloads) { // eslint-disable-line
-    try {
-      const { data } = await axios.post(url,
-        { data: payloads[payload] }, headers);
-      createdStrings = _.concat(createdStrings, data.data);
-    } catch (e) {
-      errors = _.concat(errors, e.response.data.errors);
+  for (const payload in payloads) {
+    if (Object.prototype.hasOwnProperty.call(payloads, payload)) {
+      try {
+        const { data } = await axios.post(url,
+          { data: payloads[payload] }, headers);
+        createdStrings = _.concat(createdStrings, data.data);
+      } catch (e) {
+        errors = _.concat(errors, e.response.data.errors);
+      }
     }
   }
   return {
@@ -198,13 +198,15 @@ async function patchSourceContent(token, options) {
   let updatedStrings = [];
   let errors = [];
 
-  for (const payload in payloads) { // eslint-disable-line
-    try {
-      const { data } = await axios.patch(`${url}/${payloads[payload].id}`,
-        { data: payloads[payload] }, headers);
-      updatedStrings = _.concat(updatedStrings, data.data);
-    } catch (e) {
-      errors = _.concat(errors, e.response.data.errors);
+  for (const payload in payloads) {
+    if (Object.prototype.hasOwnProperty.call(payloads, payload)) {
+      try {
+        const { data } = await axios.patch(`${url}/${payloads[payload].id}`,
+          { data: payloads[payload] }, headers);
+        updatedStrings = _.concat(updatedStrings, data.data);
+      } catch (e) {
+        errors = _.concat(errors, e.response.data.errors);
+      }
     }
   }
   return {
@@ -230,19 +232,21 @@ async function deleteSourceContent(token, options) {
   let count = 0;
   let errors = [];
 
-  for (const payload in payloads) { // eslint-disable-line
-    try {
-      await axios({
-        url,
-        method: 'delete',
-        data: {
-          data: payloads[payload],
-        },
-        ...headers,
-      });
-      count += payloads[payload].length;
-    } catch (e) {
-      errors = _.concat(errors, e.response.data.errors);
+  for (const payload in payloads) {
+    if (Object.prototype.hasOwnProperty.call(payloads, payload)) {
+      try {
+        await axios({
+          url,
+          method: 'delete',
+          data: {
+            data: payloads[payload],
+          },
+          ...headers,
+        });
+        count += payloads[payload].length;
+      } catch (e) {
+        errors = _.concat(errors, e.response.data.errors);
+      }
     }
   }
 
@@ -337,21 +341,23 @@ async function pushSourceContent(token, options) {
   existingStrings = await getSourceContentMap(token, options);
   const common = new Set();
 
-  for (const key in strings) { // eslint-disable-line
-    let attributes = {};
-    const existingString = existingStrings[key];
+  for (const key in strings) {
+    if (Object.prototype.hasOwnProperty.call(strings, key)) {
+      let attributes = {};
+      const existingString = existingStrings[key];
 
-    if (existingString) {
-      common.add(key);
-    }
+      if (existingString) {
+        common.add(key);
+      }
 
-    attributes = transformer.parseSourceStringForAPI(key, strings[key]);
-    if (!existingString) {
-      preparePayloadForPost(attributes);
-    } else if (stringNeedsUpdate(attributes, existingString.attributes)) {
-      preparePayloadForPatch(key, attributes);
-    } else {
-      skipped += 1;
+      attributes = transformer.parseSourceStringForAPI(key, strings[key]);
+      if (!existingString) {
+        preparePayloadForPost(attributes);
+      } else if (stringNeedsUpdate(attributes, existingString.attributes)) {
+        preparePayloadForPatch(key, attributes);
+      } else {
+        skipped += 1;
+      }
     }
   }
 

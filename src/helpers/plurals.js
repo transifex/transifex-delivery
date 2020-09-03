@@ -1,5 +1,3 @@
-/* eslint radix:0, no-restricted-globals:0, no-restricted-syntax:0, prefer-const:0 */
-
 const PLURAL_RULES = ['zero', 'one', 'two', 'few', 'many', 'other'];
 
 // The `_consumeFOO` functions take an input, "consume" a part of it to
@@ -48,8 +46,8 @@ function consumeRule(string) {
   let rule = string.substring(0, leftBracketPos).trim();
   if (rule[0] === '=') {
     rule = rule.substring(1);
-    if (!isNaN(parseInt(rule)) && parseInt(rule) === parseFloat(rule)) {
-      rule = parseInt(rule);
+    if (!Number.isNaN(parseInt(rule, 10)) && parseInt(rule, 10) === parseFloat(rule)) {
+      rule = parseInt(rule, 10);
       rule = PLURAL_RULES[rule];
       if (rule === undefined) { return [null, null]; }
     } else { return [null, null]; }
@@ -126,6 +124,7 @@ function explodePlurals(string) {
 
   // {cnt, plural, one {foo} other {foos}}
   // ^^^^^^^^^^^^
+  // eslint-disable-next-line prefer-const
   let [varName, remaining] = consumePreamble(string);
   if (varName == null) { return defaultResult; }
 
@@ -171,7 +170,7 @@ function explodePlurals(string) {
 function implodePlurals(plurals) {
   const result = ['{???, plural,'];
   // Lets get the rules in order
-  for (let rule of PLURAL_RULES) {
+  for (const rule of PLURAL_RULES) {
     if (rule in plurals) {
       const plural = plurals[rule];
       result.push(` ${rule} {${plural}}`);

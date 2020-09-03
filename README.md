@@ -2,6 +2,9 @@
 
 A service that caches and serves content for Transifex Native app localization.
 
+This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md).
+To contribute to Transifex Content Delivery Service, please check out the [contribution guidelines](CONTRIBUTING.md).
+
 ## Installation
 
 To run CDS you need to have Docker and docker-compose installed. All functionality is wrapped around a Makefile that handles building the docker image, running tests and launching the service:
@@ -11,6 +14,8 @@ make build
 make test
 make up
 ```
+
+CDS will be available at `http://localhost:10300` and you can check if it works by visiting `http://localhost:10300/health` endpoint.
 
 ### Use an interactive debugger
 

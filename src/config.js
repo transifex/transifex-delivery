@@ -13,9 +13,9 @@ nconf
     transform: (obj) => {
       if (!ENV_MATCH.test(obj.key)) return false;
 
-      // eslint-disable-next-line no-param-reassign
-      obj.key = obj.key.replace(ENV_MATCH, '');
-      return obj;
+      const ret = obj;
+      ret.key = ret.key.replace(ENV_MATCH, '');
+      return ret;
     },
   })
   .file('environment', {
