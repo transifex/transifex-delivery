@@ -29,6 +29,7 @@ RUN npm ci --only=prod
 
 COPY --chown=node:node config /usr/app/config
 COPY --chown=node:node ./src /usr/app/src
+COPY --chown=node:node newrelic.js /usr/app/
 
 CMD ["npm", "start"]
 

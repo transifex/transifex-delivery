@@ -1,3 +1,8 @@
+if (process.env.TX__NEWRELIC_LICENSE_KEY) {
+  // eslint-disable-next-line global-require
+  require('newrelic');
+}
+
 const server = require('./server');
 const metrics = require('./middlewares/metrics');
 const config = require('./config');
