@@ -87,6 +87,9 @@ TX__METRICS__PORT=9090
 
 # For Sentry integration, provide the appropriate Sentry DSN endpoint
 TX__SENTRY__DSN=https://....
+
+# For NewRelic integration, provide the appropriate license key
+TX__NEWRELIC_LICENSE_KEY=<abcd>
 ```
 
 ## Service API

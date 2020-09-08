@@ -1,6 +1,6 @@
 {
   "name": "transifex-delivery",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Transifex Content Delivery Service",
   "keywords": [
     "transifex",
@@ -17,7 +17,7 @@
     "start": "node ./src/index.js",
     "start-dev": "node ./node_modules/nodemon/bin/nodemon -L -e js,yml --watch ./src --watch ./config ./src/index.js",
     "start-debugger": "node --inspect-brk=0.0.0.0 ./src/index.js",
-    "test": "NODE_ENV=test nyc --reporter=text --all --reporter=html mocha --exit \"./tests/**/*.spec.js\"",
+    "test": "NODE_ENV=test nyc --reporter=text --all --reporter=html mocha --timeout 5000 --exit \"./tests/**/*.spec.js\"",
     "create-project": "node ./src/cli/create_project.js",
     "list-projects": "node ./src/cli/list_projects.js",
     "delete-project": "node ./src/cli/delete_project.js",
@@ -47,6 +47,7 @@
     "morgan": "^1.10.0",
     "nconf": "^0.10.0",
     "nconf-yaml": "^1.0.2",
+    "newrelic": "^6.13.0",
     "node-cache": "^5.1.2",
     "prom-client": "^12.0.0",
     "redis": "^3.0.2",
