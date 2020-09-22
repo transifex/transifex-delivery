@@ -7,10 +7,10 @@ USER_ID?=$$(id -u)
 TARGET_TAG=latest
 
 build:
-	make _build TARGET_TAG=latest TARGET_IMAGE=transifex-delivery-devel
+	make _build TARGET_IMAGE=transifex-delivery-devel
 
 build_prod:
-	make _build TARGET_TAG=latest TARGET_IMAGE=transifex-delivery
+	make _build TARGET_IMAGE=transifex-delivery
 
 _build:
 	docker build \
