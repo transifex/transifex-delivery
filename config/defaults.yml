@@ -16,7 +16,9 @@ transifex:
 
 redis:
   host: redis://transifex-delivery-redis
-  expire_min: 21600
+  cache_expire_min: 21600
+  registry_prefix: reg-
+  cache_prefix: cache-
 
 metrics:
   enabled: true

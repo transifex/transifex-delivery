@@ -74,8 +74,14 @@ TX__SETTINGS__CACHE=disk
 # Redis host
 TX__REDIS__HOST=redis://transifex-delivery-redis
 
-# Redis expiration keys
-TX__REDIS__EXPIRE_MIN=21600
+# Redis expiration keys for redis cache strategy
+TX__REDIS__CACHE_EXPIRE_MIN=21600
+
+# Redis cache strategy key prefix
+TX__REDIS__CACHE_PREFIX=cache-
+
+# Redis registry key prefix
+TX__REDIS__REGISTRY_PREFIX=reg-
 
 # Number of workers to process content
 TX__WORKERS=1

@@ -4,7 +4,7 @@ const config = require('../../../../config');
 const logger = require('../../../../logger');
 
 const client = redis.createClient(config.get('redis:host'));
-const expireSec = config.get('redis:expire_min') * 60;
+const expireSec = config.get('redis:cache_expire_min') * 60;
 
 /**
  * Calculate TTL based on a timestamp stored in Redis

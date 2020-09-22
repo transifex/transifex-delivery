@@ -1,4 +1,8 @@
 log:
   silent: true
 
+redis:
+  registry_prefix: reg-test-
+  cache_prefix: cache-test-
+
 workers: 0
