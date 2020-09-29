@@ -27,12 +27,15 @@ async function syncerPull(job) {
       ...syncFuncParams,
     );
     const stringData = JSON.stringify(data);
-    const { location } = await cache.setContent(key, stringData);
+    const etag = md5(stringData);
+    const cacheKey = `${key}:${etag}`;
+    const { location } = await cache.setContent(cacheKey, stringData);
     await registry.set(`cache:${key}`, {
       status: 'success',
       ts: Date.now(),
-      etag: md5(stringData),
+      etag,
       location,
+      cacheKey,
     }, registryExpireSec);
   } catch (e) {
     // gracefully handle 4xx errors and store them in cache

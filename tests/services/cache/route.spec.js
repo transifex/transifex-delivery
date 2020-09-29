@@ -4,44 +4,27 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 const request = require('supertest');
-const _ = require('lodash');
-const cache = require('../../../src/services/cache');
 const syncer = require('../../../src/services/syncer/data');
-const registry = require('../../../src/services/registry');
+const { resetRegistry, populateRegistry } = require('../../lib');
 const app = require('../../../src/server')();
 
 const req = request(app);
 
 const cachedToken = '1/abcd';
 const cachedKey = `${cachedToken}:en:content`;
-
 const uncachedToken = '1/efgh';
-const uncachedKey = `${uncachedToken}:en:content`;
-
 const content = JSON.stringify({ foo: 'bar' });
 
 describe('Content cache', () => {
   let sandbox;
 
   beforeEach(async () => {
-    // flush cache
-    const keys = await registry.find('*');
-    await Promise.all(_.map(keys, (key_) => cache.delContent(key_.replace('cache:', ''))));
-    await Promise.all(_.map(keys, (key_) => registry.del(key_)));
-
     sandbox = sinon.createSandbox();
-    await registry.set(`cache:${cachedKey}`, {
-      status: 'success',
-      etag: '123',
-      ts: Date.now(),
-      location: `cache://${cachedKey}`,
-    });
-    await cache.setContent(cachedKey, content);
+    await populateRegistry(cachedKey, content);
   });
 
   afterEach(async () => {
-    await cache.delContent(cachedKey);
-    await cache.delContent(uncachedKey);
+    await resetRegistry();
     afterEach(() => sandbox.restore());
   });
 

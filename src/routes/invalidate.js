@@ -13,8 +13,15 @@ router.post('/',
     try {
       const token = req.token.project_token;
       const keys = await registry.find(`cache:${token}:*`);
-      await Promise.all(_.map(keys, (key) => registry.del(key)));
-      await Promise.all(_.map(keys, (key) => cache.delContent(key.replace('cache:', ''))));
+      await Promise.all(_.map(keys, (key) => (async () => {
+        const data = await registry.get(key);
+        if (data) {
+          await registry.del(key);
+          if (data.cacheKey) {
+            await cache.delContent(data.cacheKey);
+          }
+        }
+      })()));
       res.json({
         status: 'success',
         token,
