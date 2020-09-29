@@ -8,7 +8,15 @@ services:
     tty: true
     depends_on:
       - transifex-delivery-redis
+      - transifex-delivery-moto
 
   transifex-delivery-redis:
     image: redis:latest
     command: redis-server
+
+  transifex-delivery-moto:
+    image: picadoh/motocker
+    environment:
+      - MOTO_SERVICE=s3
+    ports:
+      - "127.0.0.1:5000:5000"

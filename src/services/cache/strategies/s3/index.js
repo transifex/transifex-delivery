@@ -6,6 +6,43 @@ const bucket = config.get('cache:s3:bucket');
 const acl = config.get('cache:s3:acl');
 const location = config.get('cache:s3:location');
 
+if (config.get('cache:s3:region')) {
+  aws.config.update({
+    region: config.get('cache:s3:region'),
+  });
+}
+
+if (config.get('cache:s3:force_path_style')) {
+  aws.config.update({
+    s3ForcePathStyle: true,
+  });
+}
+
+if (config.get('cache:s3:access_key_id') && config.get('cache:s3:secret_access_key')) {
+  aws.config.update({
+    credentials: {
+      accessKeyId: config.get('cache:s3:access_key_id'),
+      secretAccessKey: config.get('cache:s3:secret_access_key'),
+    },
+  });
+}
+
+if (config.get('cache:s3:endpoint')) {
+  aws.config.update({
+    endpoint: config.get('cache:s3:endpoint'),
+  });
+}
+
+if (config.get('cache:s3:create_bucket')) {
+  const s3 = new aws.S3();
+  s3.createBucket({
+    Bucket: bucket,
+  }, (err, data) => {
+    if (err) logger.error(err);
+    else logger.info(data);
+  });
+}
+
 /**
  * Convert a user key to S3 key
  *
@@ -41,7 +78,7 @@ function delContent(key) {
  * @implements {getContent}
  */
 function getContent(key) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const s3 = new aws.S3();
     const options = {
       Bucket: bucket,
@@ -49,7 +86,9 @@ function getContent(key) {
     };
     s3.getObject(options, (err, data) => {
       if (err) {
-        reject(err);
+        resolve({
+          data: null,
+        });
       } else {
         resolve({
           data: data.Body.toString('utf-8'),

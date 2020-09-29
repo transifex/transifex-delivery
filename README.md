@@ -337,7 +337,7 @@ Prometheus metrics can be exposed under the `/metrics` endpoint.
 To enable Prometheus set the following environment variables:
 
 ```
-TX__METRICS__ENABLED=0
+TX__METRICS__ENABLED=1
 TX__METRICS__PORT=9090 (default)
 ```
 
