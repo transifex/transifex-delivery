@@ -50,8 +50,8 @@ All settings can be overriden using environment variables such as:
 TX__APP__NAME=transifex-delivery
 TX__APP__PORT=10300
 
-# How long content will be considered "fresh" unless manually invalidated
-TX__SETTINGS__CACHE_TTL=5400 (in seconds)
+# Max-age header for cached responses
+TX__SETTINGS__CACHE_TTL=1800 (in seconds)
 
 # Upload size limit for pushing content
 TX__SETTINGS__REQUEST_SIZE_LIMIT=50mb
@@ -59,7 +59,7 @@ TX__SETTINGS__REQUEST_SIZE_LIMIT=50mb
 # Upload timeout in minutes
 TX__SETTINGS__UPLOAD_TIMEOUT_MIN=10
 
-# The path where content will be cached in files
+# Disk path for CDS related files
 TX__SETTINGS__DISK_STORAGE_PATH=/tmp
 
 # Optionally, a whitelist of project tokens
@@ -71,31 +71,29 @@ TX__SETTINGS__SYNCER=transifex
 # Cache strategy (disk is the only available option at the moment)
 TX__SETTINGS__CACHE=disk
 
+# Interval for auto-syncing content and refreshing content cache
+TX__SETTINGS__AUTOSYNC_MIN=60
+
 # Redis host
 TX__REDIS__HOST=redis://transifex-delivery-redis
 
-# Redis expiration keys for redis cache strategy
-TX__REDIS__CACHE_EXPIRE_MIN=21600
+# Queue name
+TX__QUEUE__NAME=sync
 
-# Redis cache strategy key prefix
-TX__REDIS__CACHE_PREFIX=cache-
+# Number of workers to fetch content from Transifex
+TX__QUEUE__WORKERS=1
 
-# Redis registry key prefix
-TX__REDIS__REGISTRY_PREFIX=reg-
+# Prefix namespace for registry in Redis
+TX__REGISTRY__PREFIX="registry:"
 
-# Number of workers to process content
-TX__WORKERS=1
+# How long should the keys stay in registry
+TX__REGISTRY__EXPIRE_MIN=10080
 
-# If Prometheus metrics should be enabled,
-# along with a Prometheus listening port at /metrics endpoint
-TX__METRICS__ENABLED=0
-TX__METRICS__PORT=9090
+# Redis cache strategy namespace
+TX__CACHE__REDIS__PREFIX="storage:"
 
-# For Sentry integration, provide the appropriate Sentry DSN endpoint
-TX__SENTRY__DSN=https://....
-
-# For NewRelic integration, provide the appropriate license key
-TX__NEWRELIC_LICENSE_KEY=<abcd>
+# How long should content stay in redis cache strategy
+TX__CACHE__REDIS__EXPIRE_MIN=10080
 ```
 
 ## Service API
@@ -298,6 +296,35 @@ This strategy is useful for developers that want to try out Transifex native int
 ## Cache strategies
 
 Cache strategy defines an abstract interface on how caching work in CDS. At the moment only redis cache is supported, but the service could be extended with more strategies.
+
+## Third party integrations
+
+### Sentry
+
+To integrate with Sentry, provide the appropriate Sentry DSN endpoint as an environment variable:
+
+```
+TX__SENTRY__DSN=https://....
+```
+
+### NewRelic
+
+To integrate with NewRelic, provide the appropriate license key as an environment variable:
+
+```
+TX__NEWRELIC_LICENSE_KEY=<abcd>
+```
+
+### Prometheus
+
+Prometheus metrics can be exposed under the `/metrics` endpoint.
+
+To enable Prometheus set the following environment variables:
+
+```
+TX__METRICS__ENABLED=0
+TX__METRICS__PORT=9090 (default)
+```
 
 # License
 

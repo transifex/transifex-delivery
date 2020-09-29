@@ -3,7 +3,7 @@ const _ = require('lodash');
 const config = require('../../config');
 const logger = require('../../logger');
 
-const prefix = config.get('redis:registry_prefix') || '';
+const prefix = config.get('registry:prefix') || '';
 const client = redis.createClient(config.get('redis:host'));
 
 /**

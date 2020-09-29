@@ -1,8 +1,13 @@
 log:
   silent: true
 
-redis:
-  registry_prefix: reg-test-
-  cache_prefix: cache-test-
+registry:
+  prefix: 'test:registry:'
 
-workers: 0
+cache:
+  redis:
+    prefix: 'test:storage:'
+
+queue:
+  name: 'test:sync'
+  workers: 0

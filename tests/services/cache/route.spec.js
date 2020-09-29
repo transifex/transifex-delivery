@@ -7,6 +7,7 @@ const request = require('supertest');
 const _ = require('lodash');
 const cache = require('../../../src/services/cache');
 const syncer = require('../../../src/services/syncer/data');
+const registry = require('../../../src/services/registry');
 const app = require('../../../src/server')();
 
 const req = request(app);
@@ -19,15 +20,22 @@ const uncachedKey = `${uncachedToken}:en:content`;
 
 const content = JSON.stringify({ foo: 'bar' });
 
-describe('Disk cache', () => {
+describe('Content cache', () => {
   let sandbox;
 
   beforeEach(async () => {
     // flush cache
-    const keys = await cache.findKeys('*');
-    await Promise.all(_.map(keys, (key) => cache.delContent(key)));
+    const keys = await registry.find('*');
+    await Promise.all(_.map(keys, (key_) => cache.delContent(key_.replace('cache:', ''))));
+    await Promise.all(_.map(keys, (key_) => registry.del(key_)));
 
     sandbox = sinon.createSandbox();
+    await registry.set(`cache:${cachedKey}`, {
+      status: 'success',
+      etag: '123',
+      ts: Date.now(),
+      location: `cache://${cachedKey}`,
+    });
     await cache.setContent(cachedKey, content);
   });
 

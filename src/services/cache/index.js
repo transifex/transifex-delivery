@@ -20,9 +20,7 @@ async function delContent(key) {
  * @param {String} key A key that identifies a resource in cache
  * @returns {Object}
  * {
- *   ttl: <number>,
  *   data: <stringified json>
- *   etag: <string>
  * }
  */
 async function getContent(key) {
@@ -38,8 +36,7 @@ async function getContent(key) {
  * @param {String} data An object with the content to be cached
  * @returns {Object}
  * {
- *   ttl: <number>,
- *   etag: <string>,
+ *   location: <string> (cache://<key> or https://...)
  * }
  */
 async function setContent(key, data) {
@@ -47,21 +44,8 @@ async function setContent(key, data) {
   return res;
 }
 
-/**
- * Search cache for keys matching pattern
- *
- * @interface
- * @param {String} pattern A pattern to search for keys in cache
- * @returns {Array} array of keys
- */
-async function findKeys(pattern) {
-  const res = await cache.findKeys(pattern);
-  return res;
-}
-
 module.exports = {
   delContent,
   getContent,
   setContent,
-  findKeys,
 };

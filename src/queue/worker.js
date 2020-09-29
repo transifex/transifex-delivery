@@ -1,6 +1,11 @@
+const md5 = require('md5');
 const logger = require('../logger');
+const config = require('../config');
 const cache = require('../services/cache');
+const registry = require('../services/registry');
 const syncer = require('../services/syncer/data');
+
+const registryExpireSec = config.get('registry:expire_min') * 60;
 
 /**
  * Pull content from API syncer job
@@ -21,15 +26,23 @@ async function syncerPull(job) {
       },
       ...syncFuncParams,
     );
-    await cache.setContent(key, JSON.stringify(data));
+    const stringData = JSON.stringify(data);
+    const { location } = await cache.setContent(key, stringData);
+    await registry.set(`cache:${key}`, {
+      status: 'success',
+      ts: Date.now(),
+      etag: md5(stringData),
+      location,
+    }, registryExpireSec);
   } catch (e) {
     // gracefully handle 4xx errors and store them in cache
     if (e.status && e.status >= 400 && e.status < 500) {
-      await cache.setContent(`${key}:status`, JSON.stringify({
-        error: true,
-        status: e.status,
-        message: e.message || '',
-      }));
+      await registry.set(`cache:${key}`, {
+        status: 'error',
+        ts: Date.now(),
+        statusCode: e.status || 404,
+        statusMessage: e.message || 'Not found',
+      }, registryExpireSec);
     } else {
       throw e;
     }

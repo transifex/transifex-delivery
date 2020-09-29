@@ -1,6 +1,5 @@
 /* globals describe, it, beforeEach, afterEach */
 
-const _ = require('lodash');
 const sinon = require('sinon');
 const { expect } = require('chai');
 const cache = require('../../../../../src/services/cache/strategies/redis');
@@ -25,7 +24,6 @@ describe('Redis cache', () => {
 
   it('should read cache', async () => {
     const payload = await cache.getContent(cachedKey);
-    expect(payload.ttl).to.be.greaterThan(0);
     expect(payload.data).to.equal(content);
   });
 
@@ -33,8 +31,6 @@ describe('Redis cache', () => {
     const payload = await cache.getContent('invalid_key');
     expect(payload).to.deep.equal({
       data: null,
-      ttl: 0,
-      etag: '',
     });
   });
 
@@ -81,21 +77,5 @@ describe('Redis cache', () => {
 
     // cleanup
     await cache.delContent(key);
-  });
-
-  it('findKeys scans for keys', async () => {
-    await cache.setContent('foo:en', '123');
-    await cache.setContent('foo:fr', '123');
-    await cache.setContent('bar:en', '123');
-
-    const keys = await cache.findKeys('foo:*');
-    await cache.delContent('foo:en');
-    await cache.delContent('foo:fr');
-    await cache.delContent('bar:en', '123');
-
-    expect(_.sortBy(keys)).to.deep.equal(_.sortBy([
-      'foo:en',
-      'foo:fr',
-    ]));
   });
 });

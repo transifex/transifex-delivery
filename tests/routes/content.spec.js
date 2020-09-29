@@ -7,6 +7,7 @@ const nock = require('nock');
 const _ = require('lodash');
 const app = require('../../src/server')();
 const cache = require('../../src/services/cache');
+const registry = require('../../src/services/registry');
 const dataHelper = require('../services/syncer/strategies/transifex/helpers/api');
 const config = require('../../src/config');
 
@@ -61,8 +62,9 @@ describe('/content', () => {
       }));
 
     // flush cache
-    const keys = await cache.findKeys('*');
-    await Promise.all(_.map(keys, (key) => cache.delContent(key)));
+    const keys = await registry.find('*');
+    await Promise.all(_.map(keys, (key_) => cache.delContent(key_.replace('cache:', ''))));
+    await Promise.all(_.map(keys, (key_) => registry.del(key_)));
   });
 
   afterEach(async () => {

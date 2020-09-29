@@ -5,7 +5,8 @@ app:
 settings:
   request_size_limit: '50mb'
   upload_timeout_min: 10
-  cache_ttl: 5400
+  cache_ttl: 1800
+  autosync_min: 60
   disk_storage_path: '/tmp'
   token_whitelist: ''
   syncer: transifex
@@ -16,9 +17,15 @@ transifex:
 
 redis:
   host: redis://transifex-delivery-redis
-  cache_expire_min: 21600
-  registry_prefix: reg-
-  cache_prefix: cache-
+
+registry:
+  prefix: 'registry:'
+  expire_min: 10080
+
+cache:
+  redis:
+    prefix: 'storage:'
+    expire_min: 10080
 
 metrics:
   enabled: true
@@ -29,4 +36,6 @@ log:
     console:
       level: info
 
-workers: 1
+queue:
+  name: sync
+  workers: 1

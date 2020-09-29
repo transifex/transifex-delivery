@@ -5,6 +5,7 @@ const request = require('supertest');
 const nock = require('nock');
 const _ = require('lodash');
 const cache = require('../../src/services/cache');
+const registry = require('../../src/services/registry');
 const app = require('../../src/server')();
 
 const req = request(app);
@@ -53,8 +54,10 @@ describe('/languages', () => {
       }));
 
     // flush cache
-    const keys = await cache.findKeys('*');
-    await Promise.all(_.map(keys, (key) => cache.delContent(key)));
+    // flush cache
+    const keys = await registry.find('*');
+    await Promise.all(_.map(keys, (key_) => cache.delContent(key_.replace('cache:', ''))));
+    await Promise.all(_.map(keys, (key_) => registry.del(key_)));
   });
 
   afterEach(async () => {

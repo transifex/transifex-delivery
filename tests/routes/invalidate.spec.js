@@ -4,6 +4,7 @@ const _ = require('lodash');
 const { expect } = require('chai');
 const request = require('supertest');
 const cache = require('../../src/services/cache');
+const registry = require('../../src/services/registry');
 const app = require('../../src/server')();
 
 const req = request(app);
@@ -15,9 +16,11 @@ const content = JSON.stringify({ foo: 'bar' });
 describe('Invalidate', () => {
   beforeEach(async () => {
     // flush cache
-    const keys = await cache.findKeys('*');
-    await Promise.all(_.map(keys, (key_) => cache.delContent(key_)));
+    const keys = await registry.find('*');
+    await Promise.all(_.map(keys, (key_) => cache.delContent(key_.replace('cache:', ''))));
+    await Promise.all(_.map(keys, (key_) => registry.del(key_)));
 
+    await registry.set(`cache:${key}`, content);
     await cache.setContent(key, content);
   });
 
