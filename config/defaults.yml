@@ -26,6 +26,10 @@ cache:
   redis:
     prefix: 'storage:'
     expire_min: 10080
+  s3:
+    bucket: 'transifex-delivery'
+    acl: 'private'
+    location: 'cache://'
 
 metrics:
   enabled: true

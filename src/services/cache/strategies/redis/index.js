@@ -23,9 +23,9 @@ function delContent(key) {
   return new Promise((resolve) => {
     client.del(keyToRedis(key), (err) => {
       if (err) {
-        logger.warn(`Cache deletion failed for ${key} key`);
+        logger.warn(`[Redis] Cache deletion failed for ${key} key`);
       } else {
-        logger.info(`Cache deleted for ${key} key`);
+        logger.info(`[Redis] Cache deleted for ${key} key`);
       }
       resolve();
     });
@@ -64,10 +64,10 @@ function setContent(key, data) {
     };
     client.set(keyToRedis(key), JSON.stringify(payload), 'EX', expireSec, (err) => {
       if (err) {
-        logger.error(`Failed to set cache content for ${key} key`);
+        logger.error(`[Redis] Failed to set cache content for ${key} key`);
         reject(err);
       } else {
-        logger.info(`Cache set for ${key} key`);
+        logger.info(`[Redis] Cache set for ${key} key`);
         resolve({
           location: `cache://${key}`,
         });

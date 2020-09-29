@@ -68,8 +68,8 @@ TX__SETTINGS__TOKEN_WHITELIST=key1,key2
 # Syncer strategy (transifex or sandbox)
 TX__SETTINGS__SYNCER=transifex
 
-# Cache strategy (disk is the only available option at the moment)
-TX__SETTINGS__CACHE=disk
+# Cache strategy (redis, s3)
+TX__SETTINGS__CACHE=redis
 
 # Interval for auto-syncing content and refreshing content cache
 TX__SETTINGS__AUTOSYNC_MIN=60
@@ -298,6 +298,21 @@ This strategy is useful for developers that want to try out Transifex native int
 Cache strategy defines an abstract interface on how caching work in CDS. At the moment only redis cache is supported, but the service could be extended with more strategies.
 
 ## Third party integrations
+
+### AWS
+
+You may use an AWS S3 bucket to store the cached content and optionally set a CDN (e.g. Cloudfront) on top of it to serve the content.
+
+To enable AWS integration you need to ensure that AWS SDK can authenticate by following the [offical docs](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html).
+
+Then, you need to configure some environment variables to enable the integration:
+
+```
+TX__SETTINGS__CACHE=s3
+TX__CACHE__S3__BUCKET=<name of bucket>
+TX__CACHE__S3__ACL="public-read"
+TX__CACHE__S3__LOCATION="https://abcd.cloudfront.net/"  (<-- note the trailing slash)
+```
 
 ### Sentry
 
