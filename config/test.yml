@@ -1,4 +1,20 @@
 log:
   silent: true
 
-workers: 0
+registry:
+  prefix: 'test:registry:'
+
+cache:
+  redis:
+    prefix: 'test:storage:'
+  s3:
+    endpoint: http://transifex-delivery-moto:5000
+    region: eu-west-1
+    force_path_style: true
+    access_key_id: foo
+    secret_access_key: bar
+    create_bucket: true
+
+queue:
+  name: 'test:sync'
+  workers: 0

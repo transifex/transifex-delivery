@@ -2,14 +2,14 @@
 
 const sinon = require('sinon');
 const { expect } = require('chai');
-const cache = require('../../../../../src/services/cache/strategies/redis');
+const cache = require('../../../../../src/services/cache/strategies/s3');
 
 const cachedToken = '1/abcd';
 const cachedKey = `${cachedToken}:en:content`;
 
 const content = JSON.stringify({ foo: 'bar' });
 
-describe('Redis cache', () => {
+describe('S3 cache', () => {
   let sandbox;
 
   beforeEach(async () => {

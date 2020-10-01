@@ -3,12 +3,11 @@
 const { expect } = require('chai');
 const request = require('supertest');
 const nock = require('nock');
-const _ = require('lodash');
-const cache = require('../../src/services/cache');
 const app = require('../../src/server')();
 
 const req = request(app);
 const config = require('../../src/config');
+const { resetRegistry } = require('../lib');
 
 const token = '1/abcd';
 
@@ -51,14 +50,11 @@ describe('/languages', () => {
           },
         }],
       }));
-
-    // flush cache
-    const keys = await cache.findKeys('*');
-    await Promise.all(_.map(keys, (key) => cache.delContent(key)));
   });
 
   afterEach(async () => {
     nock.cleanAll();
+    await resetRegistry();
   });
 
   it('should get languages', async () => {

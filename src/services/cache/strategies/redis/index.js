@@ -1,20 +1,19 @@
-const md5 = require('md5');
 const redis = require('redis');
 const config = require('../../../../config');
 const logger = require('../../../../logger');
 
+const prefix = config.get('cache:redis:prefix') || '';
 const client = redis.createClient(config.get('redis:host'));
-const expireSec = config.get('redis:expire_min') * 60;
+const expireSec = config.get('cache:redis:expire_min') * 60;
 
 /**
- * Calculate TTL based on a timestamp stored in Redis
+ * Convert a user key to Redis key with prefix included
  *
- * @param {Number} ts
- * @returns {Number} TTL in seconds
+ * @param {String} key
+ * @returns {String}
  */
-function getTTL(ts) {
-  const elapsedSecs = Math.round((Date.now() - ts) / 1000);
-  return Math.max(0, config.get('settings:cache_ttl') - elapsedSecs);
+function keyToRedis(key) {
+  return `${prefix}${key}`;
 }
 
 /**
@@ -22,11 +21,11 @@ function getTTL(ts) {
  */
 function delContent(key) {
   return new Promise((resolve) => {
-    client.del(key, (err) => {
+    client.del(keyToRedis(key), (err) => {
       if (err) {
-        logger.warn(`Cache deletion failed for ${key} key`);
+        logger.warn(`[Redis] Cache deletion failed for ${key} key`);
       } else {
-        logger.info(`Cache deleted for ${key} key`);
+        logger.info(`[Redis] Cache deleted for ${key} key`);
       }
       resolve();
     });
@@ -38,21 +37,17 @@ function delContent(key) {
  */
 function getContent(key) {
   return new Promise((resolve, reject) => {
-    client.get(key, (err, payload) => {
+    client.get(keyToRedis(key), (err, payload) => {
       if (err) {
         reject(err);
       } else if (!payload) {
         resolve({
           data: null,
-          ttl: 0,
-          etag: '',
         });
       } else {
         const parsedPayload = JSON.parse(payload);
         resolve({
           data: parsedPayload.data,
-          etag: parsedPayload.etag,
-          ttl: getTTL(parsedPayload.ts),
         });
       }
     });
@@ -66,35 +61,16 @@ function setContent(key, data) {
   return new Promise((resolve, reject) => {
     const payload = {
       data,
-      etag: md5(data),
-      ts: Date.now(),
     };
-    client.set(key, JSON.stringify(payload), 'EX', expireSec, (err) => {
+    client.set(keyToRedis(key), JSON.stringify(payload), 'EX', expireSec, (err) => {
       if (err) {
-        logger.error(`Failed to set cache content for ${key} key`);
+        logger.error(`[Redis] Failed to set cache content for ${key} key`);
         reject(err);
       } else {
-        logger.info(`Cache set for ${key} key`);
+        logger.info(`[Redis] Cache set for ${key} key`);
         resolve({
-          data: payload.data,
-          etag: payload.etag,
-          ttl: getTTL(payload.ts),
+          location: `cache://${key}`,
         });
-      }
-    });
-  });
-}
-
-/**
- * @implements {findKeys}
- */
-function findKeys(pattern) {
-  return new Promise((resolve, reject) => {
-    client.keys(pattern, (err, keys) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(keys || []);
       }
     });
   });
@@ -104,5 +80,4 @@ module.exports = {
   delContent,
   getContent,
   setContent,
-  findKeys,
 };

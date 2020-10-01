@@ -4,11 +4,10 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const request = require('supertest');
 const nock = require('nock');
-const _ = require('lodash');
 const app = require('../../src/server')();
-const cache = require('../../src/services/cache');
 const dataHelper = require('../services/syncer/strategies/transifex/helpers/api');
 const config = require('../../src/config');
+const { resetRegistry } = require('../lib');
 
 chai.use(chaiHttp);
 const { expect } = chai;
@@ -59,21 +58,11 @@ describe('/content', () => {
           },
         }],
       }));
-
-    // flush cache
-    const keys = await cache.findKeys('*');
-    await Promise.all(_.map(keys, (key) => cache.delContent(key)));
   });
 
   afterEach(async () => {
     nock.cleanAll();
-    // invalidating cache to be fresh in any subsequent test
-    // requests to cds are going to return whatever is already cached
-    // and then cache is going to be updated by performing calls to transifex
-    // API
-    await request(app)
-      .post('/invalidate')
-      .set('Authorization', `Bearer ${token}:secret`);
+    await resetRegistry();
   });
 
   it('should propagate an API error', async () => {

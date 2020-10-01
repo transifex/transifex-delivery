@@ -3,6 +3,7 @@ const express = require('express');
 const validateHeader = require('../middlewares/headers');
 const logger = require('../logger');
 const cache = require('../services/cache');
+const registry = require('../services/registry');
 
 const router = express.Router();
 
@@ -11,8 +12,16 @@ router.post('/',
   async (req, res) => {
     try {
       const token = req.token.project_token;
-      const keys = await cache.findKeys(`${token}:*`);
-      await Promise.all(_.map(keys, (key) => cache.delContent(key)));
+      const keys = await registry.find(`cache:${token}:*`);
+      await Promise.all(_.map(keys, (key) => (async () => {
+        const data = await registry.get(key);
+        if (data) {
+          await registry.del(key);
+          if (data.cacheKey) {
+            await cache.delContent(data.cacheKey);
+          }
+        }
+      })()));
       res.json({
         status: 'success',
         token,
