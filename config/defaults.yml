@@ -32,7 +32,7 @@ cache:
     location: 'cache://'
 
 metrics:
-  enabled: true
+  enabled: false
   port: 9090
 
 log:
