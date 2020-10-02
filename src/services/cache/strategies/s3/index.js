@@ -120,7 +120,7 @@ function setContent(key, data) {
       } else {
         logger.info(`[S3] Cache set for ${key} key`);
         resolve({
-          location: `${location}${key}`,
+          location: `${location}${keyToS3(key)}`,
         });
       }
     });
