@@ -5,6 +5,7 @@ const logger = require('../../../../logger');
 const bucket = config.get('cache:s3:bucket');
 const acl = config.get('cache:s3:acl');
 const location = config.get('cache:s3:location');
+const maxAge = config.get('cache:s3:max_age');
 
 if (config.get('cache:s3:region')) {
   aws.config.update({
@@ -108,6 +109,7 @@ function setContent(key, data) {
       Bucket: bucket,
       Key: keyToS3(key),
       Body: data,
+      CacheControl: `max-age=${maxAge}`,
       ContentType: 'application/json; charset=utf-8',
       ACL: acl,
     };
