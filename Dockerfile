@@ -6,9 +6,11 @@ FROM node:14-alpine as builder
 ARG USER_ID
 ARG GROUP_ID
 
-RUN deluser node && \
+RUN if [ ${USER_ID:-0} -ne 0 ] && [ ${GROUP_ID:-0} -ne 0 ]; then \
+    deluser node && \
     addgroup -g ${GROUP_ID} node && \
-    adduser -u ${USER_ID} -D node -G node
+    adduser -u ${USER_ID} -D node -G node \
+;fi
 
 COPY --chown=node:node package.json package-lock.json /usr/app/
 

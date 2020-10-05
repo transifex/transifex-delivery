@@ -1,6 +1,6 @@
 {
   "name": "transifex-delivery",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Transifex Content Delivery Service",
   "keywords": [
     "transifex",
@@ -32,7 +32,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@sentry/node": "^5.24.2",
-    "aws-sdk": "^2.765.0",
+    "aws-sdk": "^2.766.0",
     "axios": "^0.20.0",
     "body-parser": "^1.19.0",
     "bull": "^3.18.0",
@@ -53,7 +53,7 @@
     "prom-client": "^12.0.0",
     "redis": "^3.0.2",
     "slugify": "^1.4.5",
-    "uuid": "^8.3.0",
+    "uuid": "^8.3.1",
     "winston": "^3.3.3",
     "winston-transport": "^4.4.0",
     "yargs": "^15.4.1"
