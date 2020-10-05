@@ -341,6 +341,16 @@ TX__METRICS__ENABLED=1
 TX__METRICS__PORT=9090 (default)
 ```
 
+## Deploying to Production
+
+To run the service on production it is required to have setup the following components:
+- Redis server (set using TX__REDIS__HOST env var)
+- AWS S3 bucket (optional but recommended)
+- AWS Cloudfront on top of S3 or other CDN service (optional but recommended)
+
+Service is available as a Docker image at [Docker Hub](https://hub.docker.com/r/transifex/transifex-delivery).
+
+
 # License
 
 Licensed under Apache License 2.0, see [LICENSE](LICENSE) file.
