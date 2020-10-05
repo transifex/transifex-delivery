@@ -16,5 +16,6 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: transifex/transifex-delivery
           tag_with_ref: true
+          tags: transifex/transifex-delivery:latest
           file: ./Dockerfile
           target: transifex-delivery
