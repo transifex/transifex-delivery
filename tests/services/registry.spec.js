@@ -52,4 +52,32 @@ describe('Registry', () => {
     });
     expect(await registry.get('foo')).to.equal(undefined);
   });
+
+  it('adds to set', async () => {
+    await registry.addToSet('test:add_to_set', 'a');
+    await registry.addToSet('test:add_to_set', 'a');
+    await registry.addToSet('test:add_to_set', 'b');
+    expect(await registry.countSet('test:add_to_set')).to.equal(2);
+  });
+
+  it('removes from set', async () => {
+    await registry.addToSet('test:rem_from_set', 'a');
+    await registry.addToSet('test:rem_from_set', 'b');
+    await registry.removeFromSet('test:rem_from_set', 'c');
+    await registry.removeFromSet('test:rem_from_set', 'b');
+    expect(await registry.countSet('test:rem_from_set')).to.equal(1);
+  });
+
+  it('lists set', async () => {
+    await registry.addToSet('test:list_set', 'a');
+    await registry.addToSet('test:list_set', 'b');
+    const values = await registry.listSet('test:list_set');
+    expect(values.sort()).to.deep.equal(['a', 'b'].sort());
+  });
+
+  it('queries set members', async () => {
+    await registry.addToSet('test:is_set_member', 'a');
+    expect(await registry.isSetMember('test:is_set_member', 'a')).to.equal(true);
+    expect(await registry.isSetMember('test:is_set_member', 'b')).to.equal(false);
+  });
 });

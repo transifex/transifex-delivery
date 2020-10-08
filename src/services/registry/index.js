@@ -139,10 +139,97 @@ function incr(key, increment, expireSec) {
   });
 }
 
+function addToSet(key, value, expireSec) {
+  return new Promise((resolve, reject) => {
+    const stringValue = JSON.stringify(value);
+    client.sadd(keyToRedis(key), stringValue, (err) => {
+      if (err) {
+        reject(err);
+      } else if (expireSec > 0) {
+        client.expire(keyToRedis(key), expireSec, (err2) => {
+          if (err2) {
+            reject(err2);
+          } else {
+            resolve();
+          }
+        });
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+function removeFromSet(key, value) {
+  return new Promise((resolve, reject) => {
+    const stringValue = JSON.stringify(value);
+    client.srem(keyToRedis(key), stringValue, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+function listSet(key) {
+  return new Promise((resolve, reject) => {
+    client.smembers(keyToRedis(key), (err, members) => {
+      if (err) {
+        reject(err);
+      } else {
+        const result = _.map(members, (value) => {
+          let retValue = value;
+          if (value) {
+            try {
+              retValue = JSON.parse(value);
+            } catch (e) {
+              retValue = null;
+            }
+          }
+          return retValue;
+        });
+        resolve(result);
+      }
+    });
+  });
+}
+
+function countSet(key) {
+  return new Promise((resolve, reject) => {
+    client.scard(keyToRedis(key), (err, count) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(count || 0);
+      }
+    });
+  });
+}
+
+function isSetMember(key, value) {
+  return new Promise((resolve, reject) => {
+    const stringValue = JSON.stringify(value);
+    client.sismember(keyToRedis(key), stringValue, (err, response) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(!!response);
+      }
+    });
+  });
+}
+
 module.exports = {
   del,
   get,
   set,
   find,
   incr,
+  addToSet,
+  removeFromSet,
+  listSet,
+  isSetMember,
+  countSet,
 };
