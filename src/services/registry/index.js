@@ -111,9 +111,38 @@ function find(pattern) {
   });
 }
 
+/**
+ * Increase key value
+ *
+ * @param {String} key
+ * @param {Number} increment
+ * @param {Number} expireSec (optional)
+ * @returns {Promise}
+ */
+function incr(key, increment, expireSec) {
+  return new Promise((resolve, reject) => {
+    client.incrby(keyToRedis(key), increment, (err) => {
+      if (err) {
+        reject(err);
+      } else if (expireSec > 0) {
+        client.expire(keyToRedis(key), expireSec, (err2) => {
+          if (err2) {
+            reject(err2);
+          } else {
+            resolve();
+          }
+        });
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
 module.exports = {
   del,
   get,
   set,
   find,
+  incr,
 };

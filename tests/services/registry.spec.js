@@ -35,4 +35,21 @@ describe('Registry', () => {
     await registry.del('foo2');
     await registry.del('bar3');
   });
+
+  it('should increment keys', async () => {
+    await registry.incr('foo', 1);
+    await registry.incr('foo', 2);
+    expect(await registry.get('foo')).to.equal(3);
+    await registry.del('foo');
+  });
+
+  it('should increment keys with expire', async () => {
+    await registry.incr('foo', 1);
+    await registry.incr('foo', 2, 1);
+    expect(await registry.get('foo')).to.equal(3);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1500);
+    });
+    expect(await registry.get('foo')).to.equal(undefined);
+  });
 });

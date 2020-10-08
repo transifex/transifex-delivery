@@ -1,6 +1,6 @@
 {
   "name": "transifex-delivery",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Transifex Content Delivery Service",
   "keywords": [
     "transifex",
@@ -31,8 +31,8 @@
   "homepage": "https://github.com/transifex/transifex-delivery",
   "license": "Apache-2.0",
   "dependencies": {
-    "@sentry/node": "^5.24.2",
-    "aws-sdk": "^2.766.0",
+    "@sentry/node": "^5.25.0",
+    "aws-sdk": "^2.769.0",
     "axios": "^0.20.0",
     "body-parser": "^1.19.0",
     "bull": "^3.18.0",
@@ -40,7 +40,7 @@
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "express-prom-bundle": "^6.1.0",
+    "express-prom-bundle": "^6.2.0",
     "glob": "^7.1.6",
     "joi": "^14.3.1",
     "lodash": "^4.17.20",
@@ -67,7 +67,7 @@
     "nock": "^13.0.4",
     "nodemon": "^2.0.4",
     "nyc": "^15.1.0",
-    "sinon": "^9.1.0",
+    "sinon": "^9.2.0",
     "supertest": "^4.0.2"
   }
 }
