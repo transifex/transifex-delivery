@@ -12,6 +12,7 @@ const languagesRouter = require('./routes/languages');
 const contentRouter = require('./routes/content');
 const statusRouter = require('./routes/status');
 const invalidateRouter = require('./routes/invalidate');
+const analyticsRouter = require('./routes/analytics');
 
 module.exports = () => {
   // setup express and routes
@@ -52,6 +53,7 @@ module.exports = () => {
   app.use('/content', contentRouter);
   app.use('/status', statusRouter);
   app.use('/invalidate', invalidateRouter);
+  app.use('/analytics', analyticsRouter);
 
   app.get('/', (req, res) => res.send('ok'));
 

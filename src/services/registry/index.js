@@ -1,7 +1,6 @@
 const redis = require('redis');
 const _ = require('lodash');
 const config = require('../../config');
-const logger = require('../../logger');
 
 const prefix = config.get('registry:prefix') || '';
 const client = redis.createClient(config.get('redis:host'));
@@ -34,12 +33,7 @@ function redisToKey(redisKey) {
  */
 function del(key) {
   return new Promise((resolve) => {
-    client.del(keyToRedis(key), (err) => {
-      if (err) {
-        logger.warn(`Registry deletion failed for ${key} key`);
-      } else {
-        logger.info(`Registry deleted for ${key} key`);
-      }
+    client.del(keyToRedis(key), () => {
       resolve();
     });
   });
@@ -77,10 +71,8 @@ function set(key, data, expireSec) {
   return new Promise((resolve, reject) => {
     function callback(err) {
       if (err) {
-        logger.error(`Failed to set registry for ${key} key`);
         reject(err);
       } else {
-        logger.info(`Registry set for ${key} key`);
         resolve();
       }
     }

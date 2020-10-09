@@ -10,13 +10,15 @@ const registry = require('../src/services/registry');
 async function resetRegistry() {
   const keys = await registry.find('*');
   await Promise.all(_.map(keys, (key) => (async () => {
-    const data = await registry.get(key);
-    if (data) {
-      await registry.del(key);
-      if (data.cacheKey) {
+    try {
+      const data = await registry.get(key);
+      if (data && data.cacheKey) {
         await cache.delContent(data.cacheKey);
       }
+    } catch (err) {
+      // throwing an error is normal if a key is a redis set
     }
+    await registry.del(key);
   })()));
 }
 

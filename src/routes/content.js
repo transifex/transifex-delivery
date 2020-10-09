@@ -1,22 +1,49 @@
 const express = require('express');
+const dayjs = require('dayjs');
+const md5 = require('md5');
+const slugify = require('slugify');
 const config = require('../config');
 const validateHeader = require('../middlewares/headers');
 const syncer = require('../services/syncer/data');
+const registry = require('../services/registry');
 const utils = require('../helpers/utils');
 const logger = require('../logger');
 
 const router = express.Router();
 
 const timeoutMsec = config.get('settings:upload_timeout_min') * 60 * 1000;
+const hasAnalytics = config.get('analytics:enabled');
+const analyticsRetentionSec = config.get('analytics:retention_days') * 24 * 60 * 60;
 
 router.get('/:lang_code',
   validateHeader('public'),
   async (req, res) => {
-    utils.routerCacheHelper(
+    const sentContent = await utils.routerCacheHelper(
       req, res,
       `${req.token.project_token}:${req.params.lang_code}:content`,
       'getProjectLanguageTranslations', req.params.lang_code,
     );
+    if (hasAnalytics && sentContent) {
+      const clientId = md5(req.ip || 'unknown');
+      const project = req.token.project_token;
+      const lang = req.params.lang_code;
+      const sdkVersion = slugify(req.headers['x-native-sdk'] || 'unknown');
+
+      const dateDay = dayjs().format('YYYY-MM-DD');
+      const dateMonth = dayjs().format('YYYY-MM');
+      const keyDay = `analytics:${project}:${dateDay}`;
+      const keyMonth = `analytics:${project}:${dateMonth}`;
+
+      // daily stats
+      registry.incr(`${keyDay}:lang:${lang}`, 1, analyticsRetentionSec);
+      registry.incr(`${keyDay}:sdk:${sdkVersion}`, 1, analyticsRetentionSec);
+      registry.addToSet(`${keyDay}:visitors`, clientId, analyticsRetentionSec);
+
+      // monthly stats
+      registry.incr(`${keyMonth}:lang:${lang}`, 1, analyticsRetentionSec);
+      registry.incr(`${keyMonth}:sdk:${sdkVersion}`, 1, analyticsRetentionSec);
+      registry.addToSet(`${keyMonth}:visitors`, clientId, analyticsRetentionSec);
+    }
   });
 
 router.post('/:lang_code',

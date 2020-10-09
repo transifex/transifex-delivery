@@ -44,3 +44,7 @@ log:
 queue:
   name: sync
   workers: 1
+
+analytics:
+  enabled: true
+  retention_days: 180
