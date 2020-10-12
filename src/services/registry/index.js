@@ -1,7 +1,6 @@
 const redis = require('redis');
 const _ = require('lodash');
 const config = require('../../config');
-const logger = require('../../logger');
 
 const prefix = config.get('registry:prefix') || '';
 const client = redis.createClient(config.get('redis:host'));
@@ -34,12 +33,7 @@ function redisToKey(redisKey) {
  */
 function del(key) {
   return new Promise((resolve) => {
-    client.del(keyToRedis(key), (err) => {
-      if (err) {
-        logger.warn(`Registry deletion failed for ${key} key`);
-      } else {
-        logger.info(`Registry deleted for ${key} key`);
-      }
+    client.del(keyToRedis(key), () => {
       resolve();
     });
   });
@@ -77,10 +71,8 @@ function set(key, data, expireSec) {
   return new Promise((resolve, reject) => {
     function callback(err) {
       if (err) {
-        logger.error(`Failed to set registry for ${key} key`);
         reject(err);
       } else {
-        logger.info(`Registry set for ${key} key`);
         resolve();
       }
     }
@@ -111,9 +103,125 @@ function find(pattern) {
   });
 }
 
+/**
+ * Increase key value
+ *
+ * @param {String} key
+ * @param {Number} increment
+ * @param {Number} expireSec (optional)
+ * @returns {Promise}
+ */
+function incr(key, increment, expireSec) {
+  return new Promise((resolve, reject) => {
+    client.incrby(keyToRedis(key), increment, (err) => {
+      if (err) {
+        reject(err);
+      } else if (expireSec > 0) {
+        client.expire(keyToRedis(key), expireSec, (err2) => {
+          if (err2) {
+            reject(err2);
+          } else {
+            resolve();
+          }
+        });
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+function addToSet(key, value, expireSec) {
+  return new Promise((resolve, reject) => {
+    const stringValue = JSON.stringify(value);
+    client.sadd(keyToRedis(key), stringValue, (err) => {
+      if (err) {
+        reject(err);
+      } else if (expireSec > 0) {
+        client.expire(keyToRedis(key), expireSec, (err2) => {
+          if (err2) {
+            reject(err2);
+          } else {
+            resolve();
+          }
+        });
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+function removeFromSet(key, value) {
+  return new Promise((resolve, reject) => {
+    const stringValue = JSON.stringify(value);
+    client.srem(keyToRedis(key), stringValue, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+function listSet(key) {
+  return new Promise((resolve, reject) => {
+    client.smembers(keyToRedis(key), (err, members) => {
+      if (err) {
+        reject(err);
+      } else {
+        const result = _.map(members, (value) => {
+          let retValue = value;
+          if (value) {
+            try {
+              retValue = JSON.parse(value);
+            } catch (e) {
+              retValue = null;
+            }
+          }
+          return retValue;
+        });
+        resolve(result);
+      }
+    });
+  });
+}
+
+function countSet(key) {
+  return new Promise((resolve, reject) => {
+    client.scard(keyToRedis(key), (err, count) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(count || 0);
+      }
+    });
+  });
+}
+
+function isSetMember(key, value) {
+  return new Promise((resolve, reject) => {
+    const stringValue = JSON.stringify(value);
+    client.sismember(keyToRedis(key), stringValue, (err, response) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(!!response);
+      }
+    });
+  });
+}
+
 module.exports = {
   del,
   get,
   set,
   find,
+  incr,
+  addToSet,
+  removeFromSet,
+  listSet,
+  isSetMember,
+  countSet,
 };

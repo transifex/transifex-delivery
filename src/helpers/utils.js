@@ -25,6 +25,8 @@ const routerCacheHelper = async (
     });
   }
 
+  let sentContent = false;
+
   try {
     const rdata = await registry.get(`cache:${key}`) || {};
     switch (rdata.status) {
@@ -35,6 +37,7 @@ const routerCacheHelper = async (
           res.status(304)
             .set('ETag', req.header('If-None-Match'))
             .send();
+          sentContent = true;
         } else if (rdata.location.startsWith('cache://')) {
           const cdata = await cache.getContent(rdata.location.replace('cache://', ''));
           if (cdata && cdata.data) {
@@ -42,12 +45,14 @@ const routerCacheHelper = async (
             res.setHeader('ETag', rdata.etag);
             res.setHeader('Cache-Control', `max-age=${maxAge}`);
             res.send(cdata.data);
+            sentContent = true;
           } else {
             res.status(202).send();
             addJob();
           }
         } else {
           res.redirect(rdata.location);
+          sentContent = true;
         }
         // check for auto refresh
         if ((Date.now() - rdata.ts) >= autoSyncMSec) {
@@ -66,6 +71,8 @@ const routerCacheHelper = async (
     logger.error(e);
     res.sendStatus(500);
   }
+
+  return sentContent;
 };
 
 module.exports = {

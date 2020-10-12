@@ -12,11 +12,17 @@ const languagesRouter = require('./routes/languages');
 const contentRouter = require('./routes/content');
 const statusRouter = require('./routes/status');
 const invalidateRouter = require('./routes/invalidate');
+const analyticsRouter = require('./routes/analytics');
 
 module.exports = () => {
   // setup express and routes
   const app = express();
   app.disable('x-powered-by');
+
+  // Enable trust proxy for parsing X-Forwarded-* headers
+  if (config.get('settings:trust_proxy')) {
+    app.set('trust proxy', true);
+  }
 
   // The request handler must be the first middleware on the app
   sentry.expressRequest(app);
@@ -52,6 +58,7 @@ module.exports = () => {
   app.use('/content', contentRouter);
   app.use('/status', statusRouter);
   app.use('/invalidate', invalidateRouter);
+  app.use('/analytics', analyticsRouter);
 
   app.get('/', (req, res) => res.send('ok'));
 

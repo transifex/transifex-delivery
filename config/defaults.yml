@@ -3,6 +3,7 @@ app:
   port: 10300
 
 settings:
+  trust_proxy: true
   request_size_limit: '50mb'
   upload_timeout_min: 10
   cache_ttl: 1800
@@ -44,3 +45,7 @@ log:
 queue:
   name: sync
   workers: 1
+
+analytics:
+  enabled: true
+  retention_days: 180

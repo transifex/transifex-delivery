@@ -84,8 +84,10 @@ function validateHeader(scope = 'private') {
         throw new Error('Invalid Token');
       }
     } catch (e) {
-      res.statusCode = 403;
-      res.send('Forbidden');
+      res.status(403).json({
+        status: 403,
+        message: 'Forbidden',
+      });
     }
   };
 }

@@ -50,6 +50,9 @@ All settings can be overriden using environment variables such as:
 TX__APP__NAME=transifex-delivery
 TX__APP__PORT=10300
 
+# Express "Trust proxy" setting to detect client IP
+TX__SETTINGS__TRUST_PROXY=1
+
 # Max-age header for cached responses
 TX__SETTINGS__CACHE_TTL=1800 (in seconds)
 
@@ -94,6 +97,12 @@ TX__CACHE__REDIS__PREFIX="storage:"
 
 # How long should content stay in redis cache strategy
 TX__CACHE__REDIS__EXPIRE_MIN=10080
+
+# Enable or disable analytics
+TX__ANALYTICS__ENABLED=1
+
+# Analytics data retention days
+TX__ANALYTICS__RETENTION_DAYS=180
 ```
 
 ## Service API
@@ -128,6 +137,9 @@ Response status: 202
 - Content not ready, queued for download from Transifex
 - try again later
 
+Response status: 302
+- Get content from URL
+
 Response status: 200
 Response body:
 {
@@ -159,6 +171,9 @@ Content-Type: application/json; charset=utf-8
 Response status: 202
 - Content not ready, queued for download from Transifex
 - try again later
+
+Response status: 302
+- Get content from URL
 
 Response status: 200
 Response body:
@@ -260,7 +275,7 @@ Endpoint to force cache invalidation for a specific resource content.
 ```
 POST /invalidate
 
-Authorization: Bearer <project-token>
+Authorization: Bearer <project-token>:<secret>
 Content-Type: application/json; charset=utf-8
 
 Request body:
@@ -276,6 +291,35 @@ Response body (success):
 Response body (fail):
 {
   status: 'failed',
+}
+```
+
+## Analytics
+
+Endpoint to get usage analytics, per language, SDK and unique anonymized visitors.
+Aggregated per day or month.
+
+```
+GET /analytics?filter[since]=<YYYY-MM-DD>&filter[until]=<YYYY-MM-DD>[&filter[aggr]=day|month]
+
+Authorization: Bearer <project-token>:<secret>
+Content-Type: application/json; charset=utf-8
+
+Response body:
+{
+  data: [{
+    languages: {
+      <lang-code>: <number of hits>,
+      ...
+    },
+    sdks: {
+      <sdk-version>: <number of hits>,
+      ...
+    },
+    visitors: <number of unique visitors>,
+    date: <YYYY-MM-DD or YYYY-MM>,
+  }, ...],
+  meta: {},
 }
 ```
 
