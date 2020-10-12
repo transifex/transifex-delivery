@@ -19,6 +19,11 @@ module.exports = () => {
   const app = express();
   app.disable('x-powered-by');
 
+  // Enable trust proxy for parsing X-Forwarded-* headers
+  if (config.get('settings:trust_proxy')) {
+    app.set('trust proxy', true);
+  }
+
   // The request handler must be the first middleware on the app
   sentry.expressRequest(app);
 

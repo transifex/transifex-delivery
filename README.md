@@ -50,6 +50,9 @@ All settings can be overriden using environment variables such as:
 TX__APP__NAME=transifex-delivery
 TX__APP__PORT=10300
 
+# Express "Trust proxy" setting to detect client IP
+TX__SETTINGS__TRUST_PROXY=1
+
 # Max-age header for cached responses
 TX__SETTINGS__CACHE_TTL=1800 (in seconds)
 
