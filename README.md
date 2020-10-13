@@ -296,11 +296,10 @@ Response body (fail):
 
 ## Analytics
 
-Endpoint to get usage analytics, per language, SDK and unique anonymized visitors.
-Aggregated per day or month.
+Endpoint to get usage analytics, per language, SDK and unique anonymized clients.
 
 ```
-GET /analytics?filter[since]=<YYYY-MM-DD>&filter[until]=<YYYY-MM-DD>[&filter[aggr]=day|month]
+GET /analytics?filter[since]=<YYYY-MM-DD>&filter[until]=<YYYY-MM-DD>
 
 Authorization: Bearer <project-token>:<secret>
 Content-Type: application/json; charset=utf-8
@@ -316,10 +315,22 @@ Response body:
       <sdk-version>: <number of hits>,
       ...
     },
-    visitors: <number of unique visitors>,
+    clients: <number of unique clients>,
     date: <YYYY-MM-DD or YYYY-MM>,
   }, ...],
-  meta: {},
+  meta: {
+    total: {
+      languages: {
+        <lang-code>: <total number of hits>,
+        ...
+      },
+      sdks: {
+        <sdk-version>: <total number of hits>,
+        ...
+      },
+      clients: <total number of unique clients>,
+    },
+  },
 }
 ```
 

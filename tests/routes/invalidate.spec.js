@@ -1,8 +1,10 @@
 /* globals describe, it, beforeEach, afterEach */
 
 const { expect } = require('chai');
+const md5 = require('md5');
 const request = require('supertest');
 const cache = require('../../src/services/cache');
+const registry = require('../../src/services/registry');
 const { resetRegistry, populateRegistry } = require('../lib');
 const app = require('../../src/server')();
 
@@ -24,6 +26,11 @@ describe('Invalidate', () => {
   });
 
   it('should work', async () => {
+    await registry.set(
+      `auth:${token}`,
+      md5(`${token}:secret`),
+    );
+
     const res = await req
       .post('/invalidate')
       .set('Authorization', `Bearer ${token}:secret`);
@@ -37,18 +44,15 @@ describe('Invalidate', () => {
     expect(await cache.getContent(cacheKey)).to.deep.equal({
       data: null,
     });
+
+    await registry.del(`auth:${token}`);
   });
 
-  it('should work on invalid token', async () => {
+  it('should validate token', async () => {
     const res = await req
       .post('/invalidate')
       .set('Authorization', `Bearer ${token}_invalid:secret`);
 
-    expect(res.status).to.equal(200);
-    expect(res.body).to.deep.equal({
-      status: 'success',
-      token: `${token}_invalid`,
-      count: 0,
-    });
+    expect(res.status).to.equal(403);
   });
 });

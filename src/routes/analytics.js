@@ -1,8 +1,7 @@
 const _ = require('lodash');
 const express = require('express');
-const md5 = require('md5');
 const dayjs = require('dayjs');
-const validateHeader = require('../middlewares/headers');
+const { validateHeader, validateAuth } = require('../middlewares/headers');
 const registry = require('../services/registry');
 const config = require('../config');
 
@@ -22,37 +21,16 @@ router.get('/',
     }
   },
   validateHeader('private'),
+  validateAuth,
   async (req, res) => {
-    // authenticate
-    const serverToken = await registry.get(`analyticsauth:${req.token.project_token}`);
-    const clientToken = md5(req.token.original);
-
-    if (!serverToken || (serverToken !== clientToken)) {
-      res.status(403).json({
-        status: 403,
-        message: 'Forbidden',
-      });
-      return;
-    }
-
     const filterQuery = req.query.filter || {};
     const filterSince = filterQuery.since;
     const filterUntil = filterQuery.until;
-    const filterAggregate = filterQuery.aggr || 'day';
     if (!filterSince || !filterUntil) {
       res.status(400).json({
         status: 400,
         message: 'Bad Request',
         details: 'Date filter missing: ?filter[since]=<date>&filter[until]=<date>',
-      });
-      return;
-    }
-
-    if (filterAggregate !== 'day' && filterAggregate !== 'month') {
-      res.status(400).json({
-        status: 400,
-        message: 'Bad Request',
-        details: 'Filter aggregate invalid value: ?filter[aggr]=month or ?filter[aggr]=day',
       });
       return;
     }
@@ -69,32 +47,24 @@ router.get('/',
       return;
     }
 
-    let intervals = 0;
-    switch (filterAggregate) {
-      case 'month':
-        intervals = dateUntil.diff(dateSince, 'months');
-        break;
-      default:
-        intervals = dateUntil.diff(dateSince, 'days');
-        break;
-    }
+    const intervals = dateUntil.diff(dateSince, 'days');
 
     const response = {
       data: [],
       meta: {
+        total: {
+          languages: {},
+          sdks: {},
+          clients: 0,
+        },
       },
     };
 
+    const { total } = response.meta;
+    const clients = {};
+
     for (let i = 0; i <= intervals; i += 1) {
-      let keyDay;
-      switch (filterAggregate) {
-        case 'month':
-          keyDay = dateSince.add(i, 'month').format('YYYY-MM');
-          break;
-        default:
-          keyDay = dateSince.add(i, 'day').format('YYYY-MM-DD');
-          break;
-      }
+      const keyDay = dateSince.add(i, 'day').format('YYYY-MM-DD');
 
       const registryKey = `analytics:${req.token.project_token}:${keyDay}`;
       const entry = {
@@ -108,26 +78,38 @@ router.get('/',
         (async () => {
           const keys = await registry.find(`${registryKey}:lang:*`);
           await Promise.all(_.map(keys, (key) => (async () => {
+            const slug = key.replace(`${registryKey}:lang:`, '');
             const count = await registry.get(key);
-            entry.languages[key.replace(`${registryKey}:lang:`, '')] = count;
+            entry.languages[slug] = count;
+            total.languages[slug] = total.languages[slug] || 0;
+            total.languages[slug] += count;
           })()));
         })(),
         // SDKs
         (async () => {
           const keys = await registry.find(`${registryKey}:sdk:*`);
           await Promise.all(_.map(keys, (key) => (async () => {
+            const slug = key.replace(`${registryKey}:sdk:`, '');
             const count = await registry.get(key);
-            entry.sdks[key.replace(`${registryKey}:sdk:`, '')] = count;
+            entry.sdks[slug] = count;
+            total.sdks[slug] = total.sdks[slug] || 0;
+            total.sdks[slug] += count;
           })()));
         })(),
-        // visitors
+        // clients
         (async () => {
-          entry.visitors = await registry.countSet(`${registryKey}:visitors`);
+          const hashes = await registry.listSet(`${registryKey}:clients`);
+          entry.clients = hashes.length;
+          _.each(hashes, (hash) => {
+            clients[hash] = true;
+          });
         })(),
       ]);
 
       response.data.push(entry);
     }
+
+    response.meta.total.clients = _.keys(clients).length;
 
     res.json(response);
   });

@@ -3,7 +3,7 @@ const dayjs = require('dayjs');
 const md5 = require('md5');
 const slugify = require('slugify');
 const config = require('../config');
-const validateHeader = require('../middlewares/headers');
+const { validateHeader } = require('../middlewares/headers');
 const syncer = require('../services/syncer/data');
 const registry = require('../services/registry');
 const utils = require('../helpers/utils');
@@ -25,24 +25,17 @@ router.get('/:lang_code',
     );
     if (hasAnalytics && sentContent) {
       const clientId = md5(req.ip || 'unknown');
+
       const project = req.token.project_token;
       const lang = req.params.lang_code;
       const sdkVersion = slugify(req.headers['x-native-sdk'] || 'unknown');
 
       const dateDay = dayjs().format('YYYY-MM-DD');
-      const dateMonth = dayjs().format('YYYY-MM');
       const keyDay = `analytics:${project}:${dateDay}`;
-      const keyMonth = `analytics:${project}:${dateMonth}`;
-
-      // daily stats
-      registry.incr(`${keyDay}:lang:${lang}`, 1, analyticsRetentionSec);
-      registry.incr(`${keyDay}:sdk:${sdkVersion}`, 1, analyticsRetentionSec);
-      registry.addToSet(`${keyDay}:visitors`, clientId, analyticsRetentionSec);
-
-      // monthly stats
-      registry.incr(`${keyMonth}:lang:${lang}`, 1, analyticsRetentionSec);
-      registry.incr(`${keyMonth}:sdk:${sdkVersion}`, 1, analyticsRetentionSec);
-      registry.addToSet(`${keyMonth}:visitors`, clientId, analyticsRetentionSec);
+      if (await registry.addToSet(`${keyDay}:clients`, clientId, analyticsRetentionSec)) {
+        registry.incr(`${keyDay}:lang:${lang}`, 1, analyticsRetentionSec);
+        registry.incr(`${keyDay}:sdk:${sdkVersion}`, 1, analyticsRetentionSec);
+      }
     }
   });
 
@@ -84,6 +77,15 @@ router.post('/',
       if (data.errors.length) status = 409;
 
       res.status(status).json(data);
+
+      if (status === 200) {
+        // store valid credentials for analytics endpoints or cache
+        // invalidation upon successful push
+        await registry.set(
+          `auth:${req.token.project_token}`,
+          md5(req.token.original),
+        );
+      }
     } catch (e) {
       if (e.status) {
         if (e.status !== 401) logger.error(e);
