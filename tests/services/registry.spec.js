@@ -54,17 +54,17 @@ describe('Registry', () => {
   });
 
   it('adds to set', async () => {
-    await registry.addToSet('test:add_to_set', 'a');
-    await registry.addToSet('test:add_to_set', 'a');
-    await registry.addToSet('test:add_to_set', 'b');
+    expect(await registry.addToSet('test:add_to_set', 'a')).to.equal(true);
+    expect(await registry.addToSet('test:add_to_set', 'a')).to.equal(false);
+    expect(await registry.addToSet('test:add_to_set', 'b')).to.equal(true);
     expect(await registry.countSet('test:add_to_set')).to.equal(2);
   });
 
   it('removes from set', async () => {
     await registry.addToSet('test:rem_from_set', 'a');
     await registry.addToSet('test:rem_from_set', 'b');
-    await registry.removeFromSet('test:rem_from_set', 'c');
-    await registry.removeFromSet('test:rem_from_set', 'b');
+    expect(await registry.removeFromSet('test:rem_from_set', 'c')).to.equal(false);
+    expect(await registry.removeFromSet('test:rem_from_set', 'b')).to.equal(true);
     expect(await registry.countSet('test:rem_from_set')).to.equal(1);
   });
 

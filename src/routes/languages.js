@@ -1,5 +1,5 @@
 const express = require('express');
-const validateHeader = require('../middlewares/headers');
+const { validateHeader } = require('../middlewares/headers');
 const utils = require('../helpers/utils');
 
 const router = express.Router();

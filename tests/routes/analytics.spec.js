@@ -25,7 +25,7 @@ describe('Analytics', () => {
 
   it('returns daily results', async () => {
     await registry.set(
-      `analyticsauth:${token}`,
+      `auth:${token}`,
       md5(`${token}:secret`),
     );
 
@@ -40,32 +40,15 @@ describe('Analytics', () => {
         languages: {},
         sdks: {},
         date: today,
-        visitors: 0,
+        clients: 0,
       }],
-      meta: {},
-    });
-  });
-
-  it('returns monthly results', async () => {
-    await registry.set(
-      `analyticsauth:${token}`,
-      md5(`${token}:secret`),
-    );
-
-    const today = dayjs().format('YYYY-MM-DD');
-    const res = await req
-      .get(`/analytics?filter[since]=${today}&filter[until]=${today}&filter[aggr]=month`)
-      .set('Authorization', `Bearer ${token}:secret`);
-
-    expect(res.status).to.equal(200);
-    expect(res.body).to.deep.equal({
-      data: [{
-        languages: {},
-        sdks: {},
-        date: dayjs().format('YYYY-MM'),
-        visitors: 0,
-      }],
-      meta: {},
+      meta: {
+        total: {
+          languages: {},
+          sdks: {},
+          clients: 0,
+        },
+      },
     });
   });
 
@@ -80,7 +63,7 @@ describe('Analytics', () => {
 
   it('validates filters', async () => {
     await registry.set(
-      `analyticsauth:${token}`,
+      `auth:${token}`,
       md5(`${token}:secret`),
     );
 
@@ -97,17 +80,11 @@ describe('Analytics', () => {
       .get(`/analytics?filter[since]=${today}`)
       .set('Authorization', `Bearer ${token}:secret`);
     expect(res.status).to.equal(400);
-
-    // wrong aggregation filter
-    res = await req
-      .get(`/analytics?filter[since]=${today}&filter[until]=${today}&filter[aggr]=any`)
-      .set('Authorization', `Bearer ${token}:secret`);
-    expect(res.status).to.equal(400);
   });
 
   it('validates date range', async () => {
     await registry.set(
-      `analyticsauth:${token}`,
+      `auth:${token}`,
       md5(`${token}:secret`),
     );
     const res = await req

@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const express = require('express');
-const validateHeader = require('../middlewares/headers');
+const { validateHeader, validateAuth } = require('../middlewares/headers');
 const logger = require('../logger');
 const cache = require('../services/cache');
 const registry = require('../services/registry');
@@ -9,6 +9,7 @@ const router = express.Router();
 
 router.post('/',
   validateHeader('private'),
+  validateAuth,
   async (req, res) => {
     try {
       const token = req.token.project_token;

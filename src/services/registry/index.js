@@ -131,10 +131,18 @@ function incr(key, increment, expireSec) {
   });
 }
 
+/**
+ * Add value to set
+ *
+ * @param {String} key
+ * @param {*} value
+ * @param {Number} expireSec (optional)
+ * @returns {Promise<Boolean>} - whether a new value was added
+ */
 function addToSet(key, value, expireSec) {
   return new Promise((resolve, reject) => {
     const stringValue = JSON.stringify(value);
-    client.sadd(keyToRedis(key), stringValue, (err) => {
+    client.sadd(keyToRedis(key), stringValue, (err, count) => {
       if (err) {
         reject(err);
       } else if (expireSec > 0) {
@@ -142,29 +150,42 @@ function addToSet(key, value, expireSec) {
           if (err2) {
             reject(err2);
           } else {
-            resolve();
+            resolve(count > 0);
           }
         });
       } else {
-        resolve();
+        resolve(count > 0);
       }
     });
   });
 }
 
+/**
+ * Remove value from set
+ *
+ * @param {String} key
+ * @param {*} value
+ * @returns {Promise<Boolean>} - whether an existing value was removed
+ */
 function removeFromSet(key, value) {
   return new Promise((resolve, reject) => {
     const stringValue = JSON.stringify(value);
-    client.srem(keyToRedis(key), stringValue, (err) => {
+    client.srem(keyToRedis(key), stringValue, (err, count) => {
       if (err) {
         reject(err);
       } else {
-        resolve();
+        resolve(count > 0);
       }
     });
   });
 }
 
+/**
+ * Get all values from set
+ *
+ * @param {String} key
+ * @returns {Promise<Array>}
+ */
 function listSet(key) {
   return new Promise((resolve, reject) => {
     client.smembers(keyToRedis(key), (err, members) => {
@@ -188,6 +209,12 @@ function listSet(key) {
   });
 }
 
+/**
+ * Count number of values in set
+ *
+ * @param {String} key
+ * @returns {Promise<Number>}
+ */
 function countSet(key) {
   return new Promise((resolve, reject) => {
     client.scard(keyToRedis(key), (err, count) => {
@@ -200,6 +227,13 @@ function countSet(key) {
   });
 }
 
+/**
+ * Check if value is in set
+ *
+ * @param {String} key
+ * @param {*} value
+ * @returns {Promise<Boolean>}
+ */
 function isSetMember(key, value) {
   return new Promise((resolve, reject) => {
     const stringValue = JSON.stringify(value);

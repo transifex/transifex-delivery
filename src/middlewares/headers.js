@@ -1,5 +1,7 @@
 const _ = require('lodash');
+const md5 = require('md5');
 const config = require('../config');
+const registry = require('../services/registry');
 
 // convert a list of comma separated whitelisted tokens to an array of tokens
 const TOKEN_WHITELIST = _.compact(_.map(
@@ -92,4 +94,38 @@ function validateHeader(scope = 'private') {
   };
 }
 
-module.exports = validateHeader;
+/**
+ * Middleware that checks the cached Redis "auth" credentials,
+ * stored after a successful push of source content.
+ *
+ * Requires validateHeader middleware.
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+async function validateAuth(req, res, next) {
+  const serverToken = await registry.get(`auth:${req.token.project_token}`);
+  const clientToken = md5(req.token.original);
+
+  if (!serverToken) {
+    res.status(403).json({
+      status: 403,
+      message: 'Forbidden',
+      details: 'At least one successful content push is required',
+    });
+  } else if (serverToken !== clientToken) {
+    res.status(403).json({
+      status: 403,
+      message: 'Forbidden',
+      details: 'Project secret is invalid',
+    });
+  } else {
+    next();
+  }
+}
+
+module.exports = {
+  validateHeader,
+  validateAuth,
+};

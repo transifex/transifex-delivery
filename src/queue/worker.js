@@ -6,8 +6,6 @@ const registry = require('../services/registry');
 const syncer = require('../services/syncer/data');
 
 const registryExpireSec = config.get('registry:expire_min') * 60;
-const hasAnalytics = config.get('analytics:enabled');
-const analyticsRetentionSec = config.get('analytics:retention_days') * 24 * 60 * 60;
 
 /**
  * Pull content from API syncer job
@@ -39,14 +37,6 @@ async function syncerPull(job) {
       location,
       cacheKey,
     }, registryExpireSec);
-    // store valid credentials for analytics endpoints
-    if (hasAnalytics) {
-      await registry.set(
-        `analyticsauth:${token.project_token}`,
-        md5(token.original),
-        analyticsRetentionSec,
-      );
-    }
   } catch (e) {
     // gracefully handle 4xx errors and store them in cache
     if (e.status && e.status >= 400 && e.status < 500) {
