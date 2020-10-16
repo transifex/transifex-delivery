@@ -1,11 +1,10 @@
 /* globals describe, it, beforeEach, afterEach */
 
 const { expect } = require('chai');
-const sinon = require('sinon');
 const md5 = require('md5');
 const request = require('supertest');
+const cache = require('../../src/services/cache');
 const registry = require('../../src/services/registry');
-const queue = require('../../src/queue');
 const { resetRegistry, populateRegistry } = require('../lib');
 const app = require('../../src/server')();
 
@@ -14,10 +13,10 @@ const req = request(app);
 const token = '1/abcd';
 const key = `${token}:en:content`;
 const content = JSON.stringify({ foo: 'bar' });
+const etag = 'abcd';
+const cacheKey = `${key}:${etag}`;
 
-describe('Invalidate', () => {
-  const sandbox = sinon.createSandbox();
-
+describe('Purge', () => {
   beforeEach(async () => {
     await populateRegistry(key, content);
     await registry.set(
@@ -27,16 +26,13 @@ describe('Invalidate', () => {
   });
 
   afterEach(async () => {
-    sandbox.restore();
     await registry.del(`auth:${token}`);
     await resetRegistry();
   });
 
-  it('should invalidate all languages', async () => {
-    const spy = sandbox.spy(queue, 'addJob');
-
+  it('should purge all languages', async () => {
     const res = await req
-      .post('/invalidate')
+      .post('/purge')
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(200);
@@ -45,14 +41,14 @@ describe('Invalidate', () => {
       token,
     });
     expect(res.body.count).to.be.greaterThan(0);
-    expect(spy.callCount).to.be.greaterThan(0);
+    expect(await cache.getContent(cacheKey)).to.deep.equal({
+      data: null,
+    });
   });
 
-  it('should invalidate specific languages', async () => {
-    const spy = sandbox.spy(queue, 'addJob');
-
+  it('should purge specific languages', async () => {
     const res = await req
-      .post('/invalidate/en')
+      .post('/purge/en')
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(200);
@@ -60,15 +56,29 @@ describe('Invalidate', () => {
       status: 'success',
       token,
     });
-    expect(res.body.count).to.equal(1);
-    expect(spy.callCount).to.equal(1);
+    expect(res.body.count).to.be.greaterThan(0);
+    expect(await cache.getContent(cacheKey)).to.deep.equal({
+      data: null,
+    });
+  });
+
+  it('should not purge non-existing language', async () => {
+    const res = await req
+      .post('/purge/abcd')
+      .set('Authorization', `Bearer ${token}:secret`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.contain({
+      status: 'success',
+      token,
+    });
+    expect(res.body.count).to.equal(0);
   });
 
   it('should validate token', async () => {
     await registry.del(`auth:${token}`);
-
     const res = await req
-      .post('/invalidate')
+      .post('/purge')
       .set('Authorization', `Bearer ${token}_invalid:secret`);
 
     expect(res.status).to.equal(403);

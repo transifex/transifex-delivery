@@ -134,7 +134,9 @@ describe('/content', () => {
         .set('Authorization', `Bearer ${token}:secret`);
     } while (res.status === 202);
 
-    expect(res.body).to.eqls({ data: {} });
+    expect(res.body).to.eqls({
+      data: {},
+    });
   });
 
   it('should return No Modified - 304', async () => {
