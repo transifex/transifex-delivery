@@ -77,7 +77,9 @@ async function getLanguages(token, options) {
     ORGANIZATION_SLUG: `o:${options.organization_slug}`,
     PROJECT_SLUG: `p:${options.project_slug}`,
   });
-  const result = { data: [] };
+  const result = {
+    data: [],
+  };
   const { data } = await axios.get(url, apiUrls.getHeaders(token));
   result.data = transformer.parseLanguages(data.data);
   return result;
@@ -112,7 +114,9 @@ async function getProjectLanguageTranslations(token, options) {
       .parseProjectLanguageTranslations(data.data, keysHashmap);
     concatenatedData = new Map([...concatenatedData, ...result]);
   }
-  return { data: Object.fromEntries(concatenatedData) };
+  return {
+    data: Object.fromEntries(concatenatedData),
+  };
 }
 
 /**

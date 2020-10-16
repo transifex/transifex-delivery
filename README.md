@@ -270,10 +270,13 @@ Response body:
 
 ## Invalidate cache
 
-Endpoint to force cache invalidation for a specific resource content.
+Endpoint to force cache invalidation for a specific language or for
+all project languages. Invalidation triggers background fetch of fresh
+content for languages that are already cached in the service.
 
 ```
 POST /invalidate
+POST /invalidate/<lang-code>
 
 Authorization: Bearer <project-token>:<secret>
 Content-Type: application/json; charset=utf-8
@@ -285,7 +288,34 @@ Response body (success):
 {
   status: 'success',
   token: <project-token>,
-  count: <number of languages uncached>,
+  count: <number of resources invalidated>,
+}
+
+Response body (fail):
+{
+  status: 'failed',
+}
+```
+
+## Purge cache
+
+Endpoint to purge cache for a specific resource content.
+
+```
+POST /purge
+POST /purge/<lang-code>
+
+Authorization: Bearer <project-token>:<secret>
+Content-Type: application/json; charset=utf-8
+
+Request body:
+{}
+
+Response body (success):
+{
+  status: 'success',
+  token: <project-token>,
+  count: <number of resources purged>,
 }
 
 Response body (fail):
