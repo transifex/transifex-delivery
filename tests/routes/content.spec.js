@@ -29,6 +29,7 @@ const urls = {
 
 describe('/content', () => {
   beforeEach(async () => {
+    nock.cleanAll();
     nock(urls.api)
       .get(urls.organizations)
       .reply(200, JSON.stringify({
@@ -45,6 +46,13 @@ describe('/content', () => {
         data: [{
           attributes: {
             slug: 'pslug',
+          },
+          relationships: {
+            source_language: {
+              data: {
+                id: 'l:en',
+              },
+            },
           },
         }],
       }));

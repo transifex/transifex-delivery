@@ -39,7 +39,7 @@ function getContentFile(projectSlug, langCode) {
 async function getLanguages(options) {
   const project = await getProjectByToken(options.token);
   return {
-    data: _.map(project.target_languages, (code) => {
+    data: _.map([project.source_lang_code, ...project.target_languages], (code) => {
       const lang = getLanguageInfo(code);
       return {
         name: lang.name,
@@ -48,6 +48,9 @@ async function getLanguages(options) {
         rtl: lang.rtl,
       };
     }),
+    meta: {
+      source_lang_code: project.source_lang_code,
+    },
   };
 }
 

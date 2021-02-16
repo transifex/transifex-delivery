@@ -3,6 +3,7 @@ const NodeCache = require('node-cache');
 const api = require('./utils/api');
 const errors = require('./utils/errors');
 const logger = require('../../../../logger');
+const { getLanguageInfo } = require('../../../../helpers/languages');
 
 const TokenCache = new NodeCache({
   stdTTL: 60 * 60 * 4, // 4hours
@@ -51,6 +52,7 @@ async function getTokenInformation(options) {
       organization_slug: organization.slug,
       project_slug: project.slug,
       resource_slug: resource.slug,
+      source_lang_code: project.source_lang_code,
     });
   } catch (e) {
     const status = e.response ? e.response.status : e.status;
@@ -69,12 +71,20 @@ async function getTokenInformation(options) {
 async function getLanguages(option) {
   const info = await getTokenInformation(option);
   try {
-    const result = await api.getLanguages(info.token.original, {
+    const result = await api.getTargetLanguages(info.token.original, {
       organization_slug: info.token.organization_slug,
       project_slug: info.token.project_slug,
-      resource_slug: info.token.resource_slug,
     });
-    return result;
+    const response = {
+      data: result.data || [],
+      meta: {},
+    };
+    // append source language
+    if (info.token.source_lang_code) {
+      response.meta.source_lang_code = info.token.source_lang_code;
+      response.data.unshift(getLanguageInfo(info.token.source_lang_code));
+    }
+    return response;
   } catch (e) {
     if (e.response.status !== 401) logger.error(e);
     throw new errors.APIError(e.message, e.response.status);
