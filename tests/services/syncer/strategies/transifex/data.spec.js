@@ -337,6 +337,23 @@ describe('Get Project Language Translations', () => {
       },
     });
   });
+
+  it('should get translations in source lang', async () => {
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, dataHelper.getSourceString());
+
+    const result = await transifexData
+      .getProjectLanguageTranslations(extendedOptions, 'en');
+
+    expect(result).to.eqls({
+      data: {
+        hello_world: {
+          string: '{???, plural, one {hello} other {world}}',
+        },
+      },
+    });
+  });
 });
 
 describe('Push source Content', () => {

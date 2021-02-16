@@ -71,6 +71,38 @@ function parseProjectLanguageTranslations(payload, keysHashmap) {
 }
 
 /**
+ * Get a payload transform data for ULF required for available translations for
+ * source language
+ * @param {Array} payload
+ * @returns {Map} A map with all the required data
+ *  {
+ *    {
+ *      <string_key>: {
+ *        string: <string>
+ *      }
+ *    }
+ *  }
+ */
+function parseProjectLanguageSources(payload) {
+  const data = new Map();
+  if (!payload) return data;
+
+  _.forEach(payload, (item) => {
+    let string;
+    if (!item.attributes.strings) {
+      string = '';
+    } else if (item.attributes.pluralized) {
+      string = implodePlurals(item.attributes.strings);
+    } else {
+      string = item.attributes.strings.other;
+    }
+    data.set(item.attributes.key, { string });
+  });
+
+  return data;
+}
+
+/**
  * Creates a hashmap which includes resource string ids and keys
  *
  * @param {Array} payload
@@ -186,6 +218,7 @@ function parseSourceStringForAPI(key, payload) {
 module.exports = {
   parseLanguages,
   parseProjectLanguageTranslations,
+  parseProjectLanguageSources,
   parseSourceStringForAPI,
   parseSourceStringForKeyLookup,
   parseSourceStringForIdLookup,
