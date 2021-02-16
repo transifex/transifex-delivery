@@ -37,7 +37,15 @@ async function getProject(token, options) {
   const { data } = apiResult.data;
 
   let result = {};
-  if (data[0]) result = data[0].attributes;
+  if (data[0]) {
+    const { attributes, relationships } = data[0];
+    result = attributes;
+    // also extract source language
+    const sourceLangId = _.get(relationships, 'source_language.data.id');
+    if (sourceLangId) {
+      result.source_lang_code = sourceLangId.replace(/^l:/, '');
+    }
+  }
   return result;
 }
 
@@ -72,7 +80,7 @@ async function getResource(token, options) {
  * @param {String} options.project_slug
  * @returns {Object} An object with all the available languages for a project
  */
-async function getLanguages(token, options) {
+async function getTargetLanguages(token, options) {
   const url = apiUrls.getUrl('LANGUAGES', {
     ORGANIZATION_SLUG: `o:${options.organization_slug}`,
     PROJECT_SLUG: `p:${options.project_slug}`,
@@ -417,7 +425,7 @@ module.exports = {
   getOrganization,
   getProject,
   getResource,
-  getLanguages,
+  getTargetLanguages,
   getProjectLanguageTranslations,
   getSourceContentMap,
   pushSourceContent,

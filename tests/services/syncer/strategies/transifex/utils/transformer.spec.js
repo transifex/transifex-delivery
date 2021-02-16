@@ -9,7 +9,7 @@ const api = require('../helpers/api');
 
 describe('Transformer', () => {
   it('should parse languages', () => {
-    const response = api.getLanguages();
+    const response = api.getTargetLanguages();
     let result = transformer.parseLanguages(response.data);
     expect(result).to.eql([{
       code: response.data[0].attributes.code,

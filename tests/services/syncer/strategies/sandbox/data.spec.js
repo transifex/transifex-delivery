@@ -66,12 +66,21 @@ describe('Sandbox data strategy', () => {
     expect(res).to.deep.equal({
       data: [
         {
+          name: 'English',
+          code: 'en',
+          localized_name: 'English',
+          rtl: false,
+        },
+        {
           name: 'French',
           code: 'fr',
           localized_name: 'Français',
           rtl: false,
         },
       ],
+      meta: {
+        source_lang_code: 'en',
+      },
     });
   });
 

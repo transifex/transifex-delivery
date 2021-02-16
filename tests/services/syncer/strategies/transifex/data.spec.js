@@ -55,6 +55,13 @@ describe('Get token information', () => {
           attributes: {
             slug: 'pslug',
           },
+          relationships: {
+            source_language: {
+              data: {
+                id: 'l:en',
+              },
+            },
+          },
         }],
       }));
 
@@ -75,6 +82,7 @@ describe('Get token information', () => {
         organization_slug: 'oslug',
         project_slug: 'pslug',
         resource_slug: 'rslug',
+        source_lang_code: 'en',
       },
     });
   });
@@ -133,6 +141,13 @@ describe('Get token information', () => {
           attributes: {
             slug: 'pslug',
           },
+          relationships: {
+            source_language: {
+              data: {
+                id: 'l:en',
+              },
+            },
+          },
         }],
       }));
 
@@ -165,6 +180,7 @@ describe('Get token information', () => {
 
 describe('Get languages', () => {
   beforeEach(async () => {
+    nock.cleanAll();
     nock(urls.api)
       .get(urls.organizations)
       .reply(200, JSON.stringify({
@@ -181,6 +197,13 @@ describe('Get languages', () => {
         data: [{
           attributes: {
             slug: 'pslug',
+          },
+          relationships: {
+            source_language: {
+              data: {
+                id: 'l:en',
+              },
+            },
           },
         }],
       }));
@@ -221,6 +244,12 @@ describe('Get languages', () => {
     expect(result).to.eql({
       data: [
         {
+          code: 'en',
+          localized_name: 'English',
+          name: 'English',
+          rtl: false,
+        },
+        {
           code: 'l_code',
           name: 'l_name',
           rtl: true,
@@ -232,6 +261,9 @@ describe('Get languages', () => {
           localized_name: 'l_code2',
         },
       ],
+      meta: {
+        source_lang_code: 'en',
+      },
     });
   });
 
@@ -250,6 +282,7 @@ describe('Get languages', () => {
 
 describe('Get Project Language Translations', () => {
   beforeEach(async () => {
+    nock.cleanAll();
     nock(urls.api)
       .get(urls.organizations)
       .reply(200, JSON.stringify({
@@ -266,6 +299,13 @@ describe('Get Project Language Translations', () => {
         data: [{
           attributes: {
             slug: 'pslug',
+          },
+          relationships: {
+            source_language: {
+              data: {
+                id: 'l:en',
+              },
+            },
           },
         }],
       }));
@@ -301,6 +341,7 @@ describe('Get Project Language Translations', () => {
 
 describe('Push source Content', () => {
   beforeEach(async () => {
+    nock.cleanAll();
     nock(urls.api)
       .get(urls.organizations)
       .reply(200, JSON.stringify({
@@ -317,6 +358,13 @@ describe('Push source Content', () => {
         data: [{
           attributes: {
             slug: 'pslug',
+          },
+          relationships: {
+            source_language: {
+              data: {
+                id: 'l:en',
+              },
+            },
           },
         }],
       }));

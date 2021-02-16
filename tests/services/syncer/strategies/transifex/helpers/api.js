@@ -1,4 +1,4 @@
-const getLanguages = () => JSON.parse(`{
+const getTargetLanguages = () => JSON.parse(`{
     "data": [
       {
         "id": "l:en_US",
@@ -260,7 +260,7 @@ const getSourceString = () => JSON.parse(`{
   }`);
 
 module.exports = {
-  getLanguages,
+  getTargetLanguages,
   getProjectLanguageTranslations,
   getPushSourceContent,
   getSourceString,

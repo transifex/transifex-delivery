@@ -21,6 +21,7 @@ const urls = {
 
 describe('/languages', () => {
   beforeEach(async () => {
+    nock.cleanAll();
     nock(urls.api)
       .get(urls.organizations)
       .reply(200, JSON.stringify({
@@ -37,6 +38,13 @@ describe('/languages', () => {
         data: [{
           attributes: {
             slug: 'pslug',
+          },
+          relationships: {
+            source_language: {
+              data: {
+                id: 'l:en',
+              },
+            },
           },
         }],
       }));
@@ -58,6 +66,23 @@ describe('/languages', () => {
   });
 
   it('should get languages', async () => {
+    nock(urls.api)
+      .get(urls.projects)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'pslug',
+          },
+          relationships: {
+            source_language: {
+              data: {
+                id: 'l:en',
+              },
+            },
+          },
+        }],
+      }));
+
     nock(urls.api)
       .get(urls.languages)
       .reply(200, JSON.stringify({
@@ -88,6 +113,12 @@ describe('/languages', () => {
     expect(res.body).to.eqls({
       data: [
         {
+          code: 'en',
+          localized_name: 'English',
+          name: 'English',
+          rtl: false,
+        },
+        {
           code: 'l_code',
           localized_name: 'L Code',
           name: 'l_name',
@@ -100,6 +131,9 @@ describe('/languages', () => {
           rtl: false,
         },
       ],
+      meta: {
+        source_lang_code: 'en',
+      },
     });
   });
 });
