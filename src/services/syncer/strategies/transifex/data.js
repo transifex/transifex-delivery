@@ -4,6 +4,7 @@ const api = require('./utils/api');
 const errors = require('./utils/errors');
 const logger = require('../../../../logger');
 const { getLanguageInfo } = require('../../../../helpers/languages');
+const { parseProjectLanguageSources } = require('./utils/transformer');
 
 const TokenCache = new NodeCache({
   stdTTL: 60 * 60 * 4, // 4hours
@@ -97,6 +98,18 @@ async function getLanguages(option) {
 async function getProjectLanguageTranslations(options, langCode) {
   const info = await getTokenInformation(options);
   try {
+    // get as source
+    if (langCode === info.token.source_lang_code) {
+      const result = await api.getSourceContentMap(info.token.original, {
+        organization_slug: info.token.organization_slug,
+        project_slug: info.token.project_slug,
+        resource_slug: info.token.resource_slug,
+      });
+      return {
+        data: Object.fromEntries(parseProjectLanguageSources(result)),
+      };
+    }
+    // get as translation
     const result = await api.getProjectLanguageTranslations(
       info.token.original, {
         organization_slug: info.token.organization_slug,

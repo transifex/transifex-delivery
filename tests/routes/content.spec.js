@@ -112,6 +112,30 @@ describe('/content', () => {
     expect(res.body).to.eql(expected);
   });
 
+  it('should get content on source language', async () => {
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, dataHelper.getSourceString());
+
+    let res;
+    do {
+      res = await request(app)
+        .get('/content/en')
+        .set('Authorization', `Bearer ${token}:secret`);
+    } while (res.status === 202);
+
+    const expected = {
+      data: {
+        hello_world: {
+          string: '{???, plural, one {hello} other {world}}',
+        },
+      },
+    };
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.eql(expected);
+  });
+
   it('should always return an Etag while responding', async () => {
     nock(urls.api)
       .get(urls.get_translations)

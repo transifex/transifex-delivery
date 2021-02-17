@@ -1,0 +1,14 @@
+name: Test suite
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: make build
+    - run: make eslint
+    - run: make test
