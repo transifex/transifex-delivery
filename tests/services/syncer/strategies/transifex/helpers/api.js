@@ -169,7 +169,7 @@ const getPushSourceContent = () => JSON.parse(`{
     "somekey": {
       "string": "I am a string",
       "meta": {
-        "context": ["context1", "context2"],
+        "context": "context1:context2",
         "developer_comment": "Some notes",
         "tags": ["tag1", "tag2"],
         "character_limit": 33,
@@ -179,7 +179,7 @@ const getPushSourceContent = () => JSON.parse(`{
     "hello_world": {
       "string": "{cnt, plural, one {hello} other {world}}",
       "meta": {
-        "context": [ "frontpage", "footer", "verb" ],
+        "context": "frontpage:footer:verb",
         "character_limit": 100,
         "tags": [ "foo", "bar" ],
         "developer_comment": "Wrapped in a 30px width div",
@@ -194,11 +194,7 @@ const getSourceString = () => JSON.parse(`{
         "attributes": {
           "appearance_order": 0,
           "character_limit": 100,
-          "context": [
-            "frontpage",
-            "footer",
-            "verb"
-          ],
+          "context": "frontpage:footer:verb",
           "date_created": "XXXX-XX-XXTXX:XX:XXZ",
           "developer_comment": "Wrapped in a 30px width div",
           "instructions": "Please use causal language for translations.",
