@@ -181,7 +181,7 @@ function parseSourceStringForKeyLookup(payload) {
  * @param {Object} payload The requested payload
  * @returns {Object} An object with the appropriate payload format
  * {
- *   context: [<context>, <context>],
+ *   context: <string>,
  *   key: <string_key>,
  *   strings: {
  *     other: <string>,
@@ -193,7 +193,6 @@ function parseSourceStringForAPI(key, payload) {
   const [variableName, strings] = explodePlurals(payload.string || '');
   const result = {
     key,
-    context: _.get(payload, 'meta.context') || [],
     strings,
     pluralized: !!variableName,
   };
@@ -210,6 +209,13 @@ function parseSourceStringForAPI(key, payload) {
 
   if (_.get(payload, 'meta.occurrences')) {
     result.occurrences = _.join(payload.meta.occurrences, ',');
+  }
+
+  const context = _.get(payload, 'meta.context') || '';
+  if (Array.isArray(context)) {
+    result.context = _.join(context, ':');
+  } else {
+    result.context = context;
   }
 
   return result;

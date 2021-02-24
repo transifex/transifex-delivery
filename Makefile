@@ -25,8 +25,11 @@ up:
 eslint:
 	docker-compose run --rm transifex-delivery npm run eslint
 
-test:
+ci-tests:
 	docker-compose run --rm transifex-delivery npm test
+
+test:
+	docker-compose -f docker-compose.yml -f docker-compose.dev.yml run --rm transifex-delivery npm test
 
 stop:
 	docker-compose stop

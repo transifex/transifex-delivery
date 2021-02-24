@@ -7,6 +7,7 @@ const { getLanguageInfo } = require('../../../../../../src/helpers/languages');
 const transformer = require('../../../../../../src/services/syncer/strategies/transifex/utils/transformer');
 const api = require('../helpers/api');
 
+
 describe('Transformer', () => {
   it('should parse languages', () => {
     const response = api.getTargetLanguages();
@@ -96,7 +97,6 @@ describe('Transformer', () => {
     const key = 'somekey';
     const data = payload[key];
     const result = transformer.parseSourceStringForAPI(key, data);
-
     expect(result).to.eql({
       context: data.meta.context,
       developer_comment: data.meta.developer_comment,
@@ -120,7 +120,7 @@ describe('Transformer', () => {
     const result = transformer.parseSourceStringForAPI(key, data);
 
     expect(result).to.eql({
-      context: [],
+      context: '',
       key,
       strings: {
         other: '',
@@ -159,11 +159,11 @@ describe('Transformer', () => {
           other: 'world',
         },
         pluralized: true,
-        context: ['frontpage', 'footer', 'verb'],
+        context: 'frontpage:footer:verb',
         tags: ['foo', 'bar'],
         developer_comment: 'Wrapped in a 30px width div',
         character_limit: 100,
-        occurrences: '/my_project/templates/frontpage/hello.html:30',
+        occurrences: "/my_project/templates/frontpage/hello.html:30",
       },
       payload: {
         character_limit: 100,

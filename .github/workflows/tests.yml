@@ -11,4 +11,4 @@ jobs:
     - uses: actions/checkout@v2
     - run: make build
     - run: make eslint
-    - run: make test
+    - run: make ci-tests

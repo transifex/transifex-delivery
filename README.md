@@ -214,7 +214,7 @@ Request body:
     <key>: {
       string: <source string>,
       meta: {
-        context: <array>
+        context: <string>
         developer_comment: <string>,
         character_limit: <number>,
         tags: <array>,
