@@ -133,4 +133,17 @@ describe('Sandbox data strategy', () => {
     res = await syncData.getProjectLanguageTranslations(project.meta, 'fr');
     expect(res).to.deep.equal(TRANSLATIONS);
   });
+
+  it('should verify valid credentials', async () => {
+    const res = await syncData.verifyCredentials(project.meta);
+    expect(res).to.equal(true);
+  });
+
+  it('should not verify invalid credentials', async () => {
+    const res = await syncData.verifyCredentials({
+      token: 'invalid',
+      secret: 'invalid',
+    });
+    expect(res).to.equal(false);
+  });
 });

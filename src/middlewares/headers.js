@@ -1,7 +1,11 @@
 const _ = require('lodash');
 const md5 = require('md5');
 const config = require('../config');
+const logger = require('../logger');
 const registry = require('../services/registry');
+const syncer = require('../services/syncer/data');
+
+const authCacheSec = config.get('settings:auth_cache_min') * 60;
 
 // convert a list of comma separated whitelisted tokens to an array of tokens
 const TOKEN_WHITELIST = _.compact(_.map(
@@ -105,23 +109,34 @@ function validateHeader(scope = 'private') {
  * @param {*} next
  */
 async function validateAuth(req, res, next) {
-  const serverToken = await registry.get(`auth:${req.token.project_token}`);
+  const authKey = `auth:${req.token.project_token}`;
   const clientToken = md5(req.token.original);
 
-  if (!serverToken) {
-    res.status(403).json({
-      status: 403,
-      message: 'Forbidden',
-      details: 'At least one successful content push is required',
-    });
-  } else if (serverToken !== clientToken) {
-    res.status(403).json({
-      status: 403,
-      message: 'Forbidden',
-      details: 'Project secret is invalid',
-    });
-  } else {
+  let serverToken = await registry.get(authKey);
+  if (!serverToken && req.token.project_secret) {
+    const lockKey = `disable:auth:${clientToken}`;
+    if (!(await registry.get(lockKey))) {
+      if (await syncer.verifyCredentials({ token: req.token })) {
+        // update authentication registry
+        await registry.set(authKey, clientToken, authCacheSec);
+        serverToken = clientToken;
+        logger.info(`Validated credentials for project: ${req.token.project_token}`);
+      } else {
+        // lock credentials to throttle requests
+        await registry.set(lockKey, 1, authCacheSec);
+        logger.warn(`Invalid auth credentials: ${req.token.original}`);
+      }
+    }
+  }
+
+  if (serverToken && serverToken === clientToken) {
     next();
+  } else {
+    res.status(403).json({
+      status: 403,
+      message: 'Forbidden',
+      details: 'Invalid credentials',
+    });
   }
 }
 

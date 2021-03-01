@@ -77,15 +77,6 @@ router.post('/',
       if (data.errors.length) status = 409;
 
       res.status(status).json(data);
-
-      if (status === 200) {
-        // store valid credentials for analytics endpoints or cache
-        // invalidation upon successful push
-        await registry.set(
-          `auth:${req.token.project_token}`,
-          md5(req.token.original),
-        );
-      }
     } catch (e) {
       if (e.status) {
         if (e.status !== 401) logger.error(e);

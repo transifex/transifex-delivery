@@ -34,6 +34,18 @@ function getContentFile(projectSlug, langCode) {
 }
 
 /**
+ * @implements {verifyCredentials}
+ */
+async function verifyCredentials(options) {
+  try {
+    const project = await getProjectByToken(options.token);
+    return !!project;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
  * @implements {getLanguages}
  */
 async function getLanguages(options) {
@@ -53,14 +65,6 @@ async function getLanguages(options) {
     },
   };
 }
-
-/**
- * @implements {getProjectLanguageStatus}
- */
-// eslint-disable-next-line no-unused-vars
-const getProjectLanguageStatus = async (options, langCode) => {
-  throw new Error('Not implemented');
-};
 
 /**
  * @implements {getProjectLanguageTranslations}
@@ -176,8 +180,8 @@ async function pushTranslations(options, langCode, payload) {
 }
 
 module.exports = {
+  verifyCredentials,
   getLanguages,
-  getProjectLanguageStatus,
   getProjectLanguageTranslations,
   pushSourceContent,
   pushTranslations,
