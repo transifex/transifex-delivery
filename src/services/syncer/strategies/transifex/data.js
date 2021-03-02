@@ -67,10 +67,22 @@ async function getTokenInformation(options) {
 }
 
 /**
+ * @implements {verifyCredentials}
+ */
+async function verifyCredentials(options) {
+  try {
+    const info = await getTokenInformation(options);
+    return !!info.token.organization_slug;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
  * @implements {getLanguages}
  */
-async function getLanguages(option) {
-  const info = await getTokenInformation(option);
+async function getLanguages(options) {
+  const info = await getTokenInformation(options);
   try {
     const result = await api.getTargetLanguages(info.token.original, {
       organization_slug: info.token.organization_slug,
@@ -148,18 +160,10 @@ async function pushTranslations(options, langCode, payload) {
   throw new Error('Not Implemented');
 }
 
-/**
- * @implements {getProjectLanguageStatus}
- */
-// eslint-disable-next-line no-unused-vars
-async function getProjectLanguageStatus(options, langCode) {
-  throw new Error('Not Implemented');
-}
-
 module.exports = {
   getTokenInformation,
+  verifyCredentials,
   getLanguages,
-  getProjectLanguageStatus,
   getProjectLanguageTranslations,
   pushSourceContent,
   pushTranslations,

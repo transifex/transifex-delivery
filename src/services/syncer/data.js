@@ -4,6 +4,19 @@ const validators = require('../../helpers/validators');
 const syncer = require(`./strategies/${config.get('settings:syncer')}/data`);
 
 /**
+ * Verify token/secret credentials
+ *
+ * @interface
+ * @param {Object} options
+ * @param {Object} options.token
+ * @returns {Boolean}
+ */
+async function verifyCredentials(options) {
+  const data = await syncer.verifyCredentials(options);
+  return data;
+}
+
+/**
  * Gets a list of available languages for the specific token
  *
  * @interface
@@ -25,26 +38,6 @@ async function getLanguages(options) {
   const data = await syncer.getLanguages(options);
   return data;
 }
-
-/**
- * Gets localization status of project language
- *
- * @interface
- * @param {Object} options
- * @param {Object} options.token
- * @returns {Object} An object with statistics
- *  {
- *    data: [
- *      //TBD
- *    ]
- *  }
- */
-const getProjectLanguageStatus = async (options, langCode) => {
-  if (!langCode) throw new Error('A lang_code is required');
-
-  const data = await syncer.getProjectLanguageStatus(options, langCode);
-  return data;
-};
 
 /**
  * Gets a list of available translations for the specific token/single language
@@ -143,8 +136,8 @@ async function pushTranslations(options, langCode, payload) {
 }
 
 module.exports = {
+  verifyCredentials,
   getLanguages,
-  getProjectLanguageStatus,
   getProjectLanguageTranslations,
   pushSourceContent,
   pushTranslations,

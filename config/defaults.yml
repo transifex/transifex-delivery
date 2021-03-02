@@ -10,6 +10,7 @@ settings:
   autosync_min: 60
   disk_storage_path: '/tmp'
   token_whitelist: ''
+  auth_cache_min: 30
   syncer: transifex
   cache: redis
 

@@ -695,12 +695,65 @@ describe('Push source Content', () => {
   });
 });
 
-describe('Get Project Language Status', () => {
-  it('should throw an error', async () => {
-    try {
-      await transifexData.getProjectLanguageStatus();
-    } catch (e) {
-      expect(e.message).to.eql('Not Implemented');
-    }
+describe('Verify credentials', () => {
+  it('should verify on valid credentials', async () => {
+    nock(urls.api)
+      .get(urls.organizations)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'oslug',
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.projects)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'pslug',
+          },
+          relationships: {
+            source_language: {
+              data: {
+                id: 'l:en',
+              },
+            },
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.resources)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'rslug',
+          },
+        }],
+      }));
+
+    const result = await transifexData.verifyCredentials({
+      token: {
+        original: 'valid:valid',
+      },
+    });
+    expect(result).to.eql(true);
+  });
+
+  it('should not verify on invalid credentials', async () => {
+    nock(urls.api)
+      .get(urls.organizations)
+      .reply(200, JSON.stringify({
+        data: [],
+      }));
+
+    const result = await transifexData.verifyCredentials({
+      token: {
+        original: 'invalid:invalid',
+      },
+    });
+    expect(result).to.eql(false);
   });
 });

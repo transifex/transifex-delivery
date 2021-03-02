@@ -77,6 +77,9 @@ TX__SETTINGS__CACHE=redis
 # Interval for auto-syncing content and refreshing content cache
 TX__SETTINGS__AUTOSYNC_MIN=60
 
+# Minutes to cache authentication credentials (invalidate, analytics endpoints)
+TX__SETTINGS__AUTH_CACHE_MIN=30
+
 # Redis host
 TX__REDIS__HOST=redis://transifex-delivery-redis
 
