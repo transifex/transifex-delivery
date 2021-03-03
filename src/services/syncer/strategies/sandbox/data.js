@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const { getLanguageInfo } = require('../../../../helpers/languages');
+const { arrayContainsArray } = require('../../../../helpers/utils');
 const { PROJECTS_FILE, CONTENT_FILE } = require('./utils/constants');
 const { readFileJSON, writeFileJSON } = require('./utils/files');
 
@@ -76,11 +77,26 @@ async function getProjectLanguageTranslations(options, langCode) {
 
   try {
     const data = await readFileJSON(filename);
-    _.each(data, (value, key) => {
-      translations[key] = {
-        string: value,
-      };
-    });
+    let filterTags = _.get(options, 'filter.tags');
+    if (filterTags) {
+      const sourceFilename = getContentFile(project.slug, project.source_lang_code);
+      const sourceData = await readFileJSON(sourceFilename);
+      filterTags = filterTags.split(',');
+      _.each(data, (value, key) => {
+        const sourceValue = sourceData[key];
+        if (arrayContainsArray(_.get(sourceValue, 'meta.tags'), filterTags)) {
+          translations[key] = {
+            string: value.string,
+          };
+        }
+      });
+    } else {
+      _.each(data, (value, key) => {
+        translations[key] = {
+          string: value.string,
+        };
+      });
+    }
   } catch (e) {
     if (project.target_languages.indexOf(langCode) === -1) {
       throw new Error('Language does not exist');
@@ -117,9 +133,9 @@ async function pushSourceContent(options, payload) {
 
   _.each(payload.data, (value, key) => {
     if (!data[key]) created += 1;
-    else if (data[key] === value.string) skipped += 1;
+    else if (data[key].string === value.string) skipped += 1;
     else updated += 1;
-    data[key] = value.string;
+    data[key] = value;
   });
 
   await writeFileJSON(filename, data);
@@ -162,9 +178,9 @@ async function pushTranslations(options, langCode, payload) {
 
   _.each(payload.data, (value, key) => {
     if (!data[key]) created += 1;
-    else if (data[key] === value.string) skipped += 1;
+    else if (data[key].string === value.string) skipped += 1;
     else updated += 1;
-    data[key] = value.string;
+    data[key] = value;
   });
 
   await writeFileJSON(filename, data);

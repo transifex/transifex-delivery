@@ -1,6 +1,6 @@
 {
   "name": "transifex-delivery",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "Transifex Content Delivery Service",
   "keywords": [
     "transifex",
@@ -32,7 +32,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@sentry/node": "^6.2.1",
-    "aws-sdk": "^2.854.0",
+    "aws-sdk": "^2.855.0",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "bull": "^3.20.1",
@@ -60,12 +60,12 @@
     "yargs": "^16.2.0"
   },
   "devDependencies": {
-    "chai": "^4.3.0",
+    "chai": "^4.3.1",
     "eslint": "^7.21.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
     "mocha": "^8.3.0",
-    "nock": "^13.0.9",
+    "nock": "^13.0.10",
     "nodemon": "^2.0.7",
     "nyc": "^15.1.0",
     "sinon": "^9.2.4",

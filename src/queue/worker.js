@@ -15,6 +15,7 @@ const registryExpireSec = config.get('registry:expire_min') * 60;
 async function syncerPull(job) {
   const {
     key,
+    filter,
     token,
     syncFunc,
     syncFuncParams,
@@ -23,6 +24,7 @@ async function syncerPull(job) {
     const data = await syncer[syncFunc](
       {
         token,
+        filter,
       },
       ...syncFuncParams,
     );

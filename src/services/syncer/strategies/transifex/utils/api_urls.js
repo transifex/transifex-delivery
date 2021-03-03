@@ -8,6 +8,7 @@ const TRANSIFEX_API_KEYS = {
   PROJECT_SLUG: 'p:project_slug',
   LANGUAGE_CODE: 'l:language_code',
   RESOURCE_SLUG: 'r:resource_slug',
+  FILTER_TAGS: 'f:tags',
 };
 
 // Keep in one place the APIs entity keys
@@ -16,6 +17,7 @@ const ENTITY_IDS = {
   PROJECT: 'o:organization_slug:p:project_slug',
   RESOURCE: 'o:organization_slug:p:project_slug:r:resource_slug',
   LANGUAGE: 'l:language_code',
+  TAGS: 'f:tags',
 };
 
 const TRANSIFEX_API_URLS = {
@@ -24,9 +26,16 @@ const TRANSIFEX_API_URLS = {
   GET_RESOURCE_TRANSLATIONS: '/resource_translations?'
     + `filter[resource]=${ENTITY_IDS.RESOURCE}&`
     + `filter[language]=${ENTITY_IDS.LANGUAGE}&include=resource_string`,
+  GET_RESOURCE_TRANSLATIONS_FILTER_TAGS: '/resource_translations?'
+    + `filter[resource]=${ENTITY_IDS.RESOURCE}&`
+    + `filter[language]=${ENTITY_IDS.LANGUAGE}&include=resource_string&`
+    + `filter[resource_string][tags][all]=${ENTITY_IDS.TAGS}`,
   RESOURCE_STRINGS: '/resource_strings',
   GET_RESOURCE_STRINGS: '/resource_strings?'
     + `filter[resource]=${ENTITY_IDS.RESOURCE}`,
+  GET_RESOURCE_STRINGS_FILTER_TAGS: '/resource_strings?'
+    + `filter[resource]=${ENTITY_IDS.RESOURCE}&`
+    + `filter[tags][all]=${ENTITY_IDS.TAGS}`,
   ORGANIZATIONS: '/organizations',
   PROJECTS: `/projects?filter[organization]=${ENTITY_IDS.ORGANIZATION}`,
   RESOURCES: `/resources?filter[project]=${ENTITY_IDS.PROJECT}`,

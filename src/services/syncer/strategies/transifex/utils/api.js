@@ -3,6 +3,7 @@ const _ = require('lodash');
 const apiUrls = require('./api_urls');
 const apiPayloads = require('./api_payloads');
 const transformer = require('./transformer');
+const logger = require('../../../../../logger');
 
 /**
  * Make a GET request to Transifex API to get an Organization based on
@@ -13,6 +14,7 @@ const transformer = require('./transformer');
 async function getOrganization(token) {
   const url = apiUrls.getUrl('ORGANIZATIONS');
 
+  logger.info(`GET ${url}`);
   const apiResult = await axios.get(url, apiUrls.getHeaders(token));
   const { data } = apiResult.data;
 
@@ -33,6 +35,8 @@ async function getProject(token, options) {
   const url = apiUrls.getUrl('PROJECTS', {
     ORGANIZATION_SLUG: `o:${options.organization_slug}`,
   });
+
+  logger.info(`GET ${url}`);
   const apiResult = await axios.get(url, apiUrls.getHeaders(token));
   const { data } = apiResult.data;
 
@@ -63,6 +67,8 @@ async function getResource(token, options) {
     ORGANIZATION_SLUG: `o:${options.organization_slug}`,
     PROJECT_SLUG: `p:${options.project_slug}`,
   });
+
+  logger.info(`GET ${url}`);
   const apiResult = await axios.get(url, apiUrls.getHeaders(token));
   const { data } = apiResult.data;
 
@@ -88,6 +94,8 @@ async function getTargetLanguages(token, options) {
   const result = {
     data: [],
   };
+
+  logger.info(`GET ${url}`);
   const { data } = await axios.get(url, apiUrls.getHeaders(token));
   result.data = transformer.parseLanguages(data.data);
   return result;
@@ -106,14 +114,28 @@ async function getTargetLanguages(token, options) {
  */
 async function getProjectLanguageTranslations(token, options) {
   let concatenatedData = new Map();
-  let url = apiUrls.getUrl('GET_RESOURCE_TRANSLATIONS', {
+
+  let urlKey = 'GET_RESOURCE_TRANSLATIONS';
+  let urlParams = {
     ORGANIZATION_SLUG: `o:${options.organization_slug}`,
     PROJECT_SLUG: `p:${options.project_slug}`,
     RESOURCE_SLUG: `r:${options.resource_slug}`,
     LANGUAGE_CODE: `l:${options.lang_code}`,
-  });
+  };
+
+  // add filter
+  if (options.filter_tags) {
+    urlKey = 'GET_RESOURCE_TRANSLATIONS_FILTER_TAGS';
+    urlParams = {
+      ...urlParams,
+      FILTER_TAGS: options.filter_tags,
+    };
+  }
+
+  let url = apiUrls.getUrl(urlKey, urlParams);
   let result = null;
   while (url) {
+    logger.info(`GET ${url}`);
     const { data } = await axios.get(url, apiUrls.getHeaders(token));
     url = data.links.next;
     const keysHashmap = transformer
@@ -139,15 +161,29 @@ async function getProjectLanguageTranslations(token, options) {
  */
 async function getSourceContentMap(token, options) {
   let concatenatedData = new Map();
-  let url = apiUrls.getUrl('GET_RESOURCE_STRINGS', {
+
+  let urlKey = 'GET_RESOURCE_STRINGS';
+  let urlParams = {
     ORGANIZATION_SLUG: `o:${options.organization_slug}`,
     PROJECT_SLUG: `p:${options.project_slug}`,
     RESOURCE_SLUG: `r:${options.resource_slug}`,
-  });
+  };
+
+  // add filter
+  if (options.filter_tags) {
+    urlKey = 'GET_RESOURCE_STRINGS_FILTER_TAGS';
+    urlParams = {
+      ...urlParams,
+      FILTER_TAGS: options.filter_tags,
+    };
+  }
+
+  let url = apiUrls.getUrl(urlKey, urlParams);
   const headers = apiUrls.getHeaders(token);
 
   let result = null;
   while (url) {
+    logger.info(`GET ${url}`);
     const { data } = await axios.get(url, headers);
     url = data.links.next;
     result = transformer
@@ -179,6 +215,7 @@ async function postSourceContent(token, options) {
   for (const payload in payloads) {
     if (Object.prototype.hasOwnProperty.call(payloads, payload)) {
       try {
+        logger.info(`POST ${url}`);
         const { data } = await axios.post(url,
           { data: payloads[payload] }, headers);
         createdStrings = _.concat(createdStrings, data.data);
@@ -213,6 +250,7 @@ async function patchSourceContent(token, options) {
   for (const payload in payloads) {
     if (Object.prototype.hasOwnProperty.call(payloads, payload)) {
       try {
+        logger.info(`PATCH ${url}`);
         const { data } = await axios.patch(`${url}/${payloads[payload].id}`,
           { data: payloads[payload] }, headers);
         updatedStrings = _.concat(updatedStrings, data.data);

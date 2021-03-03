@@ -13,20 +13,36 @@ router.post('/:lang_code',
   async (req, res) => {
     try {
       const token = req.token.project_token;
-      const key = `cache:${token}:${req.params.lang_code}:content`;
-      const data = await registry.get(key);
+      const langCode = req.params.lang_code;
+      // find all language keys from redis
+      const keys = await registry.find(`cache:${token}:${langCode}:content*`);
+      // Regular expression to match cache key with optional [tags] filter
+      const contentRE = new RegExp(`cache:${token}:${langCode}:content(.*)`);
       let count = 0;
-      if (data) {
+      _.each(keys, (key) => {
+        const filter = {};
         const jobKey = key.replace('cache:', '');
+        const matches = key.match(contentRE);
+        // optionally match [tags] filter
+        try {
+          let tags = matches[1];
+          // extract comma separated tags content
+          tags = tags.match(/\[(.*)\]/);
+          // eslint-disable-next-line prefer-destructuring
+          filter.tags = tags[1];
+        } catch (e) {
+          // no-op
+        }
         queue.addJob(jobKey, {
           type: 'syncer:pull',
           key: jobKey,
           token: req.token,
+          filter,
           syncFunc: 'getProjectLanguageTranslations',
-          syncFuncParams: [req.params.lang_code],
+          syncFuncParams: [langCode],
         });
         count += 1;
-      }
+      });
       res.json({
         status: 'success',
         token,
@@ -46,27 +62,43 @@ router.post('/',
   async (req, res) => {
     try {
       const token = req.token.project_token;
+      // find all keys from redis
       const keys = await registry.find(`cache:${token}:*`);
-      const contentRE = new RegExp(`cache:${token}:(.*):content`);
+      // Regular expression to match cache key with optional [tags] filter
+      const contentRE = new RegExp(`cache:${token}:(.*):content(.*)`);
       let count = 0;
       _.each(keys, (key) => {
+        const filter = {};
         const jobKey = key.replace('cache:', '');
         if (key === `cache:${token}:languages`) {
           queue.addJob(jobKey, {
             type: 'syncer:pull',
             key: jobKey,
             token: req.token,
+            filter,
             syncFunc: 'getLanguages',
             syncFuncParams: [],
           });
           count += 1;
         } else {
           const matches = key.match(contentRE);
+          // matches[1] holds the language
           if (matches && matches[1]) {
+            // optionally match [tags] filter
+            try {
+              let tags = matches[2];
+              // extract comma separated tags content
+              tags = tags.match(/\[(.*)\]/);
+              // eslint-disable-next-line prefer-destructuring
+              filter.tags = tags[1];
+            } catch (e) {
+              // no-op
+            }
             queue.addJob(jobKey, {
               type: 'syncer:pull',
               key: jobKey,
               token: req.token,
+              filter,
               syncFunc: 'getProjectLanguageTranslations',
               syncFuncParams: [matches[1]],
             });

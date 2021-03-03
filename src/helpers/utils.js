@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const cache = require('../services/cache');
 const queue = require('../queue');
 const logger = require('../logger');
@@ -7,9 +8,20 @@ const config = require('../config');
 const maxAge = config.get('settings:cache_ttl');
 const autoSyncMSec = config.get('settings:autosync_min') * 60 * 1000;
 
-const routerCacheHelper = async (
-  req, res, key, syncFunc, ...syncFuncParams
-) => {
+/**
+ * Helper function for pulling content
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {String} key
+ * @param {Object} filter
+ * @param {Function} syncFunc
+ * @param {*} syncFuncParams
+ * @returns {Object}
+ */
+async function routerCacheHelper(
+  req, res, key, filter, syncFunc, ...syncFuncParams
+) {
   // helper function to add sync job once
   let jobAdded = false;
   function addJob() {
@@ -20,6 +32,7 @@ const routerCacheHelper = async (
       type: 'syncer:pull',
       key,
       token: req.token,
+      filter,
       syncFunc,
       syncFuncParams,
     });
@@ -73,8 +86,42 @@ const routerCacheHelper = async (
   }
 
   return sentContent;
-};
+}
+
+/**
+ * Check if non-empty array
+ * contains non-empty sub-array
+ *
+ * @param {Array} array
+ * @param {Array} partial
+ * @returns {Boolean}
+ */
+function arrayContainsArray(array, partial) {
+  if (_.isEmpty(array) || _.isEmpty(partial)) return false;
+  return partial.every((val) => array.includes(val));
+}
+
+/**
+ * Clean and sanitize a tags string, e.g.
+ * "tag1,  tag2," ->  "tag1,tag2"
+ *
+ * @param {String} tagsStr
+ * @returns {String}
+ */
+function cleanTags(tagsStr) {
+  // convert to array
+  let tags = (tagsStr || '').split(',');
+  // remove whitespace
+  tags = _.map(tags, (tag) => tag.trim());
+  // sort and remove empty values
+  tags = _.compact(tags.sort());
+  // convert back to string
+  tags = tags.join(',');
+  return tags;
+}
 
 module.exports = {
   routerCacheHelper,
+  arrayContainsArray,
+  cleanTags,
 };
