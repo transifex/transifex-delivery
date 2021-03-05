@@ -8,7 +8,7 @@ const registry = require('../services/registry');
 const router = express.Router();
 
 router.post('/:lang_code',
-  validateHeader('private'),
+  validateHeader('trust'),
   validateAuth,
   async (req, res) => {
     try {
@@ -57,7 +57,7 @@ router.post('/:lang_code',
   });
 
 router.post('/',
-  validateHeader('private'),
+  validateHeader('trust'),
   validateAuth,
   async (req, res) => {
     try {
