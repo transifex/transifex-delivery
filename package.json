@@ -17,15 +17,10 @@
     "start": "node ./src/index.js",
     "start-dev": "node ./node_modules/nodemon/bin/nodemon -L -e js,yml --watch ./src --watch ./config ./src/index.js",
     "start-debugger": "node --inspect-brk=0.0.0.0 ./src/index.js",
-    "test": "NODE_ENV=test nyc --reporter=text --all --reporter=html mocha --timeout 5000 --exit \"./tests/**/*.spec.js\"",
-    "create-project": "node ./src/cli/create_project.js",
-    "list-projects": "node ./src/cli/list_projects.js",
-    "delete-project": "node ./src/cli/delete_project.js",
-    "add-language": "node ./src/cli/add_language.js",
-    "delete-language": "node ./src/cli/delete_language.js"
+    "test": "NODE_ENV=test nyc --reporter=text --all --reporter=html mocha --timeout 5000 --exit \"./tests/**/*.spec.js\""
   },
   "engines": {
-    "node": ">=12"
+    "node": ">=14"
   },
   "author": "Transifex",
   "homepage": "https://github.com/transifex/transifex-delivery",

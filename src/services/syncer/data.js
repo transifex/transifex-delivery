@@ -106,43 +106,9 @@ async function pushSourceContent(options, payload) {
   return data;
 }
 
-/**
- * Push translations
- *
- * @interface
- * @param {Object} options
- * @param {Object} options.token
- * @param {String} lang_code The language code of the translations
- * @param {Object} payload
- * {
- *   data: {
- *     <key>: {
- *       string: <string>,
- *     },
- *     <key>: { .. }
- *   }
- * }
- *
- * @returns {Object} Object with report on operation
- * {
- *   created: <number>,
- *   updated: <number>,
- *   skipped: <number>,
- *   errors: [..],
- * }
- */
-async function pushTranslations(options, langCode, payload) {
-  if (!langCode) throw new Error('A lang_code is required');
-  validators.validatePushTranslations(payload);
-
-  const data = await syncer.pushTranslations(options, langCode, payload);
-  return data;
-}
-
 module.exports = {
   verifyCredentials,
   getLanguages,
   getProjectLanguageTranslations,
   pushSourceContent,
-  pushTranslations,
 };

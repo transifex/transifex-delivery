@@ -56,32 +56,6 @@ router.get('/:lang_code',
     }
   });
 
-router.post('/:lang_code',
-  validateHeader('private'),
-  async (req, res) => {
-    req.setTimeout(timeoutMsec);
-    try {
-      const data = await syncer.pushTranslations(
-        { token: req.token }, req.params.lang_code, req.body.data,
-      );
-      res.json(data);
-    } catch (e) {
-      if (e.status) {
-        res.status(e.status).json({
-          status: e.status,
-          message: e.message,
-          details: e.details,
-        });
-      } else {
-        logger.error(e);
-        res.status(500).json({
-          status: 500,
-          message: 'An error occured!',
-        });
-      }
-    }
-  });
-
 router.post('/',
   validateHeader('private'),
   async (req, res) => {
