@@ -7,7 +7,6 @@ const { getLanguageInfo } = require('../../../../../../src/helpers/languages');
 const transformer = require('../../../../../../src/services/syncer/strategies/transifex/utils/transformer');
 const api = require('../helpers/api');
 
-
 describe('Transformer', () => {
   it('should parse languages', () => {
     const response = api.getTargetLanguages();
@@ -163,7 +162,7 @@ describe('Transformer', () => {
         tags: ['foo', 'bar'],
         developer_comment: 'Wrapped in a 30px width div',
         character_limit: 100,
-        occurrences: "/my_project/templates/frontpage/hello.html:30",
+        occurrences: '/my_project/templates/frontpage/hello.html:30',
       },
       payload: {
         character_limit: 100,

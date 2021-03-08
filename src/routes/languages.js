@@ -6,8 +6,13 @@ const router = express.Router();
 
 router.get('/',
   validateHeader('public'), async (req, res) => {
-    utils.routerCacheHelper(req, res, `${req.token.project_token}:languages`,
-      'getLanguages');
+    const filter = req.query.filter || {};
+    const key = `${req.token.project_token}:languages`;
+    utils.routerCacheHelper(
+      req, res,
+      key, filter,
+      'getLanguages',
+    );
   });
 
 module.exports = router;

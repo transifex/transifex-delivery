@@ -8,9 +8,15 @@ const SOURCE = {
   data: {
     key1: {
       string: 'string1',
+      meta: {
+        tags: ['foo', 'bar'],
+      },
     },
     key2: {
       string: 'string2',
+      meta: {
+        tags: ['foo'],
+      },
     },
   },
 };
@@ -107,7 +113,7 @@ describe('Sandbox data strategy', () => {
     });
   });
 
-  it('should push & get translations', async () => {
+  it('should push translations', async () => {
     let res = await syncData.pushTranslations(project.meta, 'fr', TRANSLATIONS);
     expect(res).to.deep.equal({
       created: 2,
@@ -128,10 +134,74 @@ describe('Sandbox data strategy', () => {
       failed: 0,
       errors: [],
     });
+  });
+
+  it('should get translations', async () => {
+    await syncData.pushSourceContent(project.meta, SOURCE);
+    await syncData.pushTranslations(project.meta, 'fr', TRANSLATIONS);
 
     // get translations
-    res = await syncData.getProjectLanguageTranslations(project.meta, 'fr');
+    let res = await syncData.getProjectLanguageTranslations(project.meta, 'fr');
     expect(res).to.deep.equal(TRANSLATIONS);
+
+    // get translations with one tag filter
+    res = await syncData.getProjectLanguageTranslations({
+      ...project.meta,
+      filter: {
+        tags: 'foo',
+      },
+    }, 'fr');
+    expect(res).to.deep.equal({
+      data: {
+        key1: {
+          string: 'translation1',
+        },
+        key2: {
+          string: 'translation2',
+        },
+      },
+    });
+
+    // get translations with another tag filter
+    res = await syncData.getProjectLanguageTranslations({
+      ...project.meta,
+      filter: {
+        tags: 'bar',
+      },
+    }, 'fr');
+    expect(res).to.deep.equal({
+      data: {
+        key1: {
+          string: 'translation1',
+        },
+      },
+    });
+
+    // get translations with two tags filter
+    res = await syncData.getProjectLanguageTranslations({
+      ...project.meta,
+      filter: {
+        tags: 'foo,bar',
+      },
+    }, 'fr');
+    expect(res).to.deep.equal({
+      data: {
+        key1: {
+          string: 'translation1',
+        },
+      },
+    });
+
+    // get translations with no matching tags filter
+    res = await syncData.getProjectLanguageTranslations({
+      ...project.meta,
+      filter: {
+        tags: 'notag',
+      },
+    }, 'fr');
+    expect(res).to.deep.equal({
+      data: {},
+    });
   });
 
   it('should verify valid credentials', async () => {

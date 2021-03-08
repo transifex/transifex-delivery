@@ -1,12 +1,13 @@
 const express = require('express');
 const dayjs = require('dayjs');
 const md5 = require('md5');
+const _ = require('lodash');
 const slugify = require('slugify');
 const config = require('../config');
 const { validateHeader } = require('../middlewares/headers');
 const syncer = require('../services/syncer/data');
 const registry = require('../services/registry');
-const utils = require('../helpers/utils');
+const { cleanTags, routerCacheHelper } = require('../helpers/utils');
 const logger = require('../logger');
 
 const router = express.Router();
@@ -18,9 +19,25 @@ const analyticsRetentionSec = config.get('analytics:retention_days') * 24 * 60 *
 router.get('/:lang_code',
   validateHeader('public'),
   async (req, res) => {
-    const sentContent = await utils.routerCacheHelper(
+    // pattern is:
+    // - token:lang:content
+    // - token:lang:content[tag1,tag2]
+    let key = `${req.token.project_token}:${req.params.lang_code}:content`;
+
+    // parse tags filter
+    let filter = {};
+    const tags = cleanTags(_.get(req.query, 'filter.tags'));
+    if (tags) {
+      // update filter
+      filter = {
+        tags,
+      };
+      // add tags to key
+      key = `${key}[${tags}]`;
+    }
+    const sentContent = await routerCacheHelper(
       req, res,
-      `${req.token.project_token}:${req.params.lang_code}:content`,
+      key, filter,
       'getProjectLanguageTranslations', req.params.lang_code,
     );
     if (hasAnalytics && sentContent) {

@@ -13,20 +13,20 @@ router.post('/:lang_code',
   async (req, res) => {
     try {
       const token = req.token.project_token;
-      const key = `cache:${token}:${req.params.lang_code}:content`;
-      const data = await registry.get(key);
-      let count = 0;
-      if (data) {
-        await registry.del(key);
-        if (data.cacheKey) {
-          await cache.delContent(data.cacheKey);
+      const keys = await registry.find(`cache:${token}:${req.params.lang_code}:*`);
+      await Promise.all(_.map(keys, (key) => (async () => {
+        const data = await registry.get(key);
+        if (data) {
+          await registry.del(key);
+          if (data.cacheKey) {
+            await cache.delContent(data.cacheKey);
+          }
         }
-        count += 1;
-      }
+      })()));
       res.json({
         status: 'success',
         token,
-        count,
+        count: keys.length,
       });
     } catch (e) {
       logger.error(e);
