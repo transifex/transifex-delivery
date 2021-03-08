@@ -12,40 +12,48 @@ const TOKEN_WHITELIST = _.compact(_.map(
   config.get('settings:token_whitelist').split(','),
   (token) => token.trim(),
 ));
+const TRUST_SECRET = config.get('settings:trust_secret');
 
 /**
  * A simple "dummy" scope validation based on a given token and scope.
  *
- * @param {String} scope This is the scope of the request. Can be 'private' or
- *                       public
+ * @param {String} scope This is the scope of the request. Can be 'private',
+ *                       'public' or 'trust'
  * @param {String} token A token used in the response. If it is a private one
  *                       should be formed like <proj_token>:<proj_secret>. In
  *                       case of a public one the <proj_token> is enough
- *
- * @returns {Boolean|Error} This will return true if token is valid, if not
- *                          an error should be thrown
+ * @returns {Boolean} This will return true if token is valid
  */
 function validateScope(scope, token) {
-  const scopes = ['public', 'private'];
-  if (!scopes.includes(scope)
-    || (scope === 'private' && (!token.project_secret || !token.project_token))
-  ) {
-    throw new Error('Invalid Scope');
+  // always require project_token
+  if (!token.project_token) return false;
+  switch (scope) {
+    case 'public':
+      return true;
+    case 'private':
+      if (token.project_secret) return true;
+      break;
+    case 'trust':
+      if (token.trust_secret) {
+        return token.trust_secret === TRUST_SECRET;
+      }
+      if (token.project_secret) return true;
+      break;
+    default:
+      throw new Error('Unknown Scope');
   }
-  return true;
+  return false;
 }
 
 /**
  * Validates token against a whitelist (if enabled)
  *
  * @param {String} token A token used in the response.
- *
- * @returns {Boolean|Error} This will return true if token is whitelisted,
- *                          if not an error should be thrown
+ * @returns {Boolean} This will return true if token is whitelisted
  */
 function validateWhitelist(token) {
   if (TOKEN_WHITELIST.length && TOKEN_WHITELIST.indexOf(token) !== -1) {
-    throw new Error('Token is not in whitelist');
+    return false;
   }
   return true;
 }
@@ -80,9 +88,19 @@ function validateHeader(scope = 'private') {
           token.project_secret = auth[1]; // eslint-disable-line
         }
 
+        // store trust header
+        const trustSecret = req.headers['x-transifex-trust-secret'];
+        if (trustSecret) {
+          token.trust_secret = trustSecret;
+        }
+
         // throws exception on fail
-        validateWhitelist(token);
-        validateScope(scope, token);
+        if (!validateWhitelist(token)) {
+          throw new Error('Token is not in whitelist');
+        }
+        if (!validateScope(scope, token)) {
+          throw new Error('Invalid Scope');
+        }
 
         req.token = token;
         next();
@@ -109,6 +127,12 @@ function validateHeader(scope = 'private') {
  * @param {*} next
  */
 async function validateAuth(req, res, next) {
+  // always proceed with trust secret
+  if (req.token.trust_secret && req.token.trust_secret === TRUST_SECRET) {
+    next();
+    return;
+  }
+
   const authKey = `auth:${req.token.project_token}`;
   const clientToken = md5(req.token.original);
 

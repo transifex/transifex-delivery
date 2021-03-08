@@ -20,7 +20,7 @@ router.get('/',
       next();
     }
   },
-  validateHeader('private'),
+  validateHeader('trust'),
   validateAuth,
   async (req, res) => {
     const filterQuery = req.query.filter || {};

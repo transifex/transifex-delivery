@@ -15,7 +15,7 @@ const token = '1/abcd';
 const key = `${token}:en:content`;
 const content = JSON.stringify({ foo: 'bar' });
 
-describe('Invalidate', () => {
+describe('Invalidate as user', () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
@@ -70,6 +70,69 @@ describe('Invalidate', () => {
     const res = await req
       .post('/invalidate')
       .set('Authorization', `Bearer ${token}_invalid:secret`);
+
+    expect(res.status).to.equal(403);
+  });
+});
+
+describe('Invalidate as Transifex', () => {
+  const sandbox = sinon.createSandbox();
+
+  beforeEach(async () => {
+    await populateRegistry(key, content);
+    await registry.set(
+      `auth:${token}`,
+      md5(`${token}:secret`),
+    );
+  });
+
+  afterEach(async () => {
+    sandbox.restore();
+    await registry.del(`auth:${token}`);
+    await resetRegistry();
+  });
+
+  it('should invalidate all languages', async () => {
+    const spy = sandbox.spy(queue, 'addJob');
+
+    const res = await req
+      .post('/invalidate')
+      .set('Authorization', `Bearer ${token}`)
+      .set('X-Transifex-Trust-Secret', 'txsecret');
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.contain({
+      status: 'success',
+      token,
+    });
+    expect(res.body.count).to.be.greaterThan(0);
+    expect(spy.callCount).to.be.greaterThan(0);
+  });
+
+  it('should invalidate specific languages', async () => {
+    const spy = sandbox.spy(queue, 'addJob');
+
+    const res = await req
+      .post('/invalidate/en')
+      .set('Authorization', `Bearer ${token}`)
+      .set('X-Transifex-Trust-Secret', 'txsecret');
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.contain({
+      status: 'success',
+      token,
+    });
+    expect(res.body.count).to.equal(1);
+    expect(spy.callCount).to.equal(1);
+  });
+
+  it('should validate token', async () => {
+    await registry.del(`auth:${token}`);
+
+    const res = await req
+      .post('/invalidate')
+      .set('Authorization', `Bearer ${token}`)
+      .set('X-Transifex-Trust-Secret', 'invalid');
 
     expect(res.status).to.equal(403);
   });

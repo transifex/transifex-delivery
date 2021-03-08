@@ -53,6 +53,11 @@ TX__APP__PORT=10300
 # Express "Trust proxy" setting to detect client IP
 TX__SETTINGS__TRUST_PROXY=1
 
+# Optional secret for trusting communication between CDS and Transifex
+# Used for requests supporting the X-TRANSIFEX-TRUST-SECRET authentication
+# header
+TX__SETTINGS__TRUST_SECRET=supersecret
+
 # Max-age header for cached responses
 TX__SETTINGS__CACHE_TTL=1800 (in seconds)
 
@@ -282,6 +287,12 @@ POST /invalidate/<lang-code>
 Authorization: Bearer <project-token>:<secret>
 Content-Type: application/json; charset=utf-8
 
+or
+
+Authorization: Bearer <project-token>
+X-TRANSIFEX-TRUST-SECRET: <transifex-secret>
+Content-Type: application/json; charset=utf-8
+
 Request body:
 {}
 
@@ -309,6 +320,12 @@ POST /purge/<lang-code>
 Authorization: Bearer <project-token>:<secret>
 Content-Type: application/json; charset=utf-8
 
+or
+
+Authorization: Bearer <project-token>
+X-TRANSIFEX-TRUST-SECRET: <transifex-secret>
+Content-Type: application/json; charset=utf-8
+
 Request body:
 {}
 
@@ -333,6 +350,12 @@ Endpoint to get usage analytics, per language, SDK and unique anonymized clients
 GET /analytics?filter[since]=<YYYY-MM-DD>&filter[until]=<YYYY-MM-DD>
 
 Authorization: Bearer <project-token>:<secret>
+Content-Type: application/json; charset=utf-8
+
+or
+
+Authorization: Bearer <project-token>
+X-TRANSIFEX-TRUST-SECRET: <transifex-secret>
 Content-Type: application/json; charset=utf-8
 
 Response body:
