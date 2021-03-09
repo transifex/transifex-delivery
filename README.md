@@ -203,9 +203,17 @@ Response body:
 
 Push source content.
 
+**Purge content**
+
 If `purge: true` in `meta` object, then replace the entire resource content with the pushed content of this request.
 
 If `purge: false` in `meta` object (the default), then append the source content of this request to the existing resource content.
+
+**Replace tags**
+
+If `override_tags: true` in `meta` object, then replace the existing string tags with the tags of this request.
+
+If `override_tags: false` in `meta` object (the default), then append tags from source content to tags of existing strings instead of overwriting them.
 
 ```
 POST /content
@@ -228,7 +236,8 @@ Request body:
     <key>: { .. }
   },
   meta: {
-    purge: <boolean>
+    purge: <boolean>,
+    override_tags: <boolean>
   }
 }
 
