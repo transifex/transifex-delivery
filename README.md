@@ -73,7 +73,7 @@ TX__SETTINGS__DISK_STORAGE_PATH=/tmp
 # Optionally, a whitelist of project tokens
 TX__SETTINGS__TOKEN_WHITELIST=key1,key2
 
-# Syncer strategy (transifex or sandbox)
+# Syncer strategy
 TX__SETTINGS__SYNCER=transifex
 
 # Cache strategy (redis, s3)
@@ -243,37 +243,6 @@ Response body:
 }
 ```
 
-### Push translations (Sandbox only)
-
-Push translations.
-
-```
-POST /content/<lang-code>
-
-Authorization: Bearer <project-token>:<secret>
-Content-Type: application/json; charset=utf-8
-
-Request body:
-{
-  data: {
-    <key>: {
-      string: <source string>,
-    }
-    <key>: { .. }
-  },
-}
-
-Response body:
-{
-  created: <number>,
-  updated: <number>,
-  skipped: <number>,
-  deleted: <number>
-  failed: <number>,
-  errors: [..],
-}
-```
-
 ## Invalidate cache
 
 Endpoint to force cache invalidation for a specific language or for
@@ -395,12 +364,6 @@ CDS works like a middleware between application SDKs and a place where content l
 ### Transifex (default)
 
 This is the default strategy that syncs content between CDS and Transifex, using Transifex APIv3.
-
-### Sandbox
-
-A local strategy that can be used as a playground, where data are stored in files within the CDS service.
-
-This strategy is useful for developers that want to try out Transifex native integrations without an account in www.transifex.com.
 
 ## Cache strategies
 

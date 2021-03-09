@@ -154,19 +154,10 @@ async function pushSourceContent(options, payload, meta) {
   return result;
 }
 
-/**
- * @implements {pushTranslations}
- */
-// eslint-disable-next-line no-unused-vars
-async function pushTranslations(options, langCode, payload) {
-  throw new Error('Not Implemented');
-}
-
 module.exports = {
   getTokenInformation,
   verifyCredentials,
   getLanguages,
   getProjectLanguageTranslations,
   pushSourceContent,
-  pushTranslations,
 };
