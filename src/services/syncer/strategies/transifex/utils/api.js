@@ -348,10 +348,6 @@ async function pushSourceContent(token, options) {
   let deleted = 0;
   let errors = [];
 
-  function stringNeedsUpdate(attributes, existingAttributes) {
-    return !_.isEqual(attributes, existingAttributes);
-  }
-
   function preparePayloadForPost(attributes) {
     const resourceId = `o:${options.organization_slug}`
       + `:p:${options.project_slug}:r:${options.resource_slug}`;
@@ -395,15 +391,20 @@ async function pushSourceContent(token, options) {
     if (Object.prototype.hasOwnProperty.call(strings, key)) {
       let attributes = {};
       const existingString = existingStrings[key];
+      attributes = transformer.parseSourceStringForAPI(key, strings[key]);
 
       if (existingString) {
         common.add(key);
+        // append tags
+        if (!meta || meta.override_tags !== true) {
+          attributes.tags = _.uniq(_.union(
+            existingString.attributes.tags, attributes.tags,
+          ));
+        }
       }
-
-      attributes = transformer.parseSourceStringForAPI(key, strings[key]);
       if (!existingString) {
         preparePayloadForPost(attributes);
-      } else if (stringNeedsUpdate(attributes, existingString.attributes)) {
+      } else if (apiPayloads.stringNeedsUpdate(attributes, existingString.attributes)) {
         preparePayloadForPatch(key, attributes);
       } else {
         skipped += 1;
