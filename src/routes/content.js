@@ -2,7 +2,6 @@ const express = require('express');
 const dayjs = require('dayjs');
 const md5 = require('md5');
 const _ = require('lodash');
-const slugify = require('slugify');
 const config = require('../config');
 const { validateHeader } = require('../middlewares/headers');
 const syncer = require('../services/syncer/data');
@@ -45,7 +44,7 @@ router.get('/:lang_code',
 
       const project = req.token.project_token;
       const lang = req.params.lang_code;
-      const sdkVersion = slugify(req.headers['x-native-sdk'] || 'unknown');
+      const sdkVersion = (req.headers['x-native-sdk'] || 'unknown').replace(/ /g, '-');
 
       const dateDay = dayjs().format('YYYY-MM-DD');
       const keyDay = `analytics:${project}:${dateDay}`;
