@@ -79,6 +79,9 @@ TX__SETTINGS__SYNCER=transifex
 # Cache strategy (redis, s3)
 TX__SETTINGS__CACHE=redis
 
+# Number of seconds to keep alive idle connections
+TX__SETTINGS__KEEP_ALIVE_TIMEOUT_SEC=180
+
 # Interval for auto-syncing content and refreshing content cache
 TX__SETTINGS__AUTOSYNC_MIN=60
 

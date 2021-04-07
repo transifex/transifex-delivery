@@ -14,6 +14,7 @@ settings:
   auth_cache_min: 30
   syncer: transifex
   cache: redis
+  keep_alive_timeout_sec: ''
 
 transifex:
   api_host: https://rest.api.transifex.com
