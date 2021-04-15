@@ -18,6 +18,7 @@ settings:
 
 transifex:
   api_host: https://rest.api.transifex.com
+  page_limit: 1000
 
 redis:
   host: redis://transifex-delivery-redis

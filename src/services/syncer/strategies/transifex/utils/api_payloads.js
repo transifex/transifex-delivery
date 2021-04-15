@@ -35,9 +35,20 @@ function getDeleteStringPayload(stringId) {
 function stringNeedsUpdate(attributes, existingAttributes) {
   const filteredAttrs = _.filter(PATCH_ATTRIBUTES,
     (attr) => !_.isUndefined(attributes[attr]));
+
+  const cleanAttributes = _.pick(attributes, filteredAttrs);
+  const cleanExistingAttributes = _.pick(existingAttributes, filteredAttrs);
+
+  if (_.isEmpty(cleanAttributes.tags)) {
+    delete cleanAttributes.tags;
+  }
+  if (_.isEmpty(cleanExistingAttributes.tags)) {
+    delete cleanExistingAttributes.tags;
+  }
+
   return !_.isEqual(
-    _.pick(attributes, filteredAttrs),
-    _.pick(existingAttributes, filteredAttrs),
+    cleanAttributes,
+    cleanExistingAttributes,
   );
 }
 

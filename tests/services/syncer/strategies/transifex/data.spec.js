@@ -32,7 +32,8 @@ const urls = {
   translations: '/resource_translations?filter[resource]=o:oslug:p:pslug'
     + ':r:rslug&filter[language]=l:lcode&include=resource_string',
   source_strings: '/resource_strings?filter[resource]='
-    + 'o:oslug:p:pslug:r:rslug',
+    + 'o:oslug:p:pslug:r:rslug&'
+    + `limit=${config.get('transifex:page_limit')}`,
   resource_strings: '/resource_strings',
 };
 

@@ -1,6 +1,7 @@
 const config = require('../../../../../config');
 
 const TRANSIFEX_API_HOST = config.get('transifex:api_host');
+const PAGE_LIMIT = config.get('transifex:page_limit');
 
 // Keep a key/string to replace in url
 const TRANSIFEX_API_KEYS = {
@@ -32,10 +33,12 @@ const TRANSIFEX_API_URLS = {
     + `filter[resource_string][tags][all]=${ENTITY_IDS.TAGS}`,
   RESOURCE_STRINGS: '/resource_strings',
   GET_RESOURCE_STRINGS: '/resource_strings?'
-    + `filter[resource]=${ENTITY_IDS.RESOURCE}`,
+    + `filter[resource]=${ENTITY_IDS.RESOURCE}&`
+    + `limit=${PAGE_LIMIT}`,
   GET_RESOURCE_STRINGS_FILTER_TAGS: '/resource_strings?'
     + `filter[resource]=${ENTITY_IDS.RESOURCE}&`
-    + `filter[tags][all]=${ENTITY_IDS.TAGS}`,
+    + `filter[tags][all]=${ENTITY_IDS.TAGS}&`
+    + `limit=${PAGE_LIMIT}`,
   ORGANIZATIONS: '/organizations',
   PROJECTS: `/projects?filter[organization]=${ENTITY_IDS.ORGANIZATION}`,
   RESOURCES: `/resources?filter[project]=${ENTITY_IDS.PROJECT}`,
