@@ -22,3 +22,17 @@ const keepAliveTimeoutSec = config.get('settings:keep_alive_timeout_sec');
 if (isNumber(keepAliveTimeoutSec) && keepAliveTimeoutSec >= 0) {
   attachedApplication.keepAliveTimeout = keepAliveTimeoutSec * 1000;
 }
+
+// graceful shutdown of server
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM signal received: closing HTTP server');
+  attachedApplication.close(() => {
+    logger.info('HTTP server closed');
+    process.exit(0);
+  });
+  // failsafe timeout
+  setTimeout(() => {
+    logger.info('Server close timeout reached, exiting process');
+    process.exit(0);
+  }, 5000);
+});

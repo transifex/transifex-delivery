@@ -1,6 +1,6 @@
 {
   "name": "transifex-delivery",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Transifex Content Delivery Service",
   "keywords": [
     "transifex",
@@ -27,10 +27,10 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@sentry/node": "^6.2.5",
-    "aws-sdk": "^2.887.0",
+    "aws-sdk": "^2.889.0",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
-    "bull": "^3.22.0",
+    "bull": "^3.22.1",
     "chai-http": "^4.3.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
