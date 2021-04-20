@@ -25,14 +25,14 @@ if (isNumber(keepAliveTimeoutSec) && keepAliveTimeoutSec >= 0) {
 
 // graceful shutdown of server
 process.on('SIGTERM', () => {
-  logger.info('SIGTERM signal received: closing HTTP server');
+  logger.info('SIGTERM: closing HTTP server');
   attachedApplication.close(() => {
-    logger.info('HTTP server closed');
+    logger.info('SIGTERM: server closed');
     process.exit(0);
   });
   // failsafe timeout
   setTimeout(() => {
-    logger.info('Server close timeout reached, exiting process');
+    logger.info('SIGTERM: timeout reached, killing process');
     process.exit(0);
   }, 5000);
 });
