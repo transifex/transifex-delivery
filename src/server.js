@@ -7,6 +7,7 @@ const queue = require('./queue');
 const config = require('./config');
 const { version } = require('../package.json');
 const sentry = require('./sentry');
+const logger = require('./logger');
 const metrics = require('./middlewares/metrics');
 const languagesRouter = require('./routes/languages');
 const contentRouter = require('./routes/content');
@@ -28,7 +29,11 @@ module.exports = () => {
   // The request handler must be the first middleware on the app
   sentry.expressRequest(app);
 
-  if (process.env.NODE_ENV !== 'test') app.use(morgan('combined'));
+  if (process.env.NODE_ENV !== 'test') {
+    app.use(morgan('combined', {
+      stream: logger.stream,
+    }));
+  }
 
   const requestSizeLimit = config.get('settings:request_size_limit');
 
