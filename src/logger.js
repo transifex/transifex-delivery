@@ -5,9 +5,7 @@ const sentry = require('./sentry');
 
 const transports = [];
 const logsFormat = winston.format.combine(
-  winston.format.timestamp({
-    format: 'YYYY-MM-DD HH:mm:ss',
-  }),
+  winston.format.timestamp(),
   winston.format.errors({ stack: true }),
   winston.format.splat(),
   winston.format.json(),
@@ -31,7 +29,7 @@ if (sentry.isActive) {
   }));
 }
 
-module.exports = winston.createLogger({
+const logger = winston.createLogger({
   defaultMeta: {
     service: config.get('app:name'),
     environment: process.env.NODE_ENV,
@@ -39,3 +37,12 @@ module.exports = winston.createLogger({
   transports,
   silent: config.get('log:silent'),
 });
+
+// stream object to be used by morgan for express logs
+logger.stream = {
+  write: (message) => {
+    logger.info(message);
+  },
+};
+
+module.exports = logger;
