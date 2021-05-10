@@ -67,6 +67,9 @@ TX__SETTINGS__REQUEST_SIZE_LIMIT=50mb
 # Upload timeout in minutes
 TX__SETTINGS__UPLOAD_TIMEOUT_MIN=10
 
+# Push throttling timeout in minutes
+TX__SETTINGS__PUSH_THROTTLE_TIMEOUT_MIN=10
+
 # Disk path for CDS related files
 TX__SETTINGS__DISK_STORAGE_PATH=/tmp
 
@@ -206,6 +209,10 @@ Response body:
 
 Push source content.
 
+Only one push is allowed per project token at the same time.
+Pushing on the same project while another request is in progress will yield an
+HTTP 429 error response.
+
 **Purge content**
 
 If `purge: true` in `meta` object, then replace the entire resource content with the pushed content of this request.
@@ -244,6 +251,7 @@ Request body:
   }
 }
 
+Response status: 200
 Response body:
 {
   created: <number>,
@@ -252,6 +260,13 @@ Response body:
   deleted: <number>,
   failed: <number>,
   errors: [..],
+}
+
+Response status: 429
+Response body:
+{
+  status: 429,
+  message: 'Another content upload is already in progress',
 }
 ```
 
@@ -277,6 +292,7 @@ Content-Type: application/json; charset=utf-8
 Request body:
 {}
 
+Response status: 200
 Response body (success):
 {
   status: 'success',
@@ -284,6 +300,7 @@ Response body (success):
   count: <number of resources invalidated>,
 }
 
+Response status: 500
 Response body (fail):
 {
   status: 'failed',
@@ -310,6 +327,7 @@ Content-Type: application/json; charset=utf-8
 Request body:
 {}
 
+Response status: 200
 Response body (success):
 {
   status: 'success',
@@ -317,6 +335,7 @@ Response body (success):
   count: <number of resources purged>,
 }
 
+Response status: 500
 Response body (fail):
 {
   status: 'failed',
@@ -339,6 +358,7 @@ Authorization: Bearer <project-token>
 X-TRANSIFEX-TRUST-SECRET: <transifex-secret>
 Content-Type: application/json; charset=utf-8
 
+Response status: 200
 Response body:
 {
   data: [{

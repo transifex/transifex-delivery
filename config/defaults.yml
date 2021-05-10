@@ -6,6 +6,7 @@ settings:
   trust_proxy: true
   request_size_limit: '50mb'
   upload_timeout_min: 10
+  push_throttle_timeout_min: 10
   cache_ttl: 1800
   autosync_min: 60
   disk_storage_path: '/tmp'

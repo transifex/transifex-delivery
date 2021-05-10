@@ -50,7 +50,7 @@ router.post('/:lang_code',
       });
     } catch (e) {
       logger.error(e);
-      res.json({
+      res.status(500).json({
         status: 'failed',
       });
     }
@@ -113,7 +113,7 @@ router.post('/',
       });
     } catch (e) {
       logger.error(e);
-      res.json({
+      res.status(500).json({
         status: 'failed',
       });
     }
