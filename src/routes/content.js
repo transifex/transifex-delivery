@@ -14,6 +14,7 @@ const router = express.Router();
 const timeoutMsec = config.get('settings:upload_timeout_min') * 60 * 1000;
 const hasAnalytics = config.get('analytics:enabled');
 const analyticsRetentionSec = config.get('analytics:retention_days') * 24 * 60 * 60;
+const pushThrottleTimeoutSec = config.get('settings:push_throttle_timeout_min') * 60;
 
 router.get('/:lang_code',
   validateHeader('public'),
@@ -58,8 +59,19 @@ router.get('/:lang_code',
 router.post('/',
   validateHeader('private'),
   async (req, res) => {
+    const throttleKey = `throttle:push:${req.token.project_token}`;
+    if (await registry.get(throttleKey)) {
+      res.status(429).json({
+        status: 429,
+        message: 'Another content upload is already in progress',
+      });
+      return;
+    }
+
     req.setTimeout(timeoutMsec);
     try {
+      await registry.set(throttleKey, 1, pushThrottleTimeoutSec);
+
       const data = await syncer
         .pushSourceContent({ token: req.token }, req.body);
 
@@ -82,6 +94,8 @@ router.post('/',
           message: 'An error occured!',
         });
       }
+    } finally {
+      await registry.del(throttleKey);
     }
   });
 
