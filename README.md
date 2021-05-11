@@ -235,12 +235,13 @@ Request body:
 {
   data: {
     <key>: {
-      string: <source string>,
+      string: <string>,
       meta: {
         context: <string>
         developer_comment: <string>,
         character_limit: <number>,
         tags: <array>,
+        occurrences: <array>,
       }
     }
     <key>: { .. }

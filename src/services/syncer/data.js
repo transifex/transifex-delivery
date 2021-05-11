@@ -77,10 +77,11 @@ async function getProjectLanguageTranslations(options, langCode) {
  *     <key>: {
  *       string: <string>,
  *       meta: {
- *         context: <>,
- *         developer_notes: <>,
+ *         context: <string>,
+ *         developer_notes: <string>,
  *         character_limit: <number>,
  *         tags: <array>,
+ *         occurrences: <array>,
  *         ...
  *       }
  *     }
