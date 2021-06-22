@@ -225,6 +225,11 @@ If `override_tags: true` in `meta` object, then replace the existing string tags
 
 If `override_tags: false` in `meta` object (the default), then append tags from source content to tags of existing strings instead of overwriting them.
 
+**Async push** (recommended)
+
+If `async: true` in `meta`, then add the payload in a queue and process it asynchronously. The response yields 202 HTTP status code and
+a job-id available for polling on progress report.
+
 ```
 POST /content
 
@@ -247,12 +252,13 @@ Request body:
     <key>: { .. }
   },
   meta: {
+    async: <boolean>,
     purge: <boolean>,
     override_tags: <boolean>
   }
 }
 
-Response status: 200
+Response status: 200 (deprecated)
 Response body:
 {
   created: <number>,
@@ -263,11 +269,52 @@ Response body:
   errors: [..],
 }
 
+Response status: 202
+Response body:
+{
+  data: {
+    id: <string>,
+    links: {
+      job: <string>
+    }
+  }
+}
+
 Response status: 429
 Response body:
 {
   status: 429,
   message: 'Another content upload is already in progress',
+}
+```
+
+### Job status
+
+Get job status for push source content action:
+- If "status" field is "pending" or "processing", you should check this endpoint again later
+- If "status" field is "failed", then you should check for "errors"
+- If "status" field is "completed", then you should check for "details"
+
+```
+GET /jobs/content/<id>
+
+Authorization: Bearer <project-token>:<secret>
+Content-Type: application/json; charset=utf-8
+
+Response status: 200
+Response body:
+{
+  data: {
+    details: {
+      created: <number>,
+      updated: <number>,
+      skipped: <number>,
+      deleted: <number>,
+      failed: <number>
+    }
+    errors: [..],
+    status: "pending|processing|failed|completed",
+  },
 }
 ```
 
