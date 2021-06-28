@@ -1,7 +1,7 @@
 const _ = require('lodash');
-const md5 = require('md5');
 const config = require('../config');
 const logger = require('../logger');
+const md5 = require('../helpers/md5');
 const registry = require('../services/registry');
 const syncer = require('../services/syncer/data');
 

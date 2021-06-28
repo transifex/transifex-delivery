@@ -1,6 +1,5 @@
-const md5 = require('md5');
-
 const _ = require('lodash');
+const md5 = require('../src/helpers/md5');
 const cache = require('../src/services/cache');
 const registry = require('../src/services/registry');
 

@@ -1,8 +1,8 @@
 /* globals describe, it, beforeEach, afterEach */
 
 const { expect } = require('chai');
-const md5 = require('md5');
 const request = require('supertest');
+const md5 = require('../../src/helpers/md5');
 const cache = require('../../src/services/cache');
 const registry = require('../../src/services/registry');
 const { resetRegistry, populateRegistry } = require('../lib');

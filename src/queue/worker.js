@@ -1,4 +1,4 @@
-const md5 = require('md5');
+const md5 = require('../helpers/md5');
 const logger = require('../logger');
 const config = require('../config');
 const cache = require('../services/cache');

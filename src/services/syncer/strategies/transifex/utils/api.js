@@ -1,8 +1,8 @@
-const axios = require('axios');
 const _ = require('lodash');
 const apiUrls = require('./api_urls');
 const apiPayloads = require('./api_payloads');
 const transformer = require('./transformer');
+const axios = require('../../../../../helpers/axios');
 const logger = require('../../../../../logger');
 
 /**
@@ -406,11 +406,13 @@ async function pushSourceContent(token, options) {
     deletePayloads.push(payload);
   }
 
-  if (!meta.purge) {
-    // check for optimal strategy to update content, reducing API calls
-    const payloadKeys = _.keys(strings);
-    const resource = await getResource(token, options);
+  const payloadKeys = _.keys(strings);
+  // check for optimal strategy to update content, reducing API calls
+  const resource = await getResource(token, options);
+  const resourceId = `${options.organization_slug}:${options.project_slug}:${options.resource_slug}`;
 
+  if (!meta.purge) {
+    logger.info(`Pushing ${payloadKeys.length} of ${resource.string_count} strings [${resourceId}]`);
     // if requests to get whole resource are less than the strings to be
     // pushed then fetch the whole resource
     if ((resource.string_count / apiUrls.getPageSize()) < payloadKeys.length) {
@@ -423,6 +425,7 @@ async function pushSourceContent(token, options) {
       });
     }
   } else {
+    logger.info(`Purging ${payloadKeys.length} of ${resource.string_count} strings [${resourceId}]`);
     // get all source strings
     existingStrings = await getSourceContentMap(token, options);
   }
