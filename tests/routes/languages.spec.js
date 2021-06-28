@@ -55,6 +55,7 @@ describe('/languages', () => {
         data: [{
           attributes: {
             slug: 'rslug',
+            string_count: '10',
           },
         }],
       }));

@@ -10,6 +10,7 @@ const TRANSIFEX_API_KEYS = {
   LANGUAGE_CODE: 'l:language_code',
   RESOURCE_SLUG: 'r:resource_slug',
   FILTER_TAGS: 'f:tags',
+  FILTER_KEY: 'f:key',
 };
 
 // Keep in one place the APIs entity keys
@@ -19,6 +20,7 @@ const ENTITY_IDS = {
   RESOURCE: 'o:organization_slug:p:project_slug:r:resource_slug',
   LANGUAGE: 'l:language_code',
   TAGS: 'f:tags',
+  KEY: 'f:key',
 };
 
 const TRANSIFEX_API_URLS = {
@@ -34,6 +36,10 @@ const TRANSIFEX_API_URLS = {
   RESOURCE_STRINGS: '/resource_strings',
   GET_RESOURCE_STRINGS: '/resource_strings?'
     + `filter[resource]=${ENTITY_IDS.RESOURCE}&`
+    + `limit=${PAGE_LIMIT}`,
+  GET_RESOURCE_STRINGS_FILTER_KEY: '/resource_strings?'
+    + `filter[resource]=${ENTITY_IDS.RESOURCE}&`
+    + `filter[key]=${ENTITY_IDS.KEY}&`
     + `limit=${PAGE_LIMIT}`,
   GET_RESOURCE_STRINGS_FILTER_TAGS: '/resource_strings?'
     + `filter[resource]=${ENTITY_IDS.RESOURCE}&`
@@ -66,7 +72,12 @@ function getHeaders(token, isBulk) {
   };
 }
 
+function getPageSize() {
+  return PAGE_LIMIT;
+}
+
 module.exports = {
   getUrl,
   getHeaders,
+  getPageSize,
 };

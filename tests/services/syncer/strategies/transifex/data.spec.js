@@ -72,6 +72,7 @@ describe('Get token information', () => {
         data: [{
           attributes: {
             slug: 'rslug',
+            string_count: '10',
           },
         }],
       }));
@@ -215,6 +216,7 @@ describe('Get languages', () => {
         data: [{
           attributes: {
             slug: 'rslug',
+            string_count: '10',
           },
         }],
       }));
@@ -317,6 +319,7 @@ describe('Get Project Language Translations', () => {
         data: [{
           attributes: {
             slug: 'rslug',
+            string_count: '10',
           },
         }],
       }));
@@ -393,6 +396,7 @@ describe('Push source Content', () => {
         data: [{
           attributes: {
             slug: 'rslug',
+            string_count: '10',
           },
         }],
       }));
@@ -696,6 +700,86 @@ describe('Push source Content', () => {
   });
 });
 
+describe('Push source Content (per string key strategy)', () => {
+  beforeEach(async () => {
+    nock.cleanAll();
+    nock(urls.api)
+      .get(urls.organizations)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'oslug',
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.projects)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'pslug',
+          },
+          relationships: {
+            source_language: {
+              data: {
+                id: 'l:en',
+              },
+            },
+          },
+        }],
+      }));
+
+    nock(urls.api)
+      .get(urls.resources)
+      .reply(200, JSON.stringify({
+        data: [{
+          attributes: {
+            slug: 'rslug',
+            string_count: '100000000',
+          },
+        }],
+      }));
+  });
+
+  afterEach(async () => {
+    nock.cleanAll();
+  });
+
+  it('should push new strings', async () => {
+    nock(urls.api)
+      .get(`${urls.source_strings}&filter[key]=somekey`)
+      .reply(200, { data: [], links: {} });
+
+    nock(urls.api)
+      .get(`${urls.source_strings}&filter[key]=hello_world`)
+      .reply(200, { data: [], links: {} });
+
+    nock(urls.api).post(urls.resource_strings)
+      .reply(200, {
+        data: [
+          {
+            somekey: 'somevalue',
+          },
+          {
+            someotherkey: 'somevalue',
+          },
+        ],
+      });
+    const data = dataHelper.getPushSourceContent();
+    const result = await transifexData.pushSourceContent(options, data);
+
+    expect(result).to.eql({
+      created: 2,
+      updated: 0,
+      skipped: 0,
+      deleted: 0,
+      failed: 0,
+      errors: [],
+    });
+  });
+});
+
 describe('Verify credentials', () => {
   it('should verify on valid credentials', async () => {
     nock(urls.api)
@@ -731,6 +815,7 @@ describe('Verify credentials', () => {
         data: [{
           attributes: {
             slug: 'rslug',
+            string_count: '10',
           },
         }],
       }));

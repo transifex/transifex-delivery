@@ -64,6 +64,7 @@ describe('/content', () => {
         data: [{
           attributes: {
             slug: 'rslug',
+            string_count: '10',
           },
         }],
       }));
