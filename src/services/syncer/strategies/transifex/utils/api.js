@@ -195,6 +195,44 @@ async function getSourceContentMap(token, options) {
 }
 
 /**
+ * Makes a GET request to Transifex API to get resource strings on
+ * specific keys list and creates a hashmap for quick lookups
+ *
+ * @param {Object} options
+ * @param {String} options.organization_slug
+ * @param {String} options.project_slug
+ * @param {String} options.resource_slug
+ * @param {Array} options.keys
+ * @returns {Object} An hashmap for easy access to string  keys
+ */
+async function getSourceContentMapOnKeys(token, options) {
+  let concatenatedData = new Map();
+
+  const urlKey = 'GET_RESOURCE_STRINGS_FILTER_KEY';
+  const urlParams = {
+    ORGANIZATION_SLUG: `o:${options.organization_slug}`,
+    PROJECT_SLUG: `p:${options.project_slug}`,
+    RESOURCE_SLUG: `r:${options.resource_slug}`,
+  };
+  const headers = apiUrls.getHeaders(token);
+
+  for (let i = 0; i < options.keys.length; i += 1) {
+    const key = options.keys[i];
+    const url = apiUrls.getUrl(urlKey, {
+      ...urlParams,
+      FILTER_KEY: key,
+    });
+    logger.info(`GET ${url}`);
+    const { data } = await axios.get(url, headers);
+    const result = transformer
+      .parseSourceStringForKeyLookup(data.data);
+    concatenatedData = new Map([...concatenatedData, ...result]);
+  }
+
+  return Object.fromEntries(concatenatedData);
+}
+
+/**
  * Creates new content via the API by using POST after content is being chunked
  * to 150 items
  *
@@ -335,7 +373,7 @@ async function deleteSourceContent(token, options) {
 
 async function pushSourceContent(token, options) {
   const strings = options.payload;
-  const { meta } = options;
+  const meta = options.meta || {};
 
   const createPayloads = [];
   const updatePayloads = [];
@@ -368,6 +406,27 @@ async function pushSourceContent(token, options) {
     deletePayloads.push(payload);
   }
 
+  if (!meta.purge) {
+    // check for optimal strategy to update content, reducing API calls
+    const payloadKeys = _.keys(strings);
+    const resource = await getResource(token, options);
+
+    // if requests to get whole resource are less than the strings to be
+    // pushed then fetch the whole resource
+    if ((resource.string_count / apiUrls.getPageSize()) < payloadKeys.length) {
+      existingStrings = await getSourceContentMap(token, options);
+    } else {
+      // ...else fetch details on specific keys we want to upload
+      existingStrings = await getSourceContentMapOnKeys(token, {
+        ...options,
+        keys: payloadKeys,
+      });
+    }
+  } else {
+    // get all source strings
+    existingStrings = await getSourceContentMap(token, options);
+  }
+
   // Create payload for each string
   // existingStrings: Set of strings already in TX.
   // common: Set of strings both in pushed set and in TX.
@@ -384,7 +443,6 @@ async function pushSourceContent(token, options) {
   //     + if purge option is true we delete them
   //     + if purge option is false we skip them - leave them be (essentialy
   //       we append to them).
-  existingStrings = await getSourceContentMap(token, options);
   const common = new Set();
 
   for (const key in strings) {
@@ -396,7 +454,7 @@ async function pushSourceContent(token, options) {
       if (existingString) {
         common.add(key);
         // append tags
-        if (!meta || meta.override_tags !== true) {
+        if (meta.override_tags !== true) {
           attributes.tags = _.uniq(_.union(
             existingString.attributes.tags, attributes.tags,
           ));
@@ -413,7 +471,7 @@ async function pushSourceContent(token, options) {
   }
 
   // prepare delete payloads only if purge is True
-  if (meta && meta.purge === true) {
+  if (meta.purge === true) {
     const existingMinusCommon = new Set();
     for (const key in existingStrings) {
       if (!common.has(key)) {
