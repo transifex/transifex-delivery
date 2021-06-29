@@ -2,8 +2,8 @@
 
 const { expect } = require('chai');
 const sinon = require('sinon');
-const md5 = require('md5');
 const request = require('supertest');
+const md5 = require('../../src/helpers/md5');
 const registry = require('../../src/services/registry');
 const queue = require('../../src/queue');
 const { resetRegistry, populateRegistry } = require('../lib');

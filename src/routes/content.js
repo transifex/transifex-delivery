@@ -1,11 +1,11 @@
 const express = require('express');
 const dayjs = require('dayjs');
-const md5 = require('md5');
 const _ = require('lodash');
 const config = require('../config');
 const { validateHeader } = require('../middlewares/headers');
 const syncer = require('../services/syncer/data');
 const registry = require('../services/registry');
+const md5 = require('../helpers/md5');
 const { cleanTags, routerCacheHelper } = require('../helpers/utils');
 const logger = require('../logger');
 

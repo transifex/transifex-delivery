@@ -2,8 +2,8 @@
 
 const { expect } = require('chai');
 const dayjs = require('dayjs');
-const md5 = require('md5');
 const request = require('supertest');
+const md5 = require('../../src/helpers/md5');
 const registry = require('../../src/services/registry');
 const { resetRegistry, populateRegistry } = require('../lib');
 const app = require('../../src/server')();
