@@ -28,11 +28,13 @@ const TRANSIFEX_API_URLS = {
   RESOURCE_TRANSLATIONS: '/resource_translations',
   GET_RESOURCE_TRANSLATIONS: '/resource_translations?'
     + `filter[resource]=${ENTITY_IDS.RESOURCE}&`
-    + `filter[language]=${ENTITY_IDS.LANGUAGE}&include=resource_string`,
+    + `filter[language]=${ENTITY_IDS.LANGUAGE}&include=resource_string&`
+    + `limit=${PAGE_LIMIT}`,
   GET_RESOURCE_TRANSLATIONS_FILTER_TAGS: '/resource_translations?'
     + `filter[resource]=${ENTITY_IDS.RESOURCE}&`
     + `filter[language]=${ENTITY_IDS.LANGUAGE}&include=resource_string&`
-    + `filter[resource_string][tags][all]=${ENTITY_IDS.TAGS}`,
+    + `filter[resource_string][tags][all]=${ENTITY_IDS.TAGS}&`
+    + `limit=${PAGE_LIMIT}`,
   RESOURCE_STRINGS: '/resource_strings',
   GET_RESOURCE_STRINGS: '/resource_strings?'
     + `filter[resource]=${ENTITY_IDS.RESOURCE}&`

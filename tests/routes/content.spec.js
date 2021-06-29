@@ -21,7 +21,8 @@ const urls = {
   resources: '/resources?filter[project]=o:oslug:p:pslug',
   languages: '/projects/o:oslug:p:pslug/languages',
   get_translations: '/resource_translations?filter[resource]='
-    + 'o:oslug:p:pslug:r:rslug&filter[language]=l:lcode&include=resource_string',
+    + 'o:oslug:p:pslug:r:rslug&filter[language]=l:lcode&include=resource_string&'
+    + `limit=${config.get('transifex:page_limit')}`,
   source_strings: '/resource_strings?filter[resource]='
     + 'o:oslug:p:pslug:r:rslug&'
     + `limit=${config.get('transifex:page_limit')}`,
