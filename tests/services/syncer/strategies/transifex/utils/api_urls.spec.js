@@ -13,7 +13,8 @@ describe('API urls helper', () => {
     });
     expect(result).to.equal(`${config.get('transifex:api_host')}/resource_translations?`
       + 'filter[resource]=o:oslug:p:pslug:r:rslug&filter[language]=l:lcode'
-      + '&include=resource_string');
+      + '&include=resource_string&'
+      + `limit=${config.get('transifex:page_limit')}`);
   });
 
   it('should return correct auth headers', () => {
