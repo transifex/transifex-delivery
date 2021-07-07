@@ -13,10 +13,13 @@ build_prod:
 	make _build TARGET_IMAGE=transifex-delivery
 
 _build:
-	docker build \
+	DOCKER_BUILDKIT=1 docker buildx build \
+		--platform linux/arm64 \
 		--build-arg USER_ID=${USER_ID} \
 		--build-arg GROUP_ID=${GROUP_ID} \
 		--target ${TARGET_IMAGE} \
+		--load \
+		--progress=plain \
 		-t ${TARGET_IMAGE}:${TARGET_TAG} .
 
 up:
