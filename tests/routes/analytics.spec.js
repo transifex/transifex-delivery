@@ -7,6 +7,7 @@ const md5 = require('../../src/helpers/md5');
 const registry = require('../../src/services/registry');
 const { resetRegistry, populateRegistry } = require('../lib');
 const app = require('../../src/server')();
+require('../../src/queue').initialize();
 
 const req = request(app);
 

@@ -39,6 +39,14 @@ const urls = {
 };
 
 describe('Get token information', () => {
+  beforeEach(async () => {
+    nock.cleanAll();
+  });
+
+  afterEach(async () => {
+    nock.cleanAll();
+  });
+
   it('should retrieve token information', async () => {
     nock(urls.api)
       .get(urls.organizations)
@@ -223,6 +231,10 @@ describe('Get languages', () => {
       }));
   });
 
+  afterEach(async () => {
+    nock.cleanAll();
+  });
+
   it('should get languages', async () => {
     nock(urls.api)
       .get(urls.languages)
@@ -324,6 +336,10 @@ describe('Get Project Language Translations', () => {
           },
         }],
       }));
+  });
+
+  afterEach(async () => {
+    nock.cleanAll();
   });
 
   it('should get translations', async () => {
@@ -782,6 +798,14 @@ describe('Push source Content (per string key strategy)', () => {
 });
 
 describe('Verify credentials', () => {
+  beforeEach(async () => {
+    nock.cleanAll();
+  });
+
+  afterEach(async () => {
+    nock.cleanAll();
+  });
+
   it('should verify on valid credentials', async () => {
     nock(urls.api)
       .get(urls.organizations)

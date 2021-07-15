@@ -4,10 +4,11 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const request = require('supertest');
 const nock = require('nock');
-const app = require('../../src/server')();
 const dataHelper = require('../services/syncer/strategies/transifex/helpers/api');
 const config = require('../../src/config');
 const { resetRegistry } = require('../lib');
+const app = require('../../src/server')();
+require('../../src/queue').initialize();
 
 chai.use(chaiHttp);
 const { expect } = chai;
