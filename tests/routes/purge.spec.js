@@ -7,6 +7,7 @@ const cache = require('../../src/services/cache');
 const registry = require('../../src/services/registry');
 const { resetRegistry, populateRegistry } = require('../lib');
 const app = require('../../src/server')();
+require('../../src/queue').initialize();
 
 const req = request(app);
 

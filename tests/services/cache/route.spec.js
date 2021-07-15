@@ -7,6 +7,7 @@ const request = require('supertest');
 const syncer = require('../../../src/services/syncer/data');
 const { resetRegistry, populateRegistry } = require('../../lib');
 const app = require('../../../src/server')();
+require('../../../src/queue').initialize();
 
 const req = request(app);
 
