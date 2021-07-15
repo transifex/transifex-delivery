@@ -4,6 +4,7 @@ const { expect } = require('chai');
 const request = require('supertest');
 const nock = require('nock');
 const app = require('../../src/server')();
+require('../../src/queue').initialize();
 
 const req = request(app);
 const config = require('../../src/config');
@@ -67,23 +68,6 @@ describe('/languages', () => {
   });
 
   it('should get languages', async () => {
-    nock(urls.api)
-      .get(urls.projects)
-      .reply(200, JSON.stringify({
-        data: [{
-          attributes: {
-            slug: 'pslug',
-          },
-          relationships: {
-            source_language: {
-              data: {
-                id: 'l:en',
-              },
-            },
-          },
-        }],
-      }));
-
     nock(urls.api)
       .get(urls.languages)
       .reply(200, JSON.stringify({
