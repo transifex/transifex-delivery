@@ -1,6 +1,6 @@
 {
   "name": "transifex-delivery",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "description": "Transifex Content Delivery Service",
   "keywords": [
     "transifex",
@@ -15,6 +15,8 @@
   "scripts": {
     "eslint": "eslint src/",
     "start": "node ./src/index.js",
+    "start-web": "node ./src/index.js --only=web",
+    "start-worker": "node ./src/index.js --only=worker",
     "start-dev": "node ./node_modules/nodemon/bin/nodemon -L -e js,yml --watch ./src --watch ./config ./src/index.js",
     "start-debugger": "node --inspect-brk=0.0.0.0 ./src/index.js",
     "test": "NODE_ENV=test nyc --reporter=text --all --reporter=html mocha --timeout 5000 --exit \"./tests/**/*.spec.js\""
@@ -26,16 +28,16 @@
   "homepage": "https://github.com/transifex/transifex-delivery",
   "license": "Apache-2.0",
   "dependencies": {
-    "@sentry/node": "^6.8.0",
-    "aws-sdk": "^2.936.0",
+    "@sentry/node": "^6.9.0",
+    "aws-sdk": "^2.946.0",
     "axios": "^0.21.1",
     "axios-retry": "^3.1.9",
     "body-parser": "^1.19.0",
-    "bull": "^3.22.9",
+    "bull": "^3.23.3",
     "chai-http": "^4.3.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
-    "dayjs": "^1.10.5",
+    "dayjs": "^1.10.6",
     "express": "^4.17.1",
     "express-prom-bundle": "^6.3.6",
     "glob": "^7.1.7",
@@ -44,7 +46,7 @@
     "morgan": "^1.10.0",
     "nconf": "^0.11.3",
     "nconf-yaml": "^1.0.2",
-    "newrelic": "^7.5.1",
+    "newrelic": "^7.5.2",
     "node-cache": "^5.1.2",
     "prom-client": "^13.1.0",
     "redis": "^3.1.2",
@@ -55,12 +57,12 @@
   },
   "devDependencies": {
     "chai": "^4.3.4",
-    "eslint": "^7.29.0",
+    "eslint": "^7.30.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.23.4",
-    "mocha": "^9.0.1",
-    "nock": "^13.1.0",
-    "nodemon": "^2.0.7",
+    "mocha": "^9.0.2",
+    "nock": "^13.1.1",
+    "nodemon": "^2.0.12",
     "nyc": "^15.1.0",
     "sinon": "^11.1.1",
     "supertest": "^6.1.3"

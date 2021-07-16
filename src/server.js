@@ -72,8 +72,5 @@ module.exports = () => {
   // The error handler must be before any other error middleware
   sentry.expressError(app);
 
-  // start queue system
-  queue.initialize();
-
   return app;
 };

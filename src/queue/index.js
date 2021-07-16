@@ -10,12 +10,12 @@ let isInitialized = false;
 /**
  * Initialize the queue system.
  */
-async function initialize() {
+async function initialize(subProcess) {
   if (isInitialized) return;
   isInitialized = true;
   // spawn workers
   const numWorkers = parseInt(config.get('queue:workers'), 10);
-  if (numWorkers > 0) {
+  if (numWorkers > 0 && subProcess) {
     logger.info(`Spawning ${numWorkers} workers`);
     queue.process(numWorkers, path.join(__dirname, 'worker.js'));
   } else {

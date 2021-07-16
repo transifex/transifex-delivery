@@ -91,6 +91,12 @@ TX__SETTINGS__AUTOSYNC_MIN=60
 # Minutes to cache authentication credentials (invalidate, analytics endpoints)
 TX__SETTINGS__AUTH_CACHE_MIN=30
 
+# Minutes to cache successful pulls in the registry
+TX__SETTINGS__PULL_SUCCESS_CACHE_MIN=10080
+
+# Minutes to cache failed pulls in the registry
+TX__SETTINGS__PULL_ERROR_CACHE_MIN=15
+
 # Redis host
 TX__REDIS__HOST=redis://transifex-delivery-redis
 
@@ -102,9 +108,6 @@ TX__QUEUE__WORKERS=1
 
 # Prefix namespace for registry in Redis
 TX__REGISTRY__PREFIX="registry:"
-
-# How long should the keys stay in registry
-TX__REGISTRY__EXPIRE_MIN=10080
 
 # Redis cache strategy namespace
 TX__CACHE__REDIS__PREFIX="storage:"
@@ -455,6 +458,23 @@ To run the service on production it is required to have setup the following comp
 
 Service is available as a Docker image at [Docker Hub](https://hub.docker.com/r/transifex/transifex-delivery).
 
+### Web and workers
+
+By default, the service runs both a web service and a worker on the same container on different threads.
+However there is the option to run web and workers as separate containers and
+scale them in an infrustructure independently.
+
+To run only the web service use the command:
+
+```
+npm run start-web
+```
+
+To run only the worker use the command:
+
+```
+npm run start-worker
+```
 
 # License
 

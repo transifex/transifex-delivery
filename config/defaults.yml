@@ -6,13 +6,15 @@ settings:
   trust_proxy: true
   request_size_limit: '50mb'
   upload_timeout_min: 10
+  auth_cache_min: 30
   push_throttle_timeout_min: 10
+  pull_success_cache_min: 10080
+  pull_error_cache_min: 15
   cache_ttl: 1800
   autosync_min: 60
   disk_storage_path: '/tmp'
   token_whitelist: ''
   trust_secret: ''
-  auth_cache_min: 30
   syncer: transifex
   cache: redis
   keep_alive_timeout_sec: ''
@@ -26,7 +28,6 @@ redis:
 
 registry:
   prefix: 'registry:'
-  expire_min: 10080
 
 cache:
   redis:

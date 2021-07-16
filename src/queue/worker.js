@@ -5,7 +5,8 @@ const cache = require('../services/cache');
 const registry = require('../services/registry');
 const syncer = require('../services/syncer/data');
 
-const registryExpireSec = config.get('registry:expire_min') * 60;
+const pullSuccessExpireSec = config.get('settings:pull_success_cache_min') * 60;
+const pullErrorExpireSec = config.get('settings:pull_error_cache_min') * 60;
 
 /**
  * Pull content from API syncer job
@@ -38,7 +39,7 @@ async function syncerPull(job) {
       etag,
       location,
       cacheKey,
-    }, registryExpireSec);
+    }, pullSuccessExpireSec);
   } catch (e) {
     // gracefully handle 4xx errors and store them in cache
     if (e.status && e.status >= 400 && e.status < 500) {
@@ -47,7 +48,7 @@ async function syncerPull(job) {
         ts: Date.now(),
         statusCode: e.status || 404,
         statusMessage: e.message || 'Not found',
-      }, registryExpireSec);
+      }, pullErrorExpireSec);
     } else {
       throw e;
     }
