@@ -20,10 +20,10 @@ const urls = {
   languages: '/projects/o:oslug:p:pslug/languages',
 };
 
-describe('/languages', () => {
+describe('GET /languages', () => {
   beforeEach(async () => {
-    nock.cleanAll();
     nock(urls.api)
+      .persist()
       .get(urls.organizations)
       .reply(200, JSON.stringify({
         data: [{
@@ -34,6 +34,7 @@ describe('/languages', () => {
       }));
 
     nock(urls.api)
+      .persist()
       .get(urls.projects)
       .reply(200, JSON.stringify({
         data: [{
@@ -51,6 +52,7 @@ describe('/languages', () => {
       }));
 
     nock(urls.api)
+      .persist()
       .get(urls.resources)
       .reply(200, JSON.stringify({
         data: [{
@@ -91,6 +93,7 @@ describe('/languages', () => {
     do {
       res = await req
         .get('/languages')
+        .set('Accept-version', 'v2')
         .set('Authorization', `Bearer ${token}:secret`);
     } while (res.status === 202);
 

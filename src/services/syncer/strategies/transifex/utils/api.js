@@ -367,6 +367,8 @@ async function deleteSourceContent(token, options) {
  *   created: <a number of strings created>,
  *   failed: <a number of strings failed to be saved>,
  *   skipped: <a number of strings that were skipped>,
+ *   updated: <a number of strings that were updated>,
+ *   deleted: <a number of strings that were deleted>,
  *   errors: <an array with all the errors>,
  * }
  */

@@ -3,6 +3,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const request = require('supertest');
+const nock = require('nock');
 const md5 = require('../../src/helpers/md5');
 const registry = require('../../src/services/registry');
 const queue = require('../../src/queue');
@@ -28,6 +29,7 @@ describe('Invalidate as user', () => {
   });
 
   afterEach(async () => {
+    nock.cleanAll();
     sandbox.restore();
     await registry.del(`auth:${token}`);
     await resetRegistry();
@@ -38,6 +40,7 @@ describe('Invalidate as user', () => {
 
     const res = await req
       .post('/invalidate')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(200);
@@ -54,6 +57,7 @@ describe('Invalidate as user', () => {
 
     const res = await req
       .post('/invalidate/en')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(200);
@@ -70,6 +74,7 @@ describe('Invalidate as user', () => {
 
     const res = await req
       .post('/invalidate')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}_invalid:secret`);
 
     expect(res.status).to.equal(403);
@@ -88,6 +93,7 @@ describe('Invalidate as Transifex', () => {
   });
 
   afterEach(async () => {
+    nock.cleanAll();
     sandbox.restore();
     await registry.del(`auth:${token}`);
     await resetRegistry();
@@ -98,6 +104,7 @@ describe('Invalidate as Transifex', () => {
 
     const res = await req
       .post('/invalidate')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}`)
       .set('X-Transifex-Trust-Secret', 'txsecret');
 
@@ -115,6 +122,7 @@ describe('Invalidate as Transifex', () => {
 
     const res = await req
       .post('/invalidate/en')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}`)
       .set('X-Transifex-Trust-Secret', 'txsecret');
 
@@ -132,6 +140,7 @@ describe('Invalidate as Transifex', () => {
 
     const res = await req
       .post('/invalidate')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}`)
       .set('X-Transifex-Trust-Secret', 'invalid');
 

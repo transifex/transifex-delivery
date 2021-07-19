@@ -2,6 +2,7 @@
 
 const { expect } = require('chai');
 const request = require('supertest');
+const nock = require('nock');
 const md5 = require('../../src/helpers/md5');
 const cache = require('../../src/services/cache');
 const registry = require('../../src/services/registry');
@@ -27,6 +28,7 @@ describe('Purge as user', () => {
   });
 
   afterEach(async () => {
+    nock.cleanAll();
     await registry.del(`auth:${token}`);
     await resetRegistry();
   });
@@ -34,6 +36,7 @@ describe('Purge as user', () => {
   it('should purge all languages', async () => {
     const res = await req
       .post('/purge')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(200);
@@ -50,6 +53,7 @@ describe('Purge as user', () => {
   it('should purge specific languages', async () => {
     const res = await req
       .post('/purge/en')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(200);
@@ -66,6 +70,7 @@ describe('Purge as user', () => {
   it('should not purge non-existing language', async () => {
     const res = await req
       .post('/purge/abcd')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(200);
@@ -80,6 +85,7 @@ describe('Purge as user', () => {
     await registry.del(`auth:${token}`);
     const res = await req
       .post('/purge')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}_invalid:secret`);
 
     expect(res.status).to.equal(403);
@@ -96,6 +102,7 @@ describe('Purge as Transifex', () => {
   });
 
   afterEach(async () => {
+    nock.cleanAll();
     await registry.del(`auth:${token}`);
     await resetRegistry();
   });
@@ -103,6 +110,7 @@ describe('Purge as Transifex', () => {
   it('should purge all languages', async () => {
     const res = await req
       .post('/purge')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}`)
       .set('X-Transifex-Trust-Secret', 'txsecret');
 
@@ -120,6 +128,7 @@ describe('Purge as Transifex', () => {
   it('should purge specific languages', async () => {
     const res = await req
       .post('/purge/en')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}`)
       .set('X-Transifex-Trust-Secret', 'txsecret');
 
@@ -137,6 +146,7 @@ describe('Purge as Transifex', () => {
   it('should not purge non-existing language', async () => {
     const res = await req
       .post('/purge/abcd')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}`)
       .set('X-Transifex-Trust-Secret', 'txsecret');
 
@@ -152,6 +162,7 @@ describe('Purge as Transifex', () => {
     await registry.del(`auth:${token}`);
     const res = await req
       .post('/purge')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}`)
       .set('X-Transifex-Trust-Secret', 'invalid');
 

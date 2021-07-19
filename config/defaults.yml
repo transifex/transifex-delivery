@@ -10,6 +10,7 @@ settings:
   push_throttle_timeout_min: 10
   pull_success_cache_min: 10080
   pull_error_cache_min: 15
+  job_status_cache_min: 480
   cache_ttl: 1800
   autosync_min: 60
   disk_storage_path: '/tmp'

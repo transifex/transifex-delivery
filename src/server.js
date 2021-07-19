@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const compression = require('compression');
+const _ = require('lodash');
 const queue = require('./queue');
 const config = require('./config');
 const { version } = require('../package.json');
@@ -15,6 +16,7 @@ const statusRouter = require('./routes/status');
 const invalidateRouter = require('./routes/invalidate');
 const purgeRouter = require('./routes/purge');
 const analyticsRouter = require('./routes/analytics');
+const jobsRouter = require('./routes/jobs');
 
 module.exports = () => {
   // setup express and routes
@@ -50,10 +52,11 @@ module.exports = () => {
 
   // for nagios health check
   app.get('/health', async (req, res) => {
+    const counts = await queue.countJobs();
     res.json({
       version,
       status: 'ok',
-      queue: await queue.countJobs(),
+      jobs: _.pick(counts, 'waiting', 'active', 'delayed'),
     });
   });
 
@@ -66,6 +69,7 @@ module.exports = () => {
   app.use('/invalidate', invalidateRouter);
   app.use('/purge', purgeRouter);
   app.use('/analytics', analyticsRouter);
+  app.use('/jobs', jobsRouter);
 
   app.get('/', (req, res) => res.send('ok'));
 

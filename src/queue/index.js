@@ -43,11 +43,11 @@ async function addJob(jobId, payload) {
 /**
  * Return the number of jobs in the queue.
  *
- * @returns {Number}
+ * @returns {Object}
  */
 async function countJobs() {
-  const count = await queue.count();
-  return count;
+  const counts = await queue.getJobCounts();
+  return counts;
 }
 
 module.exports = {

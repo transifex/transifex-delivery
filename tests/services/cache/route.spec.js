@@ -34,6 +34,7 @@ describe('Content cache', () => {
     do {
       res = await req
         .get('/content/en')
+        .set('Accept-version', 'v2')
         .set('Authorization', `Bearer ${cachedToken}:secret`);
     } while (res.status === 202);
 
@@ -51,6 +52,7 @@ describe('Content cache', () => {
     do {
       res = await req
         .get('/content/en')
+        .set('Accept-version', 'v2')
         .set('Authorization', `Bearer ${uncachedToken}:secret`);
     } while (res.status === 202);
 
@@ -63,6 +65,7 @@ describe('Content cache', () => {
     // cached data
     const resCached = await req
       .get('/content/en')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${uncachedToken}:secret`);
 
     expect(resCached.status).to.equal(200);
