@@ -76,6 +76,12 @@ function validateWhitelist(token) {
 function validateHeader(scope = 'private') {
   return (req, res, next) => {
     try {
+      if (req.headers['accept-version']) {
+        req.version = (req.headers['accept-version'] || '').toLowerCase();
+      } else {
+        req.version = 'v1';
+      }
+
       const parts = req.headers.authorization.split(' ');
       if (parts.length === 2 && parts[0] === 'Bearer') {
         const auth = parts[1].split(':');

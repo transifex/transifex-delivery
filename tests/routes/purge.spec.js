@@ -2,6 +2,7 @@
 
 const { expect } = require('chai');
 const request = require('supertest');
+const nock = require('nock');
 const md5 = require('../../src/helpers/md5');
 const cache = require('../../src/services/cache');
 const registry = require('../../src/services/registry');
@@ -27,6 +28,7 @@ describe('Purge as user', () => {
   });
 
   afterEach(async () => {
+    nock.cleanAll();
     await registry.del(`auth:${token}`);
     await resetRegistry();
   });
@@ -34,14 +36,17 @@ describe('Purge as user', () => {
   it('should purge all languages', async () => {
     const res = await req
       .post('/purge')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(200);
-    expect(res.body).to.deep.contain({
-      status: 'success',
-      token,
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 1,
+      },
     });
-    expect(res.body.count).to.be.greaterThan(0);
     expect(await cache.getContent(cacheKey)).to.deep.equal({
       data: null,
     });
@@ -50,14 +55,17 @@ describe('Purge as user', () => {
   it('should purge specific languages', async () => {
     const res = await req
       .post('/purge/en')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(200);
-    expect(res.body).to.deep.contain({
-      status: 'success',
-      token,
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 1,
+      },
     });
-    expect(res.body.count).to.be.greaterThan(0);
     expect(await cache.getContent(cacheKey)).to.deep.equal({
       data: null,
     });
@@ -66,20 +74,24 @@ describe('Purge as user', () => {
   it('should not purge non-existing language', async () => {
     const res = await req
       .post('/purge/abcd')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(200);
-    expect(res.body).to.deep.contain({
-      status: 'success',
-      token,
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 0,
+      },
     });
-    expect(res.body.count).to.equal(0);
   });
 
   it('should validate token', async () => {
     await registry.del(`auth:${token}`);
     const res = await req
       .post('/purge')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}_invalid:secret`);
 
     expect(res.status).to.equal(403);
@@ -96,6 +108,7 @@ describe('Purge as Transifex', () => {
   });
 
   afterEach(async () => {
+    nock.cleanAll();
     await registry.del(`auth:${token}`);
     await resetRegistry();
   });
@@ -103,15 +116,18 @@ describe('Purge as Transifex', () => {
   it('should purge all languages', async () => {
     const res = await req
       .post('/purge')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}`)
       .set('X-Transifex-Trust-Secret', 'txsecret');
 
     expect(res.status).to.equal(200);
-    expect(res.body).to.deep.contain({
-      status: 'success',
-      token,
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 1,
+      },
     });
-    expect(res.body.count).to.be.greaterThan(0);
     expect(await cache.getContent(cacheKey)).to.deep.equal({
       data: null,
     });
@@ -120,15 +136,18 @@ describe('Purge as Transifex', () => {
   it('should purge specific languages', async () => {
     const res = await req
       .post('/purge/en')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}`)
       .set('X-Transifex-Trust-Secret', 'txsecret');
 
     expect(res.status).to.equal(200);
-    expect(res.body).to.deep.contain({
-      status: 'success',
-      token,
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 1,
+      },
     });
-    expect(res.body.count).to.be.greaterThan(0);
     expect(await cache.getContent(cacheKey)).to.deep.equal({
       data: null,
     });
@@ -137,21 +156,25 @@ describe('Purge as Transifex', () => {
   it('should not purge non-existing language', async () => {
     const res = await req
       .post('/purge/abcd')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}`)
       .set('X-Transifex-Trust-Secret', 'txsecret');
 
     expect(res.status).to.equal(200);
-    expect(res.body).to.deep.contain({
-      status: 'success',
-      token,
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 0,
+      },
     });
-    expect(res.body.count).to.equal(0);
   });
 
   it('should validate token', async () => {
     await registry.del(`auth:${token}`);
     const res = await req
       .post('/purge')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}`)
       .set('X-Transifex-Trust-Secret', 'invalid');
 

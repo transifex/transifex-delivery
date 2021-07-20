@@ -33,6 +33,7 @@ describe('Analytics as user', () => {
     const today = dayjs().format('YYYY-MM-DD');
     const res = await req
       .get(`/analytics?filter[since]=${today}&filter[until]=${today}`)
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(200);
@@ -57,6 +58,7 @@ describe('Analytics as user', () => {
     const today = dayjs().format('YYYY-MM-DD');
     const res = await req
       .get(`/analytics?filter[since]=${today}&filter[until]=${today}`)
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(403);
@@ -73,12 +75,14 @@ describe('Analytics as user', () => {
     // wrong filter
     let res = await req
       .get(`/analytics?filter[any]=${today}&filter[until]=${today}`)
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}:secret`);
     expect(res.status).to.equal(400);
 
     // missing date range filter
     res = await req
       .get(`/analytics?filter[since]=${today}`)
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}:secret`);
     expect(res.status).to.equal(400);
   });
@@ -90,6 +94,7 @@ describe('Analytics as user', () => {
     );
     const res = await req
       .get('/analytics?filter[since]=2000-01-01&filter[until]=2021-01-01')
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}:secret`);
     expect(res.status).to.equal(400);
   });
@@ -113,6 +118,7 @@ describe('Analytics as Transifex', () => {
     const today = dayjs().format('YYYY-MM-DD');
     const res = await req
       .get(`/analytics?filter[since]=${today}&filter[until]=${today}`)
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}`)
       .set('X-Transifex-Trust-Secret', 'txsecret');
 
@@ -138,6 +144,7 @@ describe('Analytics as Transifex', () => {
     const today = dayjs().format('YYYY-MM-DD');
     const res = await req
       .get(`/analytics?filter[since]=${today}&filter[until]=${today}`)
+      .set('Accept-version', 'v2')
       .set('Authorization', `Bearer ${token}`)
       .set('X-Transifex-Trust-Secret', 'invalid');
 

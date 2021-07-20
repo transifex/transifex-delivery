@@ -97,6 +97,8 @@ async function getProjectLanguageTranslations(options, langCode) {
  *   created: <number>,
  *   updated: <number>,
  *   skipped: <number>,
+ *   deleted: <number>,
+ *   failed: <number>,
  *   errors: [..],
  * }
  */

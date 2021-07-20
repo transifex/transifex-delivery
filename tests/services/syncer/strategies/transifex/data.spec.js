@@ -39,10 +39,6 @@ const urls = {
 };
 
 describe('Get token information', () => {
-  beforeEach(async () => {
-    nock.cleanAll();
-  });
-
   afterEach(async () => {
     nock.cleanAll();
   });
@@ -191,8 +187,8 @@ describe('Get token information', () => {
 
 describe('Get languages', () => {
   beforeEach(async () => {
-    nock.cleanAll();
     nock(urls.api)
+      .persist()
       .get(urls.organizations)
       .reply(200, JSON.stringify({
         data: [{
@@ -203,6 +199,7 @@ describe('Get languages', () => {
       }));
 
     nock(urls.api)
+      .persist()
       .get(urls.projects)
       .reply(200, JSON.stringify({
         data: [{
@@ -220,6 +217,7 @@ describe('Get languages', () => {
       }));
 
     nock(urls.api)
+      .persist()
       .get(urls.resources)
       .reply(200, JSON.stringify({
         data: [{
@@ -298,8 +296,8 @@ describe('Get languages', () => {
 
 describe('Get Project Language Translations', () => {
   beforeEach(async () => {
-    nock.cleanAll();
     nock(urls.api)
+      .persist()
       .get(urls.organizations)
       .reply(200, JSON.stringify({
         data: [{
@@ -310,6 +308,7 @@ describe('Get Project Language Translations', () => {
       }));
 
     nock(urls.api)
+      .persist()
       .get(urls.projects)
       .reply(200, JSON.stringify({
         data: [{
@@ -327,6 +326,7 @@ describe('Get Project Language Translations', () => {
       }));
 
     nock(urls.api)
+      .persist()
       .get(urls.resources)
       .reply(200, JSON.stringify({
         data: [{
@@ -379,8 +379,8 @@ describe('Get Project Language Translations', () => {
 
 describe('Push source Content', () => {
   beforeEach(async () => {
-    nock.cleanAll();
     nock(urls.api)
+      .persist()
       .get(urls.organizations)
       .reply(200, JSON.stringify({
         data: [{
@@ -391,6 +391,7 @@ describe('Push source Content', () => {
       }));
 
     nock(urls.api)
+      .persist()
       .get(urls.projects)
       .reply(200, JSON.stringify({
         data: [{
@@ -408,6 +409,7 @@ describe('Push source Content', () => {
       }));
 
     nock(urls.api)
+      .persist()
       .get(urls.resources)
       .reply(200, JSON.stringify({
         data: [{
@@ -719,8 +721,8 @@ describe('Push source Content', () => {
 
 describe('Push source Content (per string key strategy)', () => {
   beforeEach(async () => {
-    nock.cleanAll();
     nock(urls.api)
+      .persist()
       .get(urls.organizations)
       .reply(200, JSON.stringify({
         data: [{
@@ -731,6 +733,7 @@ describe('Push source Content (per string key strategy)', () => {
       }));
 
     nock(urls.api)
+      .persist()
       .get(urls.projects)
       .reply(200, JSON.stringify({
         data: [{
@@ -748,6 +751,7 @@ describe('Push source Content (per string key strategy)', () => {
       }));
 
     nock(urls.api)
+      .persist()
       .get(urls.resources)
       .reply(200, JSON.stringify({
         data: [{
@@ -798,10 +802,6 @@ describe('Push source Content (per string key strategy)', () => {
 });
 
 describe('Verify credentials', () => {
-  beforeEach(async () => {
-    nock.cleanAll();
-  });
-
   afterEach(async () => {
     nock.cleanAll();
   });

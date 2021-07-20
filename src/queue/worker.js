@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const md5 = require('../helpers/md5');
 const logger = require('../logger');
 const config = require('../config');
@@ -7,6 +8,7 @@ const syncer = require('../services/syncer/data');
 
 const pullSuccessExpireSec = config.get('settings:pull_success_cache_min') * 60;
 const pullErrorExpireSec = config.get('settings:pull_error_cache_min') * 60;
+const jobStatusCacheSec = config.get('settings:job_status_cache_min') * 60;
 
 /**
  * Pull content from API syncer job
@@ -55,6 +57,70 @@ async function syncerPull(job) {
   }
 }
 
+/**
+ * Push content to API syncer job
+ *
+ * @param {*} job
+ */
+async function syncerPush(job) {
+  const {
+    // key,
+    jobId,
+    token,
+    payload,
+  } = job.data;
+
+  // update job status
+  await registry.set(`job:status:${jobId}`, {
+    data: {
+      status: 'processing',
+    },
+  }, jobStatusCacheSec);
+
+  try {
+    const data = await syncer
+      .pushSourceContent({ token }, payload);
+
+    // update job status
+    await registry.set(`job:status:${jobId}`, {
+      data: {
+        details: {
+          ...(_.pick(data, [
+            'created',
+            'updated',
+            'skipped',
+            'deleted',
+            'failed',
+          ])),
+        },
+        errors: data.errors,
+        status: 'completed',
+      },
+    }, jobStatusCacheSec);
+  } catch (e) {
+    if (e.status) {
+      if (e.status !== 401) logger.error(e);
+      // update job status
+      let errors = [e.message];
+      if (e.details) {
+        if (_.isArray(e.details)) {
+          errors = errors.concat(e.details);
+        } else {
+          errors.push(e.details);
+        }
+      }
+      await registry.set(`job:status:${jobId}`, {
+        data: {
+          errors,
+          status: 'failed',
+        },
+      }, jobStatusCacheSec);
+    } else {
+      throw e;
+    }
+  }
+}
+
 module.exports = (job) => {
   const proc = async () => {
     const now = Date.now();
@@ -62,6 +128,8 @@ module.exports = (job) => {
     try {
       if (job.data.type === 'syncer:pull') {
         await syncerPull(job);
+      } else if (job.data.type === 'syncer:push') {
+        await syncerPush(job);
       }
     } catch (e) {
       logger.warn(`Failed to process job ${job.id}`);

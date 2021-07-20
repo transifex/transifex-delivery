@@ -97,6 +97,9 @@ TX__SETTINGS__PULL_SUCCESS_CACHE_MIN=10080
 # Minutes to cache failed pulls in the registry
 TX__SETTINGS__PULL_ERROR_CACHE_MIN=15
 
+# Minutes to cache job status in registry
+TX__SETTINGS__JOB_STATUS_CACHE_MIN=480
+
 # Redis host
 TX__REDIS__HOST=redis://transifex-delivery-redis
 
@@ -149,6 +152,7 @@ GET /languages
 
 Authorization: Bearer <project-token>
 Content-Type: application/json; charset=utf-8
+Accept-version: v2
 
 Response status: 202
 - Content not ready, queued for download from Transifex
@@ -186,6 +190,7 @@ GET /content/<lang-code>?filter[tags]=tag1,tag2
 
 Authorization: Bearer <project-token>
 Content-Type: application/json; charset=utf-8
+Accept-version: v2
 
 Response status: 202
 - Content not ready, queued for download from Transifex
@@ -233,6 +238,7 @@ POST /content
 
 Authorization: Bearer <project-token>:<secret>
 Content-Type: application/json; charset=utf-8
+Accept-version: v2
 
 Request body:
 {
@@ -255,15 +261,15 @@ Request body:
   }
 }
 
-Response status: 200
+Response status: 202
 Response body:
 {
-  created: <number>,
-  updated: <number>,
-  skipped: <number>,
-  deleted: <number>,
-  failed: <number>,
-  errors: [..],
+  data: {
+    id: <string>,
+    links: {
+      job: <string>
+    }
+  }
 }
 
 Response status: 429
@@ -271,6 +277,62 @@ Response body:
 {
   status: 429,
   message: 'Another content upload is already in progress',
+}
+```
+
+### Job status
+
+Get job status for push source content action:
+- If "status" field is "pending" or "processing", you should check this endpoint again later
+- If "status" field is "failed", then you should check for "errors"
+- If "status" field is "completed", then you should check for "details" and "errors"
+
+```
+GET /jobs/content/<id>
+
+Authorization: Bearer <project-token>:<secret>
+Content-Type: application/json; charset=utf-8
+Accept-version: v2
+
+Response status: 200
+Response body:
+{
+  data: {
+    status: "pending",
+  },
+}
+
+Response status: 200
+Response body:
+{
+  data: {
+    status: "processing",
+  },
+}
+
+Response status: 200
+Response body:
+{
+  data: {
+    details: {
+      created: <number>,
+      updated: <number>,
+      skipped: <number>,
+      deleted: <number>,
+      failed: <number>
+    }
+    errors: [..],
+    status: "completed",
+  },
+}
+
+Response status: 200
+Response body:
+{
+  data: {
+    errors: [..],
+    status: "failed",
+  },
 }
 ```
 
@@ -286,12 +348,14 @@ POST /invalidate/<lang-code>
 
 Authorization: Bearer <project-token>:<secret>
 Content-Type: application/json; charset=utf-8
+Accept-version: v2
 
 or
 
 Authorization: Bearer <project-token>
 X-TRANSIFEX-TRUST-SECRET: <transifex-secret>
 Content-Type: application/json; charset=utf-8
+Accept-version: v2
 
 Request body:
 {}
@@ -299,15 +363,19 @@ Request body:
 Response status: 200
 Response body (success):
 {
-  status: 'success',
-  token: <project-token>,
-  count: <number of resources invalidated>,
+  data: {
+    status: 'success',
+    token: <project-token>,
+    count: <number of resources invalidated>,
+  },
 }
 
 Response status: 500
 Response body (fail):
 {
-  status: 'failed',
+  data: {
+    status: 'failed',
+  },
 }
 ```
 
@@ -321,12 +389,14 @@ POST /purge/<lang-code>
 
 Authorization: Bearer <project-token>:<secret>
 Content-Type: application/json; charset=utf-8
+Accept-version: v2
 
 or
 
 Authorization: Bearer <project-token>
 X-TRANSIFEX-TRUST-SECRET: <transifex-secret>
 Content-Type: application/json; charset=utf-8
+Accept-version: v2
 
 Request body:
 {}
@@ -334,15 +404,19 @@ Request body:
 Response status: 200
 Response body (success):
 {
-  status: 'success',
-  token: <project-token>,
-  count: <number of resources purged>,
+  data: {
+    status: 'success',
+    token: <project-token>,
+    count: <number of resources purged>,
+  }
 }
 
 Response status: 500
 Response body (fail):
 {
-  status: 'failed',
+  data: {
+    status: 'failed',
+  },
 }
 ```
 
@@ -355,12 +429,14 @@ GET /analytics?filter[since]=<YYYY-MM-DD>&filter[until]=<YYYY-MM-DD>
 
 Authorization: Bearer <project-token>:<secret>
 Content-Type: application/json; charset=utf-8
+Accept-version: v2
 
 or
 
 Authorization: Bearer <project-token>
 X-TRANSIFEX-TRUST-SECRET: <transifex-secret>
 Content-Type: application/json; charset=utf-8
+Accept-version: v2
 
 Response status: 200
 Response body:

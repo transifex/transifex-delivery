@@ -43,16 +43,30 @@ router.post('/:lang_code',
         });
         count += 1;
       });
-      res.json({
+      const response = {
         status: 'success',
         token,
         count,
-      });
+      };
+      if (req.version === 'v2') {
+        res.json({
+          data: response,
+        });
+      } else {
+        res.json(response);
+      }
     } catch (e) {
       logger.error(e);
-      res.status(500).json({
+      const response = {
         status: 'failed',
-      });
+      };
+      if (req.version === 'v2') {
+        res.status(500).json({
+          data: response,
+        });
+      } else {
+        res.status(500).json(response);
+      }
     }
   });
 
@@ -106,16 +120,30 @@ router.post('/',
           }
         }
       });
-      res.json({
+      const response = {
         status: 'success',
         token,
         count,
-      });
+      };
+      if (req.version === 'v2') {
+        res.json({
+          data: response,
+        });
+      } else {
+        res.json(response);
+      }
     } catch (e) {
       logger.error(e);
-      res.status(500).json({
+      const response = {
         status: 'failed',
-      });
+      };
+      if (req.version === 'v2') {
+        res.status(500).json({
+          data: response,
+        });
+      } else {
+        res.status(500).json(response);
+      }
     }
   });
 
