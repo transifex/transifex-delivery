@@ -40,11 +40,13 @@ describe('Purge as user', () => {
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(200);
-    expect(res.body).to.deep.contain({
-      status: 'success',
-      token,
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 1,
+      },
     });
-    expect(res.body.count).to.be.greaterThan(0);
     expect(await cache.getContent(cacheKey)).to.deep.equal({
       data: null,
     });
@@ -57,11 +59,13 @@ describe('Purge as user', () => {
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(200);
-    expect(res.body).to.deep.contain({
-      status: 'success',
-      token,
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 1,
+      },
     });
-    expect(res.body.count).to.be.greaterThan(0);
     expect(await cache.getContent(cacheKey)).to.deep.equal({
       data: null,
     });
@@ -74,11 +78,13 @@ describe('Purge as user', () => {
       .set('Authorization', `Bearer ${token}:secret`);
 
     expect(res.status).to.equal(200);
-    expect(res.body).to.deep.contain({
-      status: 'success',
-      token,
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 0,
+      },
     });
-    expect(res.body.count).to.equal(0);
   });
 
   it('should validate token', async () => {
@@ -115,11 +121,13 @@ describe('Purge as Transifex', () => {
       .set('X-Transifex-Trust-Secret', 'txsecret');
 
     expect(res.status).to.equal(200);
-    expect(res.body).to.deep.contain({
-      status: 'success',
-      token,
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 1,
+      },
     });
-    expect(res.body.count).to.be.greaterThan(0);
     expect(await cache.getContent(cacheKey)).to.deep.equal({
       data: null,
     });
@@ -133,11 +141,13 @@ describe('Purge as Transifex', () => {
       .set('X-Transifex-Trust-Secret', 'txsecret');
 
     expect(res.status).to.equal(200);
-    expect(res.body).to.deep.contain({
-      status: 'success',
-      token,
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 1,
+      },
     });
-    expect(res.body.count).to.be.greaterThan(0);
     expect(await cache.getContent(cacheKey)).to.deep.equal({
       data: null,
     });
@@ -151,11 +161,13 @@ describe('Purge as Transifex', () => {
       .set('X-Transifex-Trust-Secret', 'txsecret');
 
     expect(res.status).to.equal(200);
-    expect(res.body).to.deep.contain({
-      status: 'success',
-      token,
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 0,
+      },
     });
-    expect(res.body.count).to.equal(0);
   });
 
   it('should validate token', async () => {

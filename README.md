@@ -363,15 +363,19 @@ Request body:
 Response status: 200
 Response body (success):
 {
-  status: 'success',
-  token: <project-token>,
-  count: <number of resources invalidated>,
+  data: {
+    status: 'success',
+    token: <project-token>,
+    count: <number of resources invalidated>,
+  },
 }
 
 Response status: 500
 Response body (fail):
 {
-  status: 'failed',
+  data: {
+    status: 'failed',
+  },
 }
 ```
 
@@ -400,15 +404,19 @@ Request body:
 Response status: 200
 Response body (success):
 {
-  status: 'success',
-  token: <project-token>,
-  count: <number of resources purged>,
+  data: {
+    status: 'success',
+    token: <project-token>,
+    count: <number of resources purged>,
+  }
 }
 
 Response status: 500
 Response body (fail):
 {
-  status: 'failed',
+  data: {
+    status: 'failed',
+  },
 }
 ```
 
