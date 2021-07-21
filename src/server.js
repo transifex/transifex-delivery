@@ -3,8 +3,6 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const compression = require('compression');
-const _ = require('lodash');
-const queue = require('./queue');
 const config = require('./config');
 const { version } = require('../package.json');
 const sentry = require('./sentry');
@@ -52,11 +50,9 @@ module.exports = () => {
 
   // for nagios health check
   app.get('/health', async (req, res) => {
-    const counts = await queue.countJobs();
     res.json({
       version,
       status: 'ok',
-      jobs: _.pick(counts, 'waiting', 'active', 'delayed'),
     });
   });
 

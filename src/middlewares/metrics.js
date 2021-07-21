@@ -2,6 +2,7 @@ const express = require('express');
 const promBundle = require('express-prom-bundle');
 const config = require('../config');
 const logger = require('../logger');
+const queue = require('../queue');
 
 const isEnabled = config.get('metrics:enabled');
 const prometheusBundle = isEnabled ? promBundle({
@@ -14,13 +15,6 @@ const prometheusBundle = isEnabled ? promBundle({
 }) : {};
 
 const prometheusClient = isEnabled ? prometheusBundle.promClient : {};
-
-if (isEnabled) {
-  prometheusClient.register.setDefaultLabels({
-    application: config.get('app:name'),
-    environment: process.env.NODE_ENV,
-  });
-}
 
 /**
  * Express middleware that should be applied before
@@ -39,7 +33,36 @@ function expressRequest(app) {
 function metricsServer() {
   if (!isEnabled) return;
   const metricsApp = express();
-  metricsApp.use('/metrics', prometheusBundle.metricsMiddleware);
+
+  // Custom metrics
+  const jobsWaiting = new prometheusClient.Gauge({
+    name: 'jobs_waiting',
+    help: 'Number of jobs with a waiting status',
+  });
+  const jobsActive = new prometheusClient.Gauge({
+    name: 'jobs_active',
+    help: 'Number of jobs with an active status',
+  });
+  const jobsDelayed = new prometheusClient.Gauge({
+    name: 'jobs_delayed',
+    help: 'Number of jobs with a delayed status',
+  });
+
+  prometheusClient.register.setDefaultLabels({
+    application: config.get('app:name'),
+    environment: process.env.NODE_ENV,
+  });
+  metricsApp.get('/metrics', async (req, res) => {
+    res.set('Content-Type', prometheusBundle.promClient.register.contentType);
+
+    const counts = await queue.countJobs();
+    jobsWaiting.set(counts.waiting);
+    jobsActive.set(counts.active);
+    jobsDelayed.set(counts.delayed);
+
+    res.end(await prometheusBundle.promClient.register.metrics());
+  });
+
   metricsApp.listen(config.get('metrics:port'), () => {
     logger.info(`Prometheus metrics on port ${config.get('metrics:port')}!`);
   });
