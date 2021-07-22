@@ -36,15 +36,15 @@ function metricsServer() {
 
   // Custom metrics
   const jobsWaiting = new prometheusClient.Gauge({
-    name: 'jobs_waiting',
+    name: `tx_cds_${process.env.NODE_ENV}_jobs_waiting`,
     help: 'Number of jobs with a waiting status',
   });
   const jobsActive = new prometheusClient.Gauge({
-    name: 'jobs_active',
+    name: `tx_cds_${process.env.NODE_ENV}_jobs_active`,
     help: 'Number of jobs with an active status',
   });
   const jobsDelayed = new prometheusClient.Gauge({
-    name: 'jobs_delayed',
+    name: `tx_cds_${process.env.NODE_ENV}_jobs_delayed`,
     help: 'Number of jobs with a delayed status',
   });
 
