@@ -1,10 +1,10 @@
-const redis = require('redis');
 const config = require('../../../../config');
 const logger = require('../../../../logger');
+const { createClient } = require('../../../../helpers/ioredis');
 
 const prefix = config.get('cache:redis:prefix') || '';
-const client = redis.createClient(config.get('redis:host'));
 const expireSec = config.get('cache:redis:expire_min') * 60;
+const client = createClient();
 
 /**
  * Convert a user key to Redis key with prefix included

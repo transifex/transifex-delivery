@@ -1,10 +1,13 @@
 const path = require('path');
 const Queue = require('bull');
+const { createClient } = require('../helpers/ioredis');
 const logger = require('../logger');
 const config = require('../config');
 const worker = require('./worker');
 
-const queue = new Queue(config.get('queue:name'), config.get('redis:host'));
+const queue = new Queue(config.get('queue:name'), {
+  createClient: () => createClient(),
+});
 let isInitialized = false;
 
 /**
