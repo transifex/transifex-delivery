@@ -1,6 +1,7 @@
 const path = require('path');
 const nconf = require('nconf');
 const nconfYaml = require('nconf-yaml');
+const _ = require('lodash');
 
 const configDir = path.resolve(__dirname, '../config/');
 const ENV_MATCH = /^tx__/;
@@ -15,6 +16,11 @@ nconf
 
       const ret = obj;
       ret.key = ret.key.replace(ENV_MATCH, '');
+
+      // check for environment variable mapping
+      if (_.isString(ret.value) && ret.value[0] === '$') {
+        ret.value = process.env[ret.value.substr(1)];
+      }
       return ret;
     },
   })

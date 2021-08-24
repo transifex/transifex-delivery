@@ -125,6 +125,16 @@ TX__ANALYTICS__ENABLED=1
 TX__ANALYTICS__RETENTION_DAYS=180
 ```
 
+### Environment variables mapping
+
+You can optionally map system environment variables to the configuration by setting the variables using the `TX__VAR=$ENV_VAR` mapping. For example:
+
+```
+export TX__APP__PORT=\$PORT
+```
+
+will map the `PORT` environment variable to the `TX__APP__PORT` one.
+
 ## Service API
 
 CDS exposes a set of HTTPS endpoints to retrieve and push content or invalidate the cache.
@@ -550,6 +560,15 @@ To run only the worker use the command:
 
 ```
 npm run start-worker
+```
+
+### Heroku
+
+For Heroku or other managed services you should map at least the following settings:
+
+```
+heroku set:config TX__APP__PORT=\$PORT
+heroku set:config TX__REDIS__HOST=\$REDIS_URL
 ```
 
 # License
