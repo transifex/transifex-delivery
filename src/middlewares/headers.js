@@ -19,9 +19,10 @@ const TRUST_SECRET = config.get('settings:trust_secret');
  *
  * @param {String} scope This is the scope of the request. Can be 'private',
  *                       'public' or 'trust'
- * @param {String} token A token used in the response. If it is a private one
- *                       should be formed like <proj_token>:<proj_secret>. In
- *                       case of a public one the <proj_token> is enough
+ * @param {Object} token Authorization token
+ * @param {String} token.project_token
+ * @param {String} token.project_secret (optional)
+ * @param {String} token.trust_secret (optional)
  * @returns {Boolean} This will return true if token is valid
  */
 function validateScope(scope, token) {
@@ -48,11 +49,12 @@ function validateScope(scope, token) {
 /**
  * Validates token against a whitelist (if enabled)
  *
- * @param {String} token A token used in the response.
+ * @param {Object} token Authorization token
+ * @param {String} token.project_token
  * @returns {Boolean} This will return true if token is whitelisted
  */
 function validateWhitelist(token) {
-  if (TOKEN_WHITELIST.length && TOKEN_WHITELIST.indexOf(token) !== -1) {
+  if (TOKEN_WHITELIST.length && !TOKEN_WHITELIST.includes(token.project_token)) {
     return false;
   }
   return true;
