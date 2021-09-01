@@ -64,12 +64,6 @@ TX__SETTINGS__CACHE_TTL=1800 (in seconds)
 # Upload size limit for pushing content
 TX__SETTINGS__REQUEST_SIZE_LIMIT=50mb
 
-# Upload timeout in minutes
-TX__SETTINGS__UPLOAD_TIMEOUT_MIN=10
-
-# Push throttling timeout in minutes
-TX__SETTINGS__PUSH_THROTTLE_TIMEOUT_MIN=10
-
 # Disk path for CDS related files
 TX__SETTINGS__DISK_STORAGE_PATH=/tmp
 

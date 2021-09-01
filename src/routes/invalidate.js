@@ -48,25 +48,17 @@ router.post('/:lang_code',
         token,
         count,
       };
-      if (req.version === 'v2') {
-        res.json({
-          data: response,
-        });
-      } else {
-        res.json(response);
-      }
+      res.json({
+        data: response,
+      });
     } catch (e) {
       logger.error(e);
       const response = {
         status: 'failed',
       };
-      if (req.version === 'v2') {
-        res.status(500).json({
-          data: response,
-        });
-      } else {
-        res.status(500).json(response);
-      }
+      res.status(500).json({
+        data: response,
+      });
     }
   });
 
@@ -125,25 +117,17 @@ router.post('/',
         token,
         count,
       };
-      if (req.version === 'v2') {
-        res.json({
-          data: response,
-        });
-      } else {
-        res.json(response);
-      }
+      res.json({
+        data: response,
+      });
     } catch (e) {
       logger.error(e);
       const response = {
         status: 'failed',
       };
-      if (req.version === 'v2') {
-        res.status(500).json({
-          data: response,
-        });
-      } else {
-        res.status(500).json(response);
-      }
+      res.status(500).json({
+        data: response,
+      });
     }
   });
 
