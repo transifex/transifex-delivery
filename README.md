@@ -94,6 +94,10 @@ TX__SETTINGS__PULL_ERROR_CACHE_MIN=15
 # Minutes to cache job status in registry
 TX__SETTINGS__JOB_STATUS_CACHE_MIN=480
 
+# Rate limits for push content (max requests per seconds)
+TX__LIMITS__PUSH__MAX_REQ=20
+TX__LIMITS__PUSH__WINDOW_SEC=60
+
 # Redis host
 TX__REDIS__HOST=redis://transifex-delivery-redis
 

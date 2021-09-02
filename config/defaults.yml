@@ -54,3 +54,8 @@ queue:
 analytics:
   enabled: true
   retention_days: 180
+
+limits:
+  push:
+    window_sec: 60
+    max_req: 20
