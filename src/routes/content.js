@@ -1,7 +1,6 @@
 const express = require('express');
 const dayjs = require('dayjs');
 const _ = require('lodash');
-const { v4: uuidv4 } = require('uuid');
 const rateLimit = require('express-rate-limit');
 const config = require('../config');
 const { validateHeader } = require('../middlewares/headers');
@@ -75,6 +74,10 @@ router.post('/',
     windowMs: limitPushWindowMsec,
     max: limitPushMaxReq,
     keyGenerator: (req) => req.token.project_token,
+    message: {
+      status: 429,
+      message: 'Too many requests, please try again later.',
+    },
   }),
   async (req, res) => {
     // authenticate before creating an push job
@@ -91,7 +94,16 @@ router.post('/',
     // create a unique job id based on content
     const contentHash = md5(JSON.stringify(req.body));
     const key = `${req.token.project_token}:${contentHash}:push`;
-    const jobId = uuidv4();
+    const jobId = md5(key);
+
+    // check if job is already in the queue
+    if (await queue.hasJob(key)) {
+      res.status(409).json({
+        status: 409,
+        message: 'Another content upload is already in progress',
+      });
+      return;
+    }
 
     // update job status
     await registry.set(`job:status:${jobId}`, {

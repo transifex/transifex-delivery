@@ -44,6 +44,16 @@ async function addJob(jobId, payload) {
 }
 
 /**
+ * Check if job exists.
+ *
+ * @param {String} jobId
+ */
+async function hasJob(jobId) {
+  const job = await queue.getJob(jobId);
+  return !!job;
+}
+
+/**
  * Return the number of jobs in the queue.
  *
  * @returns {Object}
@@ -56,5 +66,6 @@ async function countJobs() {
 module.exports = {
   initialize,
   addJob,
+  hasJob,
   countJobs,
 };
