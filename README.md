@@ -280,11 +280,18 @@ Response body:
   }
 }
 
+Response status: 409
+Response body:
+{
+  status: 409,
+  message: 'Another content upload is already in progress',
+}
+
 Response status: 429
 Response body:
 {
   status: 429,
-  message: 'Another content upload is already in progress',
+  message: 'Too many requests, please try again later.',
 }
 ```
 
