@@ -37,6 +37,10 @@ cache:
     acl: 'private'
     location: 'cache://'
     max_age: 86400
+  gcs:
+    bucket: 'transifex-delivery'
+    location: 'cache://'
+    max_age: 86400
 
 metrics:
   enabled: false

@@ -87,10 +87,12 @@ function getContent(key) {
     };
     s3.getObject(options, (err, data) => {
       if (err) {
+        logger.debug(err);
         resolve({
           data: null,
         });
       } else {
+        logger.info(`[S3] Cache get for ${key} key`);
         resolve({
           data: data.Body.toString('utf-8'),
         });
@@ -119,9 +121,15 @@ function setContent(key, data) {
         reject(err);
       } else {
         logger.info(`[S3] Cache set for ${key} key`);
-        resolve({
-          location: `${location}${keyToS3(key)}`,
-        });
+        if (location === 'cache://') {
+          resolve({
+            location: `${location}${key}`,
+          });
+        } else {
+          resolve({
+            location: `${location}${keyToS3(key)}`,
+          });
+        }
       }
     });
   });
