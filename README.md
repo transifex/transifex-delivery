@@ -513,6 +513,22 @@ TX__CACHE__S3__ACL="public-read"
 TX__CACHE__S3__LOCATION="https://abcd.cloudfront.net/"  (<-- note the trailing slash)
 ```
 
+### Google Cloud Storage
+
+You may use a Google Cloud Storage bucket to store the cached content and optionally set a CDN (e.g. Google CDN) on top of it to serve the content.
+
+To enable GCS integration you need to ensure that Google SDK can authenticate by following the [offical docs](https://www.npmjs.com/package/@google-cloud/storage).
+
+Please make sure that the bucket has the proper permissions and that the account associated with the credentials can read/write/delete in the bucket.
+
+Then, you need to configure some environment variables to enable the integration:
+
+```
+TX__SETTINGS__CACHE=gcs
+TX__CACHE__GCS__BUCKET=<name of bucket>
+TX__CACHE__GCS__LOCATION="https://storage.googleapis.com/<name of bucket>/"  (<-- note the trailing slash)
+```
+
 ### Sentry
 
 To integrate with Sentry, provide the appropriate Sentry DSN endpoint as an environment variable:
