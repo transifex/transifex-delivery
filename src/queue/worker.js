@@ -99,7 +99,9 @@ async function syncerPush(job) {
     }, jobStatusCacheSec);
   } catch (e) {
     if (e.status) {
-      if (e.status !== 401) logger.error(e);
+      if (e.status !== 401 && e.status !== 404) {
+        logger.error(e);
+      }
       // update job status
       let errors = [e.message];
       if (e.details) {
