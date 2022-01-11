@@ -6,6 +6,25 @@ const {
 } = require('../../../../../helpers/plurals');
 
 /**
+ * From an API source or translation entity, extract the
+ * actual string
+ *
+ * @param {*} entity
+ * @return {String}
+ */
+function getStringFromSourceEntity(entity) {
+  let string;
+  if (!entity.attributes.strings) {
+    string = '';
+  } else if (entity.attributes.pluralized) {
+    string = implodePlurals(entity.attributes.strings);
+  } else {
+    string = entity.attributes.strings.other;
+  }
+  return string;
+}
+
+/**
  * Get a payload transform data for ULF required for available languages
  * @param {Array} payload
  * @returns {Array} An array with all the required data
@@ -88,14 +107,7 @@ function parseProjectLanguageSources(payload) {
   if (!payload) return data;
 
   _.forEach(payload, (item) => {
-    let string;
-    if (!item.attributes.strings) {
-      string = '';
-    } else if (item.attributes.pluralized) {
-      string = implodePlurals(item.attributes.strings);
-    } else {
-      string = item.attributes.strings.other;
-    }
+    const string = getStringFromSourceEntity(item);
     data.set(item.attributes.key, { string });
   });
 
@@ -228,4 +240,5 @@ module.exports = {
   parseSourceStringForAPI,
   parseSourceStringForKeyLookup,
   parseSourceStringForIdLookup,
+  getStringFromSourceEntity,
 };
