@@ -453,8 +453,18 @@ async function pushSourceContent(token, options) {
   for (const key in strings) {
     if (Object.prototype.hasOwnProperty.call(strings, key)) {
       let attributes = {};
-      const existingString = existingStrings[key];
+      let existingString = existingStrings[key];
       attributes = transformer.parseSourceStringForAPI(key, strings[key]);
+
+      // When purge is enabled, check if source string has changed
+      // and recreate string
+      if (existingString && meta.purge === true) {
+        const newString = strings[key].string;
+        const oldString = transformer.getStringFromSourceEntity(existingString);
+        if (newString !== oldString) {
+          existingString = undefined;
+        }
+      }
 
       if (existingString) {
         common.add(key);
@@ -488,6 +498,13 @@ async function pushSourceContent(token, options) {
     }
   }
 
+  // Send for Delete and return errors
+  const deletedStrings = await deleteSourceContent(token, {
+    payload: deletePayloads,
+  });
+  deleted += deletedStrings.count;
+  errors = _.concat(errors, deletedStrings.errors);
+
   // Send for post and return created and errors
   const postedStrings = await postSourceContent(token, {
     payload: createPayloads,
@@ -501,13 +518,6 @@ async function pushSourceContent(token, options) {
   });
   updated += patchedStrings.updatedStrings.length;
   errors = _.concat(errors, patchedStrings.errors);
-
-  // Send for Delete and return errors
-  const deletedStrings = await deleteSourceContent(token, {
-    payload: deletePayloads,
-  });
-  deleted += deletedStrings.count;
-  errors = _.concat(errors, deletedStrings.errors);
 
   return {
     created,

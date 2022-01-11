@@ -7,6 +7,7 @@ const errors = require('../../../../../src/services/syncer/strategies/transifex/
 const transifexData = require('../../../../../src/services/syncer/strategies/transifex/data');
 const dataHelper = require('./helpers/api');
 const config = require('../../../../../src/config');
+const { getStringFromSourceEntity } = require('../../../../../src/services/syncer/strategies/transifex/utils/transformer');
 
 const options = {
   token: {
@@ -534,7 +535,7 @@ describe('Push source Content', () => {
     });
   });
 
-  it('should skip 1 string when purge is added', async () => {
+  it('should recreate 1 string when purge is added', async () => {
     const sourceData = dataHelper.getSourceString();
     // get strings from TX
     nock(urls.api)
@@ -547,6 +548,9 @@ describe('Push source Content', () => {
         data: [
           {
             somekey: 'somevalue',
+          },
+          {
+            hello_world: 'somevalue',
           },
         ],
       });
@@ -563,10 +567,10 @@ describe('Push source Content', () => {
     });
 
     expect(result).to.eql({
-      created: 1,
+      created: 2,
       updated: 0,
-      skipped: 1,
-      deleted: 0,
+      skipped: 0,
+      deleted: 1,
       failed: 0,
       errors: [],
     });
@@ -654,6 +658,9 @@ describe('Push source Content', () => {
       });
 
     const data = dataHelper.getPushSourceContent();
+    // revert string modification from fixture
+    data.hello_world.string = getStringFromSourceEntity(sourceData.data[0]);
+    // update tags
     data.hello_world.meta.tags = ['onetag'];
     nock(urls.api)
       .patch(`${urls.resource_strings}/${sourceData.data[0].id}`)
@@ -712,8 +719,8 @@ describe('Push source Content', () => {
       deleted: 0,
       failed: 2,
       errors: [
-        { message: 'something1' },
         { message: 'something2' },
+        { message: 'something1' },
       ],
     });
   });
