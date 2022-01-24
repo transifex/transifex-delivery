@@ -50,6 +50,17 @@ const TRANSIFEX_API_URLS = {
   ORGANIZATIONS: '/organizations',
   PROJECTS: `/projects?filter[organization]=${ENTITY_IDS.ORGANIZATION}`,
   RESOURCES: `/resources?filter[project]=${ENTITY_IDS.PROJECT}`,
+  GET_RESOURCE_STRINGS_REVISIONS: '/resource_strings_revisions?'
+    + `filter[resource_string][resource]=${ENTITY_IDS.RESOURCE}&`
+    + `limit=${PAGE_LIMIT}`,
+  GET_RESOURCE_STRINGS_REVISIONS_FILTER_TAGS: '/resource_strings_revisions?'
+    + `filter[resource_string][resource]=${ENTITY_IDS.RESOURCE}&`
+    + `filter[resource_string][tags][all]=${ENTITY_IDS.TAGS}&`
+    + `limit=${PAGE_LIMIT}`,
+  GET_RESOURCE_STRINGS_REVISIONS_FILTER_KEY: '/resource_strings_revisions?'
+    + `filter[resource_string][resource]=${ENTITY_IDS.RESOURCE}&`
+    + `filter[resource_string][key]=${ENTITY_IDS.KEY}&`
+    + `limit=${PAGE_LIMIT}`,
 };
 
 function getUrl(url, parameters) {
