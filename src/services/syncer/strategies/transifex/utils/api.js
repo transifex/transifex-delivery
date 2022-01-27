@@ -194,6 +194,41 @@ async function getSourceContentMap(token, options) {
   return Object.fromEntries(concatenatedData);
 }
 
+async function getRevisions(token, options) {
+  const concatenatedData = {};
+  let urlKey = 'GET_RESOURCE_STRINGS_REVISIONS';
+  let urlParams = {
+    ORGANIZATION_SLUG: `o:${options.organization_slug}`,
+    PROJECT_SLUG: `p:${options.project_slug}`,
+    RESOURCE_SLUG: `r:${options.resource_slug}`,
+  };
+  if (options.filter_tags) {
+    urlKey = 'GET_RESOURCE_STRINGS_REVISIONS_FILTER_TAGS';
+    urlParams = {
+      ...urlParams,
+      FILTER_TAGS: options.filter_tags,
+    };
+  }
+  let url = apiUrls.getUrl(urlKey, urlParams);
+  const headers = apiUrls.getHeaders(token);
+  let result = null;
+  while (url) {
+    logger.info(`GET ${url}`);
+    const { data } = await axios.get(url, headers);
+    url = data.links.next;
+    result = transformer
+      .parseSourceStringRevisionForIdLookup(data.data);
+    Object.entries(result).forEach(([key, value]) => {
+      if (key in concatenatedData) {
+        concatenatedData[key] = [...concatenatedData[key], ...value];
+      } else {
+        concatenatedData[key] = value;
+      }
+    });
+  }
+  return concatenatedData;
+}
+
 /**
  * Makes a GET request to Transifex API to get resource strings on
  * specific keys list and creates a hashmap for quick lookups
@@ -230,6 +265,42 @@ async function getSourceContentMapOnKeys(token, options) {
   }
 
   return Object.fromEntries(concatenatedData);
+}
+
+async function getRevisionsOnKeys(token, options) {
+  const concatenatedData = {};
+
+  const urlKey = 'GET_RESOURCE_STRINGS_REVISIONS_FILTER_KEY';
+  const urlParams = {
+    ORGANIZATION_SLUG: `o:${options.organization_slug}`,
+    PROJECT_SLUG: `p:${options.project_slug}`,
+    RESOURCE_SLUG: `r:${options.resource_slug}`,
+  };
+  const headers = apiUrls.getHeaders(token);
+
+  for (let i = 0; i < options.keys.length; i += 1) {
+    const key = options.keys[i];
+    const url = apiUrls.getUrl(urlKey, {
+      ...urlParams,
+      FILTER_KEY: key,
+    });
+    logger.info(`GET ${url}`);
+    const { data } = await axios.get(url, headers);
+    const result = transformer
+      .parseSourceStringRevisionForIdLookup(data.data);
+    Object.entries(result).forEach(([revisionKey, value]) => {
+      if (revisionKey in concatenatedData) {
+        concatenatedData[revisionKey] = [
+          ...concatenatedData[revisionKey],
+          ...value,
+        ];
+      } else {
+        concatenatedData[revisionKey] = value;
+      }
+    });
+  }
+
+  return concatenatedData;
 }
 
 /**
@@ -382,6 +453,7 @@ async function pushSourceContent(token, options) {
   const deletePayloads = [];
 
   let existingStrings = {};
+  let existingRevisions = {};
   let created = 0;
   let updated = 0;
   let skipped = 0;
@@ -396,9 +468,9 @@ async function pushSourceContent(token, options) {
     createPayloads.push(payload);
   }
 
-  function preparePayloadForPatch(key, attributes) {
+  function preparePayloadForPatch(key, attributes, mustPatchStrings) {
     const payload = apiPayloads.getPatchStringPayload(
-      existingStrings[key].id, attributes,
+      existingStrings[key].id, attributes, mustPatchStrings,
     );
     updatePayloads.push(payload);
   }
@@ -418,18 +490,24 @@ async function pushSourceContent(token, options) {
     // if requests to get whole resource are less than the strings to be
     // pushed then fetch the whole resource
     if ((resource.string_count / apiUrls.getPageSize()) < payloadKeys.length) {
-      existingStrings = await getSourceContentMap(token, options);
+      [existingStrings, existingRevisions] = await Promise.all([
+        getSourceContentMap(token, options),
+        getRevisions(token, options),
+      ]);
     } else {
       // ...else fetch details on specific keys we want to upload
-      existingStrings = await getSourceContentMapOnKeys(token, {
-        ...options,
-        keys: payloadKeys,
-      });
+      [existingStrings, existingRevisions] = await Promise.all([
+        getSourceContentMapOnKeys(token, { ...options, keys: payloadKeys }),
+        getRevisionsOnKeys(token, { ...options, keys: payloadKeys }),
+      ]);
     }
   } else {
     logger.info(`Purging ${payloadKeys.length} of ${resource.string_count} strings [${resourceId}]`);
     // get all source strings
-    existingStrings = await getSourceContentMap(token, options);
+    [existingStrings, existingRevisions] = await Promise.all([
+      getSourceContentMap(token, options),
+      getRevisions(token, options),
+    ]);
   }
 
   // Create payload for each string
@@ -475,12 +553,25 @@ async function pushSourceContent(token, options) {
           ));
         }
       }
+
       if (!existingString) {
         preparePayloadForPost(attributes);
-      } else if (apiPayloads.stringNeedsUpdate(attributes, existingString.attributes)) {
-        preparePayloadForPatch(key, attributes);
       } else {
-        skipped += 1;
+        const revisions = existingRevisions[existingString.id] || [];
+        const mustPatchStrings = apiPayloads.stringContentChanged(
+          attributes,
+          existingString,
+          revisions,
+        );
+        const mustPatchMetadata = apiPayloads.stringMetadataChanged(
+          attributes,
+          existingString.attributes,
+        );
+        if (mustPatchStrings || mustPatchMetadata) {
+          preparePayloadForPatch(key, attributes, mustPatchStrings);
+        } else {
+          skipped += 1;
+        }
       }
     }
   }
@@ -543,4 +634,6 @@ module.exports = {
   pushSourceContent,
   patchSourceContent,
   postSourceContent,
+  getRevisions,
+  getRevisionsOnKeys,
 };

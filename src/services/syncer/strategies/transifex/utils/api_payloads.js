@@ -17,9 +17,14 @@ function getPushStringPayload(resourceId, attributes) {
   };
 }
 
-function getPatchStringPayload(stringId, attributes) {
+function getPatchStringPayload(stringId, attributes, mustPatchStrings) {
   return {
-    attributes: _.pick(attributes, PATCH_ATTRIBUTES),
+    attributes: _.pick(
+      attributes,
+      mustPatchStrings
+        ? [...PATCH_ATTRIBUTES, 'strings']
+        : PATCH_ATTRIBUTES,
+    ),
     id: stringId,
     type: 'resource_strings',
   };
@@ -32,7 +37,19 @@ function getDeleteStringPayload(stringId) {
   };
 }
 
-function stringNeedsUpdate(attributes, existingAttributes) {
+// If the string extracted from the codebase is unknown to Transifex (ie is
+// neither the latest upstream version nor any of the previous revisions), we
+// must update the string on Transifex
+function stringContentChanged(attributes, existingString, revisions) {
+  return (
+    !_.isEqual(attributes.strings, existingString.attributes.strings)
+    && !_.some(
+      revisions,
+      (revision) => _.isEqual(attributes.strings, revision),
+    )
+  );
+}
+function stringMetadataChanged(attributes, existingAttributes) {
   const filteredAttrs = _.filter(PATCH_ATTRIBUTES,
     (attr) => !_.isUndefined(attributes[attr]));
 
@@ -56,5 +73,6 @@ module.exports = {
   getPushStringPayload,
   getPatchStringPayload,
   getDeleteStringPayload,
-  stringNeedsUpdate,
+  stringMetadataChanged,
+  stringContentChanged,
 };
