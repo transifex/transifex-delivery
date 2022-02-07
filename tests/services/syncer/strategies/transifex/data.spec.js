@@ -547,50 +547,6 @@ describe('Push source Content', () => {
     });
   });
 
-  it('should recreate 1 string when purge is added', async () => {
-    const sourceData = dataHelper.getSourceString();
-    // get strings from TX
-    nock(urls.api)
-      .get(urls.source_strings)
-      .reply(200, sourceData);
-    nock(urls.api)
-      .get(urls.source_strings_revisions)
-      .reply(200, { data: [], links: {} });
-
-    // mock from cds -> api
-    nock(urls.api).post(urls.resource_strings)
-      .reply(200, {
-        data: [
-          {
-            somekey: 'somevalue',
-          },
-          {
-            hello_world: 'somevalue',
-          },
-        ],
-      });
-
-    // mock of delete from cds -> api
-    nock(urls.api)
-      .delete(urls.resource_strings)
-      .reply(204);
-
-    // push from sdk -> cds
-    const data = dataHelper.getPushSourceContent();
-    const result = await transifexData.pushSourceContent(options, data, {
-      purge: true,
-    });
-
-    expect(result).to.eql({
-      created: 2,
-      updated: 0,
-      skipped: 0,
-      deleted: 1,
-      failed: 0,
-      errors: [],
-    });
-  });
-
   it('should skip already saved strings with no changes', async () => {
     const sourceData = dataHelper.getSourceString();
     nock(urls.api)
