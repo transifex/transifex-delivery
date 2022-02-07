@@ -531,18 +531,8 @@ async function pushSourceContent(token, options) {
   for (const key in strings) {
     if (Object.prototype.hasOwnProperty.call(strings, key)) {
       let attributes = {};
-      let existingString = existingStrings[key];
+      const existingString = existingStrings[key];
       attributes = transformer.parseSourceStringForAPI(key, strings[key]);
-
-      // When purge is enabled, check if source string has changed
-      // and recreate string
-      if (existingString && meta.purge === true) {
-        const newString = strings[key].string;
-        const oldString = transformer.getStringFromSourceEntity(existingString);
-        if (newString !== oldString) {
-          existingString = undefined;
-        }
-      }
 
       if (existingString) {
         common.add(key);
