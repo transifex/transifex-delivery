@@ -58,6 +58,8 @@ async function getContent(req, res) {
     if (await registry.addToSet(`${keyDay}:clients`, clientId, analyticsRetentionSec)) {
       registry.incr(`${keyDay}:lang:${lang}`, 1, analyticsRetentionSec);
       registry.incr(`${keyDay}:sdk:${sdkVersion}`, 1, analyticsRetentionSec);
+      registry.addToSet(`${keyDay}:lang`, `${lang}`, analyticsRetentionSec);
+      registry.addToSet(`${keyDay}:sdk`, `${sdkVersion}`, analyticsRetentionSec);
     }
   }
 }

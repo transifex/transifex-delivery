@@ -21,7 +21,7 @@ describe('Content cache', () => {
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
-    await populateRegistry(cachedKey, content);
+    await populateRegistry(cachedToken, cachedKey, content);
   });
 
   afterEach(async () => {

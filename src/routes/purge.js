@@ -13,10 +13,13 @@ router.post('/:lang_code',
   async (req, res) => {
     try {
       const token = req.token.project_token;
-      const keys = await registry.find(`cache:${token}:${req.params.lang_code}:*`);
+      let keys = await registry.listSet(`cache:${token}:keys`);
+      keys = _.filter(keys, (key) => key.indexOf(`cache:${token}:${req.params.lang_code}:`) === 0);
+      let count = 0;
       await Promise.all(_.map(keys, (key) => (async () => {
         const data = await registry.get(key);
         if (data) {
+          count += 1;
           await registry.del(key);
           if (data.cacheKey) {
             await cache.delContent(data.cacheKey);
@@ -26,7 +29,7 @@ router.post('/:lang_code',
       const response = {
         status: 'success',
         token,
-        count: keys.length,
+        count,
       };
       res.json({
         data: response,
@@ -48,10 +51,13 @@ router.post('/',
   async (req, res) => {
     try {
       const token = req.token.project_token;
-      const keys = await registry.find(`cache:${token}:*`);
+      let keys = await registry.listSet(`cache:${token}:keys`);
+      keys = _.filter(keys, (key) => key.indexOf(`cache:${token}:`) === 0);
+      let count = 0;
       await Promise.all(_.map(keys, (key) => (async () => {
         const data = await registry.get(key);
         if (data) {
+          count += 1;
           await registry.del(key);
           if (data.cacheKey) {
             await cache.delContent(data.cacheKey);
@@ -61,7 +67,7 @@ router.post('/',
       const response = {
         status: 'success',
         token,
-        count: keys.length,
+        count,
       };
       res.json({
         data: response,

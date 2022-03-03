@@ -1,10 +1,21 @@
-/* globals describe, it */
+/* globals describe, it, beforeEach, before */
 
 const { expect } = require('chai');
 const _ = require('lodash');
-const registry = require('../../src/services/registry');
+const registry = require('../../../../../src/services/registry/strategies/redis');
 
-describe('Registry', () => {
+describe('Redis registry', () => {
+  before(async () => {
+    await registry.init();
+  });
+
+  beforeEach(async () => {
+    const keys = await registry.findAll();
+    await Promise.all(_.map(keys, (key) => (async () => {
+      await registry.del(key);
+    })()));
+  });
+
   it('should write to registry', async () => {
     await registry.set('foo', 'bar');
     expect(await registry.get('foo')).to.equal('bar');
@@ -21,14 +32,15 @@ describe('Registry', () => {
     expect(await registry.get('foo')).to.equal(undefined);
   });
 
-  it('should find keys', async () => {
+  it('should find all keys', async () => {
     await registry.set('foo1', 'bar');
     await registry.set('foo2', 'bar');
     await registry.set('bar3', 'bar');
 
-    expect(_.sortBy(await registry.find('foo*'))).to.deep.equal(_.sortBy([
+    expect(_.sortBy(await registry.findAll())).to.deep.equal(_.sortBy([
       'foo1',
       'foo2',
+      'bar3',
     ]));
 
     await registry.del('foo1');
@@ -57,15 +69,7 @@ describe('Registry', () => {
     expect(await registry.addToSet('test:add_to_set', 'a')).to.equal(true);
     expect(await registry.addToSet('test:add_to_set', 'a')).to.equal(false);
     expect(await registry.addToSet('test:add_to_set', 'b')).to.equal(true);
-    expect(await registry.countSet('test:add_to_set')).to.equal(2);
-  });
-
-  it('removes from set', async () => {
-    await registry.addToSet('test:rem_from_set', 'a');
-    await registry.addToSet('test:rem_from_set', 'b');
-    expect(await registry.removeFromSet('test:rem_from_set', 'c')).to.equal(false);
-    expect(await registry.removeFromSet('test:rem_from_set', 'b')).to.equal(true);
-    expect(await registry.countSet('test:rem_from_set')).to.equal(1);
+    expect((await registry.listSet('test:add_to_set')).length).to.equal(2);
   });
 
   it('lists set', async () => {
@@ -73,11 +77,5 @@ describe('Registry', () => {
     await registry.addToSet('test:list_set', 'b');
     const values = await registry.listSet('test:list_set');
     expect(values.sort()).to.deep.equal(['a', 'b'].sort());
-  });
-
-  it('queries set members', async () => {
-    await registry.addToSet('test:is_set_member', 'a');
-    expect(await registry.isSetMember('test:is_set_member', 'a')).to.equal(true);
-    expect(await registry.isSetMember('test:is_set_member', 'b')).to.equal(false);
   });
 });

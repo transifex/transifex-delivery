@@ -99,7 +99,23 @@ function setContent(key, data) {
   });
 }
 
+/**
+ * @implements {init}
+ */
+async function init() {
+  // no-op
+}
+
+/**
+ * @implements {destroy}
+ */
+async function destroy() {
+  // no-op
+}
+
 module.exports = {
+  init,
+  destroy,
   delContent,
   getContent,
   setContent,

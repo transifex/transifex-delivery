@@ -1,7 +1,9 @@
 /* eslint import/no-dynamic-require:0 */
 const config = require('../../config');
+const logger = require('../../logger');
 
 const cache = require(`./strategies/${config.get('settings:cache')}`);
+logger.info(`Cache strategy: ${config.get('settings:cache')}`);
 
 /**
  * Delete all data for a specific key
@@ -44,7 +46,27 @@ async function setContent(key, data) {
   return res;
 }
 
+/**
+ * Initialize cache
+ *
+ * @returns {Promise}
+ */
+function init() {
+  return cache.init();
+}
+
+/**
+ * Destroy cache
+ *
+ * @returns {Promise}
+ */
+function destroy() {
+  return cache.destroy();
+}
+
 module.exports = {
+  init,
+  destroy,
   delContent,
   getContent,
   setContent,

@@ -31,6 +31,7 @@ RUN npm ci --only=prod
 
 COPY --chown=node:node config /usr/app/config
 COPY --chown=node:node ./src /usr/app/src
+COPY --chown=node:node ./scripts /usr/app/scripts
 COPY --chown=node:node newrelic.js /usr/app/
 
 CMD ["npm", "start"]
@@ -45,6 +46,7 @@ RUN npm ci
 
 COPY --chown=node:node config /usr/app/config
 COPY --chown=node:node ./src /usr/app/src
+COPY --chown=node:node ./scripts /usr/app/scripts
 COPY --chown=node:node ./tests /usr/app/tests
 COPY --chown=node:node ./.eslintrc.json /usr/app
 
