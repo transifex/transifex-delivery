@@ -42,13 +42,11 @@ describe('Analytics as user', () => {
         languages: {},
         sdks: {},
         date: today,
-        clients: 0,
       }],
       meta: {
         total: {
           languages: {},
           sdks: {},
-          clients: 0,
         },
       },
     });
@@ -128,13 +126,11 @@ describe('Analytics as Transifex', () => {
         languages: {},
         sdks: {},
         date: today,
-        clients: 0,
       }],
       meta: {
         total: {
           languages: {},
           sdks: {},
-          clients: 0,
         },
       },
     });
