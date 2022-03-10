@@ -4,7 +4,6 @@
 
 /* Migrate registry data from CDS 1.x to 2.x */
 
-const _ = require('lodash');
 const redis = require('../src/services/registry/strategies/redis');
 const config = require('../src/config');
 
@@ -27,8 +26,10 @@ async function start() {
     if (key.endsWith(':clients')) {
       if (dynamodb) {
         const data = await redis.listSet(key);
-        await Promise.all(_.map(data, (entry) => dynamodb.addToSet(key, entry, ttl)));
-        console.log(`Add to set ${key} <- [clients]`);
+        for (let j = 0; j < data.length; j += 1) {
+          await dynamodb.addToSet(key, data[j], ttl);
+          console.log(`Add to set ${key} <- ${data[j]}`);
+        }
       }
     } else if (key.indexOf(':lang:') !== -1) {
       const data = await redis.get(key);
