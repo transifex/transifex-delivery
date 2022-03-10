@@ -382,7 +382,7 @@ Response body (fail):
 
 ## Analytics
 
-Endpoint to get usage analytics, per language, SDK and unique anonymized clients.
+Endpoint to get usage analytics, per language and SDK.
 
 ```
 GET /analytics?filter[since]=<YYYY-MM-DD>&filter[until]=<YYYY-MM-DD>
@@ -410,7 +410,6 @@ Response body:
       <sdk-version>: <number of hits>,
       ...
     },
-    clients: <number of unique clients>,
     date: <YYYY-MM-DD or YYYY-MM>,
   }, ...],
   meta: {
@@ -423,7 +422,6 @@ Response body:
         <sdk-version>: <total number of hits>,
         ...
       },
-      clients: <total number of unique clients>,
     },
   },
 }

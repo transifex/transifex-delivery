@@ -62,13 +62,11 @@ router.get('/',
         total: {
           languages: {},
           sdks: {},
-          clients: 0,
         },
       },
     };
 
     const { total } = response.meta;
-    const clients = {};
 
     for (let i = 0; i <= intervals; i += 1) {
       const keyDay = dateSince.add(i, 'day').format('YYYY-MM-DD');
@@ -105,20 +103,9 @@ router.get('/',
             }
           })()));
         })(),
-        // clients
-        (async () => {
-          const hashes = await registry.listSet(`${registryKey}:clients`);
-          entry.clients = hashes.length;
-          _.each(hashes, (hash) => {
-            clients[hash] = true;
-          });
-        })(),
       ]);
-
       response.data.push(entry);
     }
-
-    response.meta.total.clients = _.keys(clients).length;
 
     res.json(response);
   });
