@@ -21,7 +21,7 @@ describe('Invalidate as user', () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
-    await populateRegistry(key, content);
+    await populateRegistry(token, key, content);
     await registry.set(
       `auth:${token}`,
       md5(`${token}:secret`),
@@ -89,7 +89,7 @@ describe('Invalidate as Transifex', () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
-    await populateRegistry(key, content);
+    await populateRegistry(token, key, content);
     await registry.set(
       `auth:${token}`,
       md5(`${token}:secret`),

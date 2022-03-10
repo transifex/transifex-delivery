@@ -35,7 +35,7 @@ stop:
 	docker-compose stop
 
 shell:
-	docker-compose run --rm transifex-delivery sh
+	docker-compose -f docker-compose.yml -f docker-compose.dev.yml run --rm transifex-delivery sh
 
 delete:
 	docker-compose down --rmi local -v

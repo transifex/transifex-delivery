@@ -19,6 +19,13 @@ make up
 
 CDS will be available at `http://localhost:10300` and you can check if it works by visiting `http://localhost:10300/health` endpoint.
 
+You may also use CURL to get some sample content:
+```
+curl -X GET -H "Authorization: Bearer 1/066926bd75f0d9e52fce00c2208ac791ca0cd2c1" http://127.0.0.1:10300/languages -v -L
+
+curl -X GET -H "Authorization: Bearer 1/066926bd75f0d9e52fce00c2208ac791ca0cd2c1" http://127.0.0.1:10300/content/en -v -L
+```
+
 ### Use an interactive debugger
 
 1. First, make sure the main container is not running:
@@ -41,87 +48,25 @@ _Note: `nodemon` is not running so any changes you make to the source code will 
 
 ## Environment variables
 
-Defaults settings are available in `config/defaults.yml`.
+Defaults settings are available in [config/defaults.yml](https://github.com/transifex/transifex-delivery/blob/master/config/defaults.yml).
 
-All settings can be overriden using environment variables such as:
+All settings can be overriden as environment variables, following the pattern:
+`TX__[PARENT]__[CHILD]=[VALUE]`
+
+For example, to override the following settings from `defaults.yml`:
 
 ```
-# The name of the service and the listening port
-TX__APP__NAME=transifex-delivery
-TX__APP__PORT=10300
-
-# Express "Trust proxy" setting to detect client IP
-TX__SETTINGS__TRUST_PROXY=1
-
-# Optional secret for trusting communication between CDS and Transifex
-# Used for requests supporting the X-TRANSIFEX-TRUST-SECRET authentication
-# header
-TX__SETTINGS__TRUST_SECRET=supersecret
-
-# Max-age header for cached responses
-TX__SETTINGS__CACHE_TTL=1800 (in seconds)
-
-# Upload size limit for pushing content
-TX__SETTINGS__REQUEST_SIZE_LIMIT=50mb
-
-# Disk path for CDS related files
-TX__SETTINGS__DISK_STORAGE_PATH=/tmp
-
-# Optionally, a whitelist of project tokens
-TX__SETTINGS__TOKEN_WHITELIST=key1,key2
-
-# Syncer strategy
-TX__SETTINGS__SYNCER=transifex
-
-# Cache strategy (redis, s3)
-TX__SETTINGS__CACHE=redis
-
-# Number of seconds to keep alive idle connections
-TX__SETTINGS__KEEP_ALIVE_TIMEOUT_SEC=180
-
-# Interval for auto-syncing content and refreshing content cache
-TX__SETTINGS__AUTOSYNC_MIN=60
-
-# Minutes to cache authentication credentials (invalidate, analytics endpoints)
-TX__SETTINGS__AUTH_CACHE_MIN=30
-
-# Minutes to cache successful pulls in the registry
-TX__SETTINGS__PULL_SUCCESS_CACHE_MIN=10080
-
-# Minutes to cache failed pulls in the registry
-TX__SETTINGS__PULL_ERROR_CACHE_MIN=15
-
-# Minutes to cache job status in registry
-TX__SETTINGS__JOB_STATUS_CACHE_MIN=480
-
-# Rate limits for push content (max requests per seconds)
-TX__LIMITS__PUSH__MAX_REQ=20
-TX__LIMITS__PUSH__WINDOW_SEC=60
-
-# Redis host
-TX__REDIS__HOST=redis://transifex-delivery-redis
-
-# Queue name
-TX__QUEUE__NAME=sync
-
-# Number of workers to fetch content from Transifex
-TX__QUEUE__WORKERS=1
-
-# Prefix namespace for registry in Redis
-TX__REGISTRY__PREFIX="registry:"
-
-# Redis cache strategy namespace
-TX__CACHE__REDIS__PREFIX="storage:"
-
-# How long should content stay in redis cache strategy
-TX__CACHE__REDIS__EXPIRE_MIN=10080
-
-# Enable or disable analytics
-TX__ANALYTICS__ENABLED=1
-
-# Analytics data retention days
-TX__ANALYTICS__RETENTION_DAYS=180
+settings:
+  registry: redis
 ```
+
+You should set the following environment variable:
+
+```
+TX__SETTINGS__REGISTRY=dynamodb
+```
+
+Please check `defaults.yml` for extensive documentation on the available options.
 
 ### Environment variables mapping
 
@@ -486,7 +431,8 @@ Response body:
 
 ## Sync strategies
 
-CDS works like a middleware between application SDKs and a place where content lives. The sync strategy defines where the CDS should push or pull content.
+CDS works like a middleware between application SDKs and a place where content lives.
+The sync strategy defines where the CDS should push or pull content.
 
 ### Transifex (default)
 
@@ -494,7 +440,97 @@ This is the default strategy that syncs content between CDS and Transifex, using
 
 ## Cache strategies
 
-Cache strategy defines an abstract interface on how caching work in CDS. At the moment only redis cache is supported, but the service could be extended with more strategies.
+Cache strategy defines an abstract interface on how caching work in CDS.
+When a request is made to the CDS, the syncer strategy fetches the actual content
+(source phrases, translations, available languages), and stores them in a "cache".
+How and where the content is stored, is defined by the cache strategy.
+
+### Redis cache (default)
+
+With default settings, CDS stores content in Redis. This can work for testing or
+boostraping the service in a production environment, but for real use, it is
+advised to use the S3/Cloudfront or Google Cloud Storage strategy.
+
+### S3 cache
+
+S3 strategy stores content in S3 buckets that can be served either directly as
+S3 public links or on top of a Cloudfront or other CDN infrastructure.
+
+See "Third Party Integrations" -> "AWS" on how to enable this strategy.
+
+### Google Cloud Storage cache
+
+Google Cloud Storage strategy stores content in Google Cloud.
+
+See "Third Party Integrations" -> "Google Cloud Storage" on how to enable this strategy.
+
+## Registry strategies
+
+Registry is a key/value storage used for storing various metadata required for the service to work.
+Also, analytics data are stored in the registry.
+
+### Redis strategy (default)
+
+Redis is the default strategy used for the registry engine.
+
+### DynamoDB strategy
+
+DynamoDB strategy uses AWS DynamoDB as a key/value storage. DynamoDB enables multi-region
+installation of CDS, using a the DynamoDB global table. For example, you can install CDS
+on AWS Regions A, B & C. A global DynamoDB table will ensure that running instances of all
+those 3 regions will sync together using active-active replication.
+
+To enable DynamoDB strategy set the following environment variables:
+```
+TX__SETTINGS__REGISTRY=dynamodb
+TX__DYNAMODB__TABLE_NAME=<DYNAMODB GLOBAL TABLE NAME>
+```
+
+If the table does not exist, it will be created as local.
+
+You may use AWS CLI to create the table, for example:
+```
+$ aws dynamodb create-table \
+    --table-name transifex-delivery \
+    --attribute-definitions AttributeName=key,AttributeType=S \
+    --key-schema AttributeName=key,KeyType=HASH \
+    --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+```
+
+and enable TTL on "ttl" attribute:
+```
+$ aws dynamodb update-time-to-live \
+    --table-name transifex-delivery \
+    --time-to-live-specification Enabled=true,AttributeName=ttl
+```
+
+The following AWS permissions should be enabled:
+```
+dynamodb:DescribeTable
+dynamodb:DescribeTimeToLive
+dynamodb:UpdateTimeToLive
+dynamodb:DescribeLimits
+dynamodb:BatchGetItem
+dynamodb:BatchWriteItem
+dynamodb:DeleteItem
+dynamodb:GetItem
+dynamodb:GetRecords
+dynamodb:PutItem
+dynamodb:Query
+dynamodb:UpdateItem
+dynamodb:Scan
+```
+
+### DynamoDB-Redis strategy
+
+This is a hybrid strategy that combines the speed of Redis and the DynamoDB global table for multi-region setups.
+
+To enable, set the following environment variable:
+```
+TX__SETTINGS__REGISTRY=dynamodb-redis
+```
+
+And setup the DynamoDB table by following the instructions of the "DynamoDB" strategy.
 
 ## Third party integrations
 
@@ -511,6 +547,18 @@ TX__SETTINGS__CACHE=s3
 TX__CACHE__S3__BUCKET=<name of bucket>
 TX__CACHE__S3__ACL="public-read"
 TX__CACHE__S3__LOCATION="https://abcd.cloudfront.net/"  (<-- note the trailing slash)
+```
+
+The following AWS permissions should be enabled for S3 access:
+
+```
+s3:ListBucket
+s3:GetBucketLocation
+s3:PutObjectAcl
+s3:PutObject
+s3:GetObjectAcl
+s3:GetObject
+s3:DeleteObject
 ```
 
 ### Google Cloud Storage

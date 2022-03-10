@@ -35,22 +35,36 @@ async function syncerPull(job) {
     const etag = md5(stringData);
     const cacheKey = `${key}:${etag}`;
     const { location } = await cache.setContent(cacheKey, stringData);
-    await registry.set(`cache:${key}`, {
-      status: 'success',
-      ts: Date.now(),
-      etag,
-      location,
-      cacheKey,
-    }, pullSuccessExpireSec);
+    await Promise.all([
+      registry.set(`cache:${key}`, {
+        status: 'success',
+        ts: Date.now(),
+        etag,
+        location,
+        cacheKey,
+      }, pullSuccessExpireSec),
+      registry.addToSet(
+        `cache:${token.project_token}:keys`,
+        `cache:${key}`,
+        pullSuccessExpireSec,
+      ),
+    ]);
   } catch (e) {
     // gracefully handle 4xx errors and store them in cache
     if (e.status && e.status >= 400 && e.status < 500) {
-      await registry.set(`cache:${key}`, {
-        status: 'error',
-        ts: Date.now(),
-        statusCode: e.status || 404,
-        statusMessage: e.message || 'Not found',
-      }, pullErrorExpireSec);
+      await Promise.all([
+        registry.set(`cache:${key}`, {
+          status: 'error',
+          ts: Date.now(),
+          statusCode: e.status || 404,
+          statusMessage: e.message || 'Not found',
+        }, pullErrorExpireSec),
+        registry.addToSet(
+          `cache:${token.project_token}:keys`,
+          `cache:${key}`,
+          pullSuccessExpireSec,
+        ),
+      ]);
     } else {
       throw e;
     }

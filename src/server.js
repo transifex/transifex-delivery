@@ -36,6 +36,7 @@ module.exports = () => {
   }
 
   const requestSizeLimit = config.get('settings:request_size_limit');
+  const cdsHeaderId = config.get('app:id');
 
   app.use(bodyParser.urlencoded({
     extended: true,
@@ -47,6 +48,12 @@ module.exports = () => {
   }));
   app.use(cors());
   app.use(compression());
+
+  app.use((req, res, next) => {
+    res.header('X-CDS-ID', cdsHeaderId);
+    res.header('X-CDS-VERSION', `${version}`);
+    next();
+  });
 
   // for nagios health check
   app.get('/health', async (req, res) => {

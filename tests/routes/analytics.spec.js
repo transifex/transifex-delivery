@@ -17,7 +17,7 @@ const content = JSON.stringify({ foo: 'bar' });
 
 describe('Analytics as user', () => {
   beforeEach(async () => {
-    await populateRegistry(key, content);
+    await populateRegistry(token, key, content);
   });
 
   afterEach(async () => {
@@ -102,7 +102,7 @@ describe('Analytics as user', () => {
 
 describe('Analytics as Transifex', () => {
   beforeEach(async () => {
-    await populateRegistry(key, content);
+    await populateRegistry(token, key, content);
   });
 
   afterEach(async () => {

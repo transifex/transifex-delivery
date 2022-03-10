@@ -8,11 +8,6 @@ cache:
   redis:
     prefix: 'test:storage:'
   s3:
-    endpoint: http://transifex-delivery-moto:5000
-    region: eu-west-1
-    force_path_style: true
-    access_key_id: foo
-    secret_access_key: bar
     create_bucket: true
 
 queue:
@@ -21,3 +16,19 @@ queue:
 
 settings:
   trust_secret: 'txsecret'
+
+dynamodb:
+  tableName: transifex-delivery-test
+
+aws:
+  config:
+    common:
+      region: eu-west-1
+      credentials:
+        accessKeyId: keyid
+        secretAccessKey: accesskey
+    s3:
+      endpoint: http://transifex-delivery-moto:5000
+      s3ForcePathStyle: true
+    dynamodb:
+      endpoint: http://transifex-delivery-dynamodb:8000

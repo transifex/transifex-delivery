@@ -7,35 +7,19 @@ const acl = config.get('cache:s3:acl');
 const location = config.get('cache:s3:location');
 const maxAge = config.get('cache:s3:max_age');
 
-if (config.get('cache:s3:region')) {
-  aws.config.update({
-    region: config.get('cache:s3:region'),
-  });
-}
+const commonConfig = config.get('aws:config:common');
+const s3Config = config.get('aws:config:s3');
 
-if (config.get('cache:s3:force_path_style')) {
-  aws.config.update({
-    s3ForcePathStyle: true,
-  });
-}
-
-if (config.get('cache:s3:access_key_id') && config.get('cache:s3:secret_access_key')) {
-  aws.config.update({
-    credentials: {
-      accessKeyId: config.get('cache:s3:access_key_id'),
-      secretAccessKey: config.get('cache:s3:secret_access_key'),
-    },
-  });
-}
-
-if (config.get('cache:s3:endpoint')) {
-  aws.config.update({
-    endpoint: config.get('cache:s3:endpoint'),
-  });
+let awsConfig;
+if (commonConfig || s3Config) {
+  awsConfig = {
+    ...(commonConfig || {}),
+    ...(s3Config || {}),
+  };
 }
 
 if (config.get('cache:s3:create_bucket')) {
-  const s3 = new aws.S3();
+  const s3 = new aws.S3(awsConfig);
   s3.createBucket({
     Bucket: bucket,
   }, (err, data) => {
@@ -59,7 +43,7 @@ function keyToS3(key) {
  */
 function delContent(key) {
   return new Promise((resolve) => {
-    const s3 = new aws.S3();
+    const s3 = new aws.S3(awsConfig);
     const options = {
       Bucket: bucket,
       Key: keyToS3(key),
@@ -80,7 +64,7 @@ function delContent(key) {
  */
 function getContent(key) {
   return new Promise((resolve) => {
-    const s3 = new aws.S3();
+    const s3 = new aws.S3(awsConfig);
     const options = {
       Bucket: bucket,
       Key: keyToS3(key),
@@ -106,7 +90,7 @@ function getContent(key) {
  */
 function setContent(key, data) {
   return new Promise((resolve, reject) => {
-    const s3 = new aws.S3();
+    const s3 = new aws.S3(awsConfig);
     const options = {
       Bucket: bucket,
       Key: keyToS3(key),
@@ -135,7 +119,23 @@ function setContent(key, data) {
   });
 }
 
+/**
+ * @implements {init}
+ */
+async function init() {
+  // no-op
+}
+
+/**
+ * @implements {destroy}
+ */
+async function destroy() {
+  // no-op
+}
+
 module.exports = {
+  init,
+  destroy,
   delContent,
   getContent,
   setContent,

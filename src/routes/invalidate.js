@@ -15,7 +15,8 @@ router.post('/:lang_code',
       const token = req.token.project_token;
       const langCode = req.params.lang_code;
       // find all language keys from redis
-      const keys = await registry.find(`cache:${token}:${langCode}:content*`);
+      let keys = await registry.listSet(`cache:${token}:keys`);
+      keys = _.filter(keys, (key) => key.indexOf(`cache:${token}:${langCode}:content`) === 0);
       // Regular expression to match cache key with optional [tags] filter
       const contentRE = new RegExp(`cache:${token}:${langCode}:content(.*)`);
       let count = 0;
@@ -69,7 +70,8 @@ router.post('/',
     try {
       const token = req.token.project_token;
       // find all keys from redis
-      const keys = await registry.find(`cache:${token}:*`);
+      let keys = await registry.listSet(`cache:${token}:keys`);
+      keys = _.filter(keys, (key) => key.indexOf(`cache:${token}:`) === 0);
       // Regular expression to match cache key with optional [tags] filter
       const contentRE = new RegExp(`cache:${token}:(.*):content(.*)`);
       let count = 0;

@@ -9,14 +9,17 @@ services:
     depends_on:
       - transifex-delivery-redis
       - transifex-delivery-moto
+      - transifex-delivery-dynamodb
 
   transifex-delivery-redis:
     image: redis:latest
     command: redis-server
 
   transifex-delivery-moto:
-    image: picadoh/motocker
+    image: motoserver/moto
     environment:
       - MOTO_SERVICE=s3
-    ports:
-      - "127.0.0.1:5000:5000"
+
+  transifex-delivery-dynamodb:
+    command: "-jar DynamoDBLocal.jar -inMemory"
+    image: amazon/dynamodb-local:latest

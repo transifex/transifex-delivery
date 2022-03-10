@@ -7,7 +7,7 @@ const registry = require('../src/services/registry');
  * Clear entire registry and cache
  */
 async function resetRegistry() {
-  const keys = await registry.find('*');
+  const keys = await registry.findAll();
   await Promise.all(_.map(keys, (key) => (async () => {
     try {
       const data = await registry.get(key);
@@ -27,18 +27,21 @@ async function resetRegistry() {
  * @param {String} key
  * @param {*} content
  */
-async function populateRegistry(key, content) {
+async function populateRegistry(token, key, content) {
   const stringData = JSON.stringify(content);
   const etag = md5(stringData);
   const cacheKey = `${key}:${etag}`;
   const { location } = await cache.setContent(cacheKey, stringData);
-  await registry.set(`cache:${key}`, {
-    status: 'success',
-    ts: Date.now(),
-    etag,
-    location,
-    cacheKey,
-  });
+  await Promise.all([
+    registry.set(`cache:${key}`, {
+      status: 'success',
+      ts: Date.now(),
+      etag,
+      location,
+      cacheKey,
+    }),
+    registry.addToSet(`cache:${token}:keys`, `cache:${key}`),
+  ]);
 }
 
 module.exports = {

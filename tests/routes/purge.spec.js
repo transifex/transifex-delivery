@@ -20,7 +20,7 @@ const cacheKey = `${key}:${etag}`;
 
 describe('Purge as user', () => {
   beforeEach(async () => {
-    await populateRegistry(key, content);
+    await populateRegistry(token, key, content);
     await registry.set(
       `auth:${token}`,
       md5(`${token}:secret`),
@@ -100,7 +100,7 @@ describe('Purge as user', () => {
 
 describe('Purge as Transifex', () => {
   beforeEach(async () => {
-    await populateRegistry(key, content);
+    await populateRegistry(token, key, content);
     await registry.set(
       `auth:${token}`,
       md5(`${token}:secret`),

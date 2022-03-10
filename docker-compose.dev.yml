@@ -4,6 +4,7 @@ services:
   transifex-delivery:
     volumes:
       - ./src:/usr/app/src
+      - ./scripts:/usr/app/scripts
       - ./config:/usr/app/config
       - ./tests:/usr/app/tests
       - ./coverage:/usr/app/coverage

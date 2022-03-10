@@ -1,7 +1,9 @@
 const config = require('../../config');
+const logger = require('../../logger');
 const validators = require('../../helpers/validators');
 
 const syncer = require(`./strategies/${config.get('settings:syncer')}/data`);
+logger.info(`Syncer strategy: ${config.get('settings:syncer')}`);
 
 /**
  * Verify token/secret credentials

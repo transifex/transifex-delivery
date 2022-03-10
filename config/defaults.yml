@@ -1,49 +1,164 @@
 app:
+  # A server instance, exposed in the TX-CDS-ID Header.
+  # Can be used to debug responses when CDS is installed
+  # in multiple regions/servers. This can be modified using
+  # an environment variable, e.g.
+  # TX__APP__ID=aws-eu-west-1
+  id: tx
+
+  # The name of the service, used in the logs and prometheus metrics
+  # Modify it if you need to seperate logs (e.g. beta, staging) when
+  # logs and metrics are drained into a common instance. e.g.
+  # TX__APP__NAME=beta
   name: transifex-delivery
+
+  # Listening port of the service
   port: 10300
 
 settings:
+  # Express "Trust proxy" setting to detect client IP
+  # https://expressjs.com/en/guide/behind-proxies.html
   trust_proxy: true
+
+  # Upload size limit for pushing content
+  # https://github.com/expressjs/body-parser#limit
   request_size_limit: '50mb'
+
+  # Minutes to cache authentication credentials (invalidate, analytics endpoints)
+  # When a request is made, CDS will try to authenticate with Transifex the project
+  # token/secret. The result will be cached for X minutes, before trying to re-authenticate
+  # again.
   auth_cache_min: 30
+
+  # Minutes to cache successful pulls in the registry
   pull_success_cache_min: 10080
+
+  # Minutes to cache failed pulls in the registry
   pull_error_cache_min: 15
+
+  # Minutes to cache job status in registry
   job_status_cache_min: 480
+
+  # Max-age header for cached responses:
+  # Related code: res.setHeader('Cache-Control', `max-age=${maxAge}`);
   cache_ttl: 1800
+
+  # Interval for auto-syncing content and refreshing content cache
+  # By default, content cached in CDS is considered stale after 1h has
+  # passed. After an hour, content will be re-fetched and re-cached with
+  # fresh data. Lower this value if you need more frequent updates. e.g.
+  # TX__SETTINGS__AUTOSYNC_MIN=15
   autosync_min: 60
-  disk_storage_path: '/tmp'
+
+  # Optionally, a whitelist of project tokens. Set this value if you need
+  # to limit access to only a subset of Native Project Tokens, vs having
+  # CDS cache everything. e.g.
+  # TX__SETTINGS__TOKEN_WHITELIST=key1,key2
   token_whitelist: ''
+
+  # Optional secret for trusting communication between CDS and Transifex.
+  # Used for requests supporting the X-TRANSIFEX-TRUST-SECRET authentication
+  # header. This is used for server-2-server authentication, e.g. retrieve
+  # analytics or invalidate the cache of a project token, without having
+  # to provide a secret key. e.g.
+  # TX__SETTINGS__TRUST_SECRET=supersecret
   trust_secret: ''
+
+  # Syncer strategy to use, i.e. where to get content data from and cache them
+  # in CDS.
+  # Options are: [transifex]
   syncer: transifex
+
+  # Cache strategy. Defines where cached content is stored.
+  # Options are: [redis, s3, gcs]
+  # e.g. TX__SETTINGS__CACHE=redis
   cache: redis
+
+  # Registry is a key/value storage for storing metadata. This setting
+  # defines which registry engine to use.
+  # Options are: [redis, dynamodb, dynamodb-redis]
+  # e.g. TX__SETTINGS__REGISTRY=dynamodb-redis
+  registry: redis
+
+  # Number of seconds to keep alive idle connections
+  # https://nodejs.org/api/http.html#serverkeepalivetimeout
   keep_alive_timeout_sec: ''
 
 transifex:
+  # Endpoint of Transifex APIv3 (do not modify)
   api_host: https://rest.api.transifex.com
+  # Page limit for Transifex APIv3 requests (do not modify)
   page_limit: 1000
 
 redis:
+  # Redis host
   host: redis://transifex-delivery-redis
 
+dynamodb:
+  # Table name of DynamoDB, modify using:
+  # TX__DYNAMODB__TABLE_NAME=mytable
+  table_name: transifex-delivery
+
 registry:
+  # Prefix namespace for registry in Redis. Modify if you want to separate
+  # data, between multiple environments (e.g. beta, staging) that are using
+  # the same Redis instance, e.g.
+  # TX__REGISTRY__PREFIX="beta:registry:"
   prefix: 'registry:'
 
 cache:
+
+  # Redis cache strategy options
   redis:
+    # Redis cache strategy namespace. Modify if you want to separate data,
+    # data, between multiple environments (e.g. beta, staging) that are using
+    # the same Redis instance, e.g.
+    # TX__CACHE__REDIS__PREFIX="beta:storage:"
     prefix: 'storage:'
+
+    # How long should content stay in redis cache strategy before considered expired.
     expire_min: 10080
+
+  # S3 cache strategy options
   s3:
+    # Name of S3 bucket to use for storing cached content. Modify using:
+    # TX__CACHE__S3__BUCKET=mybucket
     bucket: 'transifex-delivery'
+
+    # Control ACL attribute of S3 buckets
     acl: 'private'
+
+    # Location of content during GET requests. By default CDS will read from S3 bucket
+    # and return the content. If you want CDS to redirect response and have clients read
+    # directly from S3 or Cloudfront, you should modify this value. e.g.
+    # TX__CACHE__S3__LOCATION="https://abcd.cloudfront.net/"  (<-- note the trailing slash)
     location: 'cache://'
+
+    # Controls the following S3 attribute:
+    # CacheControl: `max-age=${maxAge}`
     max_age: 86400
+
+  # Google Cloud Storage cache options
   gcs:
+    # Name of S3 bucket to use for storing cached content. Modify using:
+    # TX__CACHE__GCS__BUCKET=mybucket
     bucket: 'transifex-delivery'
+
+    # Location of content during GET requests. By default CDS will read from GCS bucket
+    # and return the content. If you want CDS to redirect response and have clients read
+    # directly from Google Cloud, you should modify this value. e.g.
+    # TX__CACHE__GCS__LOCATION="https://storage.googleapis.com/<name of bucket>/"  (<-- note the trailing slash)
     location: 'cache://'
+
+    # Controls the following GCS attribute:
+    # CacheControl: `max-age=${maxAge}`
     max_age: 86400
 
 metrics:
+  # Enable Prometheus metrics under /metric endpoint
   enabled: false
+
+  # Prometheus port for /metrics endpoint
   port: 9090
 
 log:
@@ -52,14 +167,40 @@ log:
       level: info
 
 queue:
+  # Queue name (Redis broker)
+  # https://github.com/OptimalBits/bull
   name: sync
+
+  # Number of workers to fetch content from Transifex
+  # Setting this to zero, will make queue processing within the same
+  # Node instance (slow).
   workers: 1
 
 analytics:
+  # Enable or disable analytics collection for popular languages
+  # available under /analytics endpoints
   enabled: true
+
+  # Analytics data retention days
   retention_days: 180
 
 limits:
+  # Rate limits for push content (max requests per seconds)
+  # https://github.com/nfriedly/express-rate-limit
   push:
     window_sec: 60
     max_req: 20
+
+# # Manually pass AWS config (local testing)
+# aws:
+#   config:
+#     common:
+#       region: eu-west-1
+#       credentials:
+#         accessKeyId: accesskey
+#         secretAccessKey: secretkey
+#     s3:
+#       endpoint: http://transifex-delivery-moto:5000
+#       s3ForcePathStyle: true
+#     dynamodb:
+#       endpoint: http://transifex-delivery-dynamodb:8000
