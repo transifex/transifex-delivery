@@ -4,8 +4,8 @@ services:
   transifex-delivery:
     image: transifex-delivery-devel
     env_file: docker-compose.env
-    stdin_open: true
-    tty: true
+    # stdin_open: true
+    # tty: true
     depends_on:
       - transifex-delivery-redis
       - transifex-delivery-moto

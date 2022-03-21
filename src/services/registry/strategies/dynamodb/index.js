@@ -171,7 +171,7 @@ async function addToSet(key, value, expireSec) {
         ':ttl': ttl,
       },
       UpdateExpression: 'ADD #value :set SET #ttl = :ttl',
-      ReturnValues: 'UPDATED_NEW',
+      ReturnValues: 'UPDATED_OLD',
     };
   } else {
     params = {
