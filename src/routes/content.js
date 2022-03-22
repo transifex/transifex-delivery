@@ -14,6 +14,7 @@ const router = express.Router();
 
 const hasAnalytics = config.get('analytics:enabled');
 const analyticsRetentionSec = config.get('analytics:retention_days') * 24 * 60 * 60;
+const clientsRetentionSec = 2 * 24 * 60 * 60; // 2 days retention for unique client ips
 const jobStatusCacheSec = config.get('settings:job_status_cache_min') * 60;
 const limitPushWindowMsec = config.get('limits:push:window_sec') * 1000;
 const limitPushMaxReq = config.get('limits:push:max_req') * 1;
@@ -55,7 +56,7 @@ async function getContent(req, res) {
 
     const dateDay = dayjs().format('YYYY-MM-DD');
     const keyDay = `analytics:${project}:${dateDay}`;
-    if (await registry.addToSet(`${keyDay}:clients`, clientId, analyticsRetentionSec)) {
+    if (await registry.addToSet(`${keyDay}:clients:${lang}`, clientId, clientsRetentionSec)) {
       registry.incr(`${keyDay}:lang:${lang}`, 1, analyticsRetentionSec);
       registry.incr(`${keyDay}:sdk:${sdkVersion}`, 1, analyticsRetentionSec);
       registry.addToSet(`${keyDay}:lang`, `${lang}`, analyticsRetentionSec);
