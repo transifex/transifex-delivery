@@ -73,19 +73,22 @@ router.get('/',
       const keyDay = analyticsDate.format('YYYY-MM-DD');
 
       const registryKey = `analytics:${req.token.project_token}:${keyDay}`;
+      let entry = {
+        languages: {},
+        sdks: {},
+        date: keyDay,
+      };
 
       // check for aggregated results
       const aggrKey = `${registryKey}:aggr`;
       const aggrEntry = await registry.get(aggrKey);
-      if (aggrEntry) {
-        response.data.push(aggrEntry);
+      if (aggrEntry
+          && aggrEntry.date === keyDay
+          && aggrEntry.languages
+          && aggrEntry.sdks
+      ) {
+        entry = aggrEntry;
       } else {
-        const entry = {
-          languages: {},
-          sdks: {},
-          date: keyDay,
-        };
-
         await Promise.all([
           // languages
           (async () => {
@@ -94,8 +97,6 @@ router.get('/',
               const count = await registry.get(`${registryKey}:lang:${lang}`);
               if (count > 0) {
                 entry.languages[lang] = count;
-                total.languages[lang] = total.languages[lang] || 0;
-                total.languages[lang] += count;
               }
             })()));
           })(),
@@ -106,19 +107,27 @@ router.get('/',
               const count = await registry.get(`${registryKey}:sdk:${sdk}`);
               if (count > 0) {
                 entry.sdks[sdk] = count;
-                total.sdks[sdk] = total.sdks[sdk] || 0;
-                total.sdks[sdk] += count;
               }
             })()));
           })(),
         ]);
-        response.data.push(entry);
-
         // store past results in registry for future look ups
         if (dayjs().diff(analyticsDate, 'days') > 0) {
           await registry.set(aggrKey, entry, analyticsRetentionDays);
         }
       }
+
+      // find totals
+      _.each(entry.languages, (count, lang) => {
+        total.languages[lang] = total.languages[lang] || 0;
+        total.languages[lang] += count;
+      });
+      _.each(entry.sdks, (count, sdk) => {
+        total.sdks[sdk] = total.sdks[sdk] || 0;
+        total.sdks[sdk] += count;
+      });
+
+      response.data.push(entry);
     }
 
     res.json(response);
