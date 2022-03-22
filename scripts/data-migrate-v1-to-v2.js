@@ -24,13 +24,7 @@ async function start() {
     const key = keys[i];
     const ttl = await redis.getTTLSec(key);
     if (key.endsWith(':clients')) {
-      if (dynamodb) {
-        const data = await redis.listSet(key);
-        for (let j = 0; j < data.length; j += 1) {
-          await dynamodb.addToSet(key, data[j], ttl);
-          console.log(`Add to set ${key} <- ${data[j]}`);
-        }
-      }
+      // pass
     } else if (key.indexOf(':lang:') !== -1) {
       const data = await redis.get(key);
       if (dynamodb) {
