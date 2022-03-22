@@ -75,7 +75,7 @@ router.get('/',
       const registryKey = `analytics:${req.token.project_token}:${keyDay}`;
 
       // check for aggregated results
-      const aggrKey = `${registry}:aggr`;
+      const aggrKey = `${registryKey}:aggr`;
       const aggrEntry = await registry.get(aggrKey);
       if (aggrEntry) {
         response.data.push(aggrEntry);
