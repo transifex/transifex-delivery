@@ -72,6 +72,13 @@ describe('Redis registry', () => {
     expect((await registry.listSet('test:add_to_set')).length).to.equal(2);
   });
 
+  it('adds to set with TTL', async () => {
+    expect(await registry.addToSet('test:add_to_set_ttl', 'a', 10)).to.equal(true);
+    expect(await registry.addToSet('test:add_to_set_ttl', 'a', 10)).to.equal(false);
+    expect(await registry.addToSet('test:add_to_set_ttl', 'b', 10)).to.equal(true);
+    expect((await registry.listSet('test:add_to_set_ttl')).length).to.equal(2);
+  });
+
   it('lists set', async () => {
     await registry.addToSet('test:list_set', 'a');
     await registry.addToSet('test:list_set', 'b');
