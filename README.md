@@ -427,6 +427,65 @@ Response body:
 }
 ```
 
+## Translation proxy: push html (experimental)
+
+Parse and push HTML strings.
+
+```
+POST /proxy/push
+
+Authorization: Bearer <project-token>:<secret>
+Content-Type: application/json; charset=utf-8
+Accept-version: v2
+
+Request body:
+{
+  data: {
+    format: "html|html-fragment",
+    content: "<html content>"
+    tags: ["tag1","tag2"], // optional
+    occurrences: ["occurence1","occurence2"], // optional
+  },
+}
+
+Response status: 202
+Response body:
+{
+  data: {
+    count: <number of segments pushed>
+  },
+}
+```
+
+## Translation proxy: translate HTML (experimental)
+
+Translate HTML content.
+
+```
+POST /proxy/pull/<lang-code>
+
+Authorization: Bearer <project-token>
+Content-Type: application/json; charset=utf-8
+Accept-version: v2
+
+Request body:
+{
+  data: {
+    format: "html|html-fragment",
+    content: "<html content>"
+  },
+}
+
+Response status: 200
+Response body:
+{
+  data: {
+    format: "html|html-fragment",
+    content: "<translated html content>"
+  },
+}
+```
+
 ## Sync strategies
 
 CDS works like a middleware between application SDKs and a place where content lives.

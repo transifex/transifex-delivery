@@ -15,6 +15,7 @@ const invalidateRouter = require('./routes/invalidate');
 const purgeRouter = require('./routes/purge');
 const analyticsRouter = require('./routes/analytics');
 const jobsRouter = require('./routes/jobs');
+const proxyRouter = require('./routes/proxy');
 
 module.exports = () => {
   // setup express and routes
@@ -73,6 +74,7 @@ module.exports = () => {
   app.use('/purge', purgeRouter);
   app.use('/analytics', analyticsRouter);
   app.use('/jobs', jobsRouter);
+  app.use('/proxy', proxyRouter);
 
   app.get('/', (req, res) => res.send('ok'));
 

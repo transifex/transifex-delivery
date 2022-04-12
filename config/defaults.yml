@@ -161,6 +161,15 @@ metrics:
   # Prometheus port for /metrics endpoint
   port: 9090
 
+# Translation proxy settings
+proxy:
+  # Proxy caches files (content) on the disk for quick access
+  # Override this value if you are using shared volumes
+  disk_path: '/tmp'
+
+  # For how long to cache files in seconds
+  max_age: 600
+
 log:
   transports:
     console:
