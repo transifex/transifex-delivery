@@ -152,6 +152,7 @@ function explodePlurals(string) {
 
   if ((Object.keys(plurals).length === 1 && !('other' in plurals))
     || (!('one' in plurals && 'other' in plurals))
+    || ('zero' in plurals)
   ) {
     return defaultResult;
   }
