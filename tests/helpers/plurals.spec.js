@@ -88,6 +88,10 @@ describe('explodePlurals', () => {
       '{cnt, plural, one {hello world} o ther {hello worlds}}',
       [null, { other: '{cnt, plural, one {hello world} o ther {hello worlds}}' }],
     );
+    testExplode(
+      '{cnt, plural, zero {hello none} one {hello world} other {hello worlds}}',
+      [null, { other: '{cnt, plural, zero {hello none} one {hello world} other {hello worlds}}' }],
+    );
   });
   it('should fail on missing plural strings', () => {
     testExplode('{cnt, plural, one', [null, { other: '{cnt, plural, one' }]);
