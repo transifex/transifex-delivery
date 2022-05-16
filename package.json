@@ -1,6 +1,6 @@
 {
   "name": "transifex-delivery",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Transifex Content Delivery Service",
   "keywords": [
     "transifex",
@@ -30,11 +30,11 @@
   "dependencies": {
     "@google-cloud/storage": "^5.19.4",
     "@sentry/node": "^6.19.7",
-    "aws-sdk": "^2.1132.0",
+    "aws-sdk": "^2.1135.0",
     "axios": "^0.27.2",
     "axios-retry": "^3.2.5",
     "body-parser": "^1.20.0",
-    "bull": "^4.8.2",
+    "bull": "^4.8.3",
     "chai-http": "^4.3.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
@@ -42,20 +42,20 @@
     "express": "^4.18.1",
     "express-prom-bundle": "^6.4.1",
     "express-rate-limit": "^6.4.0",
-    "glob": "^8.0.1",
+    "glob": "^8.0.3",
     "ioredis": "^4.28.5",
     "joi": "^14.3.1",
     "lodash": "^4.17.21",
     "morgan": "^1.10.0",
     "nconf": "^0.12.0",
     "nconf-yaml": "^1.0.2",
-    "newrelic": "^8.10.0",
+    "newrelic": "^8.11.1",
     "node-cache": "^5.1.2",
     "prom-client": "^14.0.1",
     "uuid": "^8.3.2",
     "winston": "^3.7.2",
     "winston-transport": "^4.5.0",
-    "yargs": "^17.4.1"
+    "yargs": "^17.5.1"
   },
   "devDependencies": {
     "chai": "^4.3.6",
