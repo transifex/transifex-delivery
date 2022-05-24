@@ -50,21 +50,30 @@ async function syncerPull(job) {
       ),
     ]);
   } catch (err) {
-    const e = err || {};
-    // gracefully handle errors and store them in cache
-    await Promise.all([
-      registry.set(`cache:${key}`, {
-        status: 'error',
-        ts: Date.now(),
-        statusCode: e.status || 500,
-        statusMessage: e.message || 'Server error',
-      }, pullErrorExpireSec),
-      registry.addToSet(
-        `cache:${token.project_token}:keys`,
-        `cache:${key}`,
-        pullSuccessExpireSec,
-      ),
-    ]);
+    const rdata = (await registry.get(`cache:${key}`)) || {};
+    if (rdata.status === 'success') {
+      // if we already have successful data in cache, then
+      // do not override them with an error state.
+      // Just log the error and bail-out.
+      logger.error(err);
+    } else {
+      const e = err || {};
+      // gracefully handle errors and store them in cache
+      await Promise.all([
+        registry.set(`cache:${key}`, {
+          status: 'error',
+          ts: Date.now(),
+          statusCode: e.status || 500,
+          statusMessage: e.message || 'Server error',
+        }, pullErrorExpireSec),
+        registry.addToSet(
+          `cache:${token.project_token}:keys`,
+          `cache:${key}`,
+          pullSuccessExpireSec,
+        ),
+      ]);
+      logger.warn(err);
+    }
   }
 }
 

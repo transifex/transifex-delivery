@@ -41,7 +41,7 @@ async function routerCacheHelper(
   let sentContent = false;
 
   try {
-    const rdata = await registry.get(`cache:${key}`) || {};
+    const rdata = (await registry.get(`cache:${key}`)) || {};
     switch (rdata.status) {
       case 'success':
         if (req.header('If-None-Match')
