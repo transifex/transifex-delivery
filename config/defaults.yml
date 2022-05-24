@@ -34,7 +34,7 @@ settings:
   pull_success_cache_min: 10080
 
   # Minutes to cache failed pulls in the registry
-  pull_error_cache_min: 15
+  pull_error_cache_min: 5
 
   # Minutes to cache job status in registry
   job_status_cache_min: 480
