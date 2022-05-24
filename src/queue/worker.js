@@ -49,25 +49,22 @@ async function syncerPull(job) {
         pullSuccessExpireSec,
       ),
     ]);
-  } catch (e) {
-    // gracefully handle 4xx errors and store them in cache
-    if (e.status && e.status >= 400 && e.status < 500) {
-      await Promise.all([
-        registry.set(`cache:${key}`, {
-          status: 'error',
-          ts: Date.now(),
-          statusCode: e.status || 404,
-          statusMessage: e.message || 'Not found',
-        }, pullErrorExpireSec),
-        registry.addToSet(
-          `cache:${token.project_token}:keys`,
-          `cache:${key}`,
-          pullSuccessExpireSec,
-        ),
-      ]);
-    } else {
-      throw e;
-    }
+  } catch (err) {
+    const e = err || {};
+    // gracefully handle errors and store them in cache
+    await Promise.all([
+      registry.set(`cache:${key}`, {
+        status: 'error',
+        ts: Date.now(),
+        statusCode: e.status || 500,
+        statusMessage: e.message || 'Server error',
+      }, pullErrorExpireSec),
+      registry.addToSet(
+        `cache:${token.project_token}:keys`,
+        `cache:${key}`,
+        pullSuccessExpireSec,
+      ),
+    ]);
   }
 }
 
@@ -111,29 +108,23 @@ async function syncerPush(job) {
         status: 'completed',
       },
     }, jobStatusCacheSec);
-  } catch (e) {
-    if (e.status) {
-      if (e.status !== 401 && e.status !== 404) {
-        logger.error(e);
+  } catch (err) {
+    const e = err || {};
+    // update job status
+    let errors = [e.message];
+    if (e.details) {
+      if (_.isArray(e.details)) {
+        errors = errors.concat(e.details);
+      } else {
+        errors.push(e.details);
       }
-      // update job status
-      let errors = [e.message];
-      if (e.details) {
-        if (_.isArray(e.details)) {
-          errors = errors.concat(e.details);
-        } else {
-          errors.push(e.details);
-        }
-      }
-      await registry.set(`job:status:${jobId}`, {
-        data: {
-          errors,
-          status: 'failed',
-        },
-      }, jobStatusCacheSec);
-    } else {
-      throw e;
     }
+    await registry.set(`job:status:${jobId}`, {
+      data: {
+        errors,
+        status: 'failed',
+      },
+    }, jobStatusCacheSec);
   }
 }
 

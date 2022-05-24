@@ -39,7 +39,6 @@ async function addJob(jobId, payload) {
     jobId,
     removeOnComplete: true,
     removeOnFail: true,
-    attempts: 3,
   });
 }
 
