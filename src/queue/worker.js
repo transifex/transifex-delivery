@@ -51,22 +51,26 @@ async function syncerPull(job) {
     ]);
   } catch (err) {
     const e = err || {};
+    const statusCode = e.status || 500;
+    const statusMessage = e.message || 'Server error';
+
     const rdata = (await registry.get(`cache:${key}`)) || {};
-    if (rdata.status === 'success') {
+    if (rdata.status === 'success'
+      && statusCode !== 401
+      && statusCode !== 404
+    ) {
       // if we already have successful data in cache, then
       // do not override them with an error state.
       // Just log the error and bail-out.
-      if (!e.status || e.status >= 500) {
-        logger.error(err);
-      }
+      logger.error(err);
     } else {
       // gracefully handle errors and store them in cache
       await Promise.all([
         registry.set(`cache:${key}`, {
           status: 'error',
           ts: Date.now(),
-          statusCode: e.status || 500,
-          statusMessage: e.message || 'Server error',
+          statusCode,
+          statusMessage,
         }, pullErrorExpireSec),
         registry.addToSet(
           `cache:${token.project_token}:keys`,
