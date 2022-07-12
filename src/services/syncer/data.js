@@ -106,8 +106,11 @@ async function getProjectLanguageTranslations(options, langCode) {
  */
 async function pushSourceContent(options, payload) {
   validators.validatePushSourceContent(payload);
-  const data = await syncer.pushSourceContent(options,
-    payload.data, payload.meta || {});
+  const data = await syncer.pushSourceContent(
+    options,
+    payload.data,
+    payload.meta || {},
+  );
   return data;
 }
 

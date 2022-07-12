@@ -1,14 +1,12 @@
 const joi = require('joi');
 
 const PUSH_SOURCE_CONTENT_SCHEMA = joi.object().keys({
-  data: joi.object().pattern(/\w/,
-    joi.object().keys(
-      {
-        string: joi.string().required(),
-        meta: joi.any(),
-      },
-    ))
-    .required(),
+  data: joi.object().pattern(/\w/, joi.object().keys(
+    {
+      string: joi.string().required(),
+      meta: joi.any(),
+    },
+  )).required(),
   meta: joi.object().keys({
     purge: joi.boolean(),
     override_tags: joi.boolean(),

@@ -4,7 +4,8 @@ const registry = require('../services/registry');
 
 const router = express.Router();
 
-router.get('/content/:id',
+router.get(
+  '/content/:id',
   validateHeader('trust'),
   validateAuth,
   async (req, res) => {
@@ -18,6 +19,7 @@ router.get('/content/:id',
         details: 'Invalid job id or job expired',
       });
     }
-  });
+  },
+);
 
 module.exports = router;
