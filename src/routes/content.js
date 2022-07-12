@@ -43,9 +43,12 @@ async function getContent(req, res) {
     key = `${key}[${tags}]`;
   }
   const sentContent = await routerCacheHelper(
-    req, res,
-    key, filter,
-    'getProjectLanguageTranslations', req.params.lang_code,
+    req,
+    res,
+    key,
+    filter,
+    'getProjectLanguageTranslations',
+    req.params.lang_code,
   );
   if (hasAnalytics && sentContent) {
     const clientId = md5(req.ip || 'unknown');
@@ -67,11 +70,14 @@ async function getContent(req, res) {
 
 // ------------- Routes -------------
 
-router.get('/:lang_code',
+router.get(
+  '/:lang_code',
   validateHeader('public'),
-  getContent);
+  getContent,
+);
 
-router.post('/',
+router.post(
+  '/',
   validateHeader('private'),
   rateLimit({
     windowMs: limitPushWindowMsec,
@@ -133,6 +139,7 @@ router.post('/',
         },
       },
     });
-  });
+  },
+);
 
 module.exports = router;

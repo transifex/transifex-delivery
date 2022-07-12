@@ -19,9 +19,7 @@ const autoSyncMSec = config.get('settings:autosync_min') * 60 * 1000;
  * @param {*} syncFuncParams
  * @returns {Object}
  */
-async function routerCacheHelper(
-  req, res, key, filter, syncFunc, ...syncFuncParams
-) {
+async function routerCacheHelper(req, res, key, filter, syncFunc, ...syncFuncParams) {
   // helper function to add sync job once
   let jobAdded = false;
   function addJob() {

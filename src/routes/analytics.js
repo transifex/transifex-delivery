@@ -16,7 +16,8 @@ if (hasAnalytics) {
   logger.info('Analytics: disabled');
 }
 
-router.get('/',
+router.get(
+  '/',
   (req, res, next) => {
     if (!hasAnalytics) {
       res.status(501).json({
@@ -131,6 +132,7 @@ router.get('/',
     }
 
     res.json(response);
-  });
+  },
+);
 
 module.exports = router;

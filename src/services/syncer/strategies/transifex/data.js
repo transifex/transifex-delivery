@@ -127,15 +127,13 @@ async function getProjectLanguageTranslations(options, langCode) {
       };
     }
     // get as translation
-    const result = await api.getProjectLanguageTranslations(
-      info.token.original, {
-        organization_slug: info.token.organization_slug,
-        project_slug: info.token.project_slug,
-        resource_slug: info.token.resource_slug,
-        lang_code: langCode,
-        filter_tags: _.get(options, 'filter.tags'),
-      },
-    );
+    const result = await api.getProjectLanguageTranslations(info.token.original, {
+      organization_slug: info.token.organization_slug,
+      project_slug: info.token.project_slug,
+      resource_slug: info.token.resource_slug,
+      lang_code: langCode,
+      filter_tags: _.get(options, 'filter.tags'),
+    });
     return result;
   } catch (e) {
     if (e.response.status !== 401 && e.response.status !== 404) {

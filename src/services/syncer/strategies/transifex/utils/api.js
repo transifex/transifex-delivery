@@ -325,8 +325,11 @@ async function postSourceContent(token, options) {
     if (Object.prototype.hasOwnProperty.call(payloads, payload)) {
       try {
         logger.info(`POST ${url}`);
-        const { data } = await axios.post(url,
-          { data: payloads[payload] }, headers);
+        const { data } = await axios.post(
+          url,
+          { data: payloads[payload] },
+          headers,
+        );
         createdStrings = _.concat(createdStrings, data.data);
       } catch (e) {
         errors = _.concat(errors, e.response.data.errors);
@@ -360,8 +363,11 @@ async function patchSourceContent(token, options) {
     if (Object.prototype.hasOwnProperty.call(payloads, payload)) {
       try {
         logger.info(`PATCH ${url}`);
-        const { data } = await axios.patch(`${url}/${payloads[payload].id}`,
-          { data: payloads[payload] }, headers);
+        const { data } = await axios.patch(
+          `${url}/${payloads[payload].id}`,
+          { data: payloads[payload] },
+          headers,
+        );
         updatedStrings = _.concat(updatedStrings, data.data);
       } catch (e) {
         errors = _.concat(errors, e.response.data.errors);
@@ -470,7 +476,9 @@ async function pushSourceContent(token, options) {
 
   function preparePayloadForPatch(key, attributes, mustPatchStrings) {
     const payload = apiPayloads.getPatchStringPayload(
-      existingStrings[key].id, attributes, mustPatchStrings,
+      existingStrings[key].id,
+      attributes,
+      mustPatchStrings,
     );
     updatePayloads.push(payload);
   }
@@ -538,9 +546,7 @@ async function pushSourceContent(token, options) {
         common.add(key);
         // append tags
         if (meta.override_tags !== true) {
-          attributes.tags = _.uniq(_.union(
-            existingString.attributes.tags, attributes.tags,
-          ));
+          attributes.tags = _.uniq(_.union(existingString.attributes.tags, attributes.tags));
         }
       }
 
