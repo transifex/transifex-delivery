@@ -4,12 +4,14 @@ const { validateHeader, validateAuth } = require('../middlewares/headers');
 const logger = require('../logger');
 const queue = require('../queue');
 const registry = require('../services/registry');
+const { createRateLimiter } = require('../helpers/ratelimit');
 
 const router = express.Router();
 
 router.post(
   '/:lang_code',
   validateHeader('trust'),
+  createRateLimiter('invalidate'),
   validateAuth,
   async (req, res) => {
     try {
@@ -19,7 +21,7 @@ router.post(
       let keys = await registry.listSet(`cache:${token}:keys`);
       keys = _.filter(keys, (key) => key.indexOf(`cache:${token}:${langCode}:content`) === 0);
       // Regular expression to match cache key with optional [tags] filter
-      const contentRE = new RegExp(`cache:${token}:${langCode}:content(.*)`);
+      const contentRE = new RegExp(`cache:${_.escapeRegExp(token)}:${_.escapeRegExp(langCode)}:content(.*)`);
       let count = 0;
       _.each(keys, (key) => {
         const filter = {};
@@ -68,6 +70,7 @@ router.post(
 router.post(
   '/',
   validateHeader('trust'),
+  createRateLimiter('invalidate'),
   validateAuth,
   async (req, res) => {
     try {
@@ -76,7 +79,7 @@ router.post(
       let keys = await registry.listSet(`cache:${token}:keys`);
       keys = _.filter(keys, (key) => key.indexOf(`cache:${token}:`) === 0);
       // Regular expression to match cache key with optional [tags] filter
-      const contentRE = new RegExp(`cache:${token}:(.*):content(.*)`);
+      const contentRE = new RegExp(`cache:${_.escapeRegExp(token)}:(.*):content(.*)`);
       let count = 0;
       _.each(keys, (key) => {
         const filter = {};

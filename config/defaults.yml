@@ -190,6 +190,15 @@ limits:
   push:
     window_sec: 60
     max_req: 20
+  invalidate:
+    window_sec: 5
+    max_req: 120
+  jobs:
+    window_sec: 5
+    max_req: 120
+  analytics:
+    window_sec: 5
+    max_req: 60
 
 # # Manually pass AWS config (local testing)
 # aws:

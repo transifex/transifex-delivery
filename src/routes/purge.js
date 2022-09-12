@@ -4,12 +4,14 @@ const { validateHeader, validateAuth } = require('../middlewares/headers');
 const logger = require('../logger');
 const cache = require('../services/cache');
 const registry = require('../services/registry');
+const { createRateLimiter } = require('../helpers/ratelimit');
 
 const router = express.Router();
 
 router.post(
   '/:lang_code',
   validateHeader('trust'),
+  createRateLimiter('invalidate'),
   validateAuth,
   async (req, res) => {
     try {
@@ -50,6 +52,7 @@ router.post(
 router.post(
   '/',
   validateHeader('trust'),
+  createRateLimiter('invalidate'),
   validateAuth,
   async (req, res) => {
     try {

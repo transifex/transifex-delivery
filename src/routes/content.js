@@ -1,7 +1,6 @@
 const express = require('express');
 const dayjs = require('dayjs');
 const _ = require('lodash');
-const rateLimit = require('express-rate-limit');
 const config = require('../config');
 const { validateHeader } = require('../middlewares/headers');
 const syncer = require('../services/syncer/data');
@@ -9,6 +8,7 @@ const registry = require('../services/registry');
 const queue = require('../queue');
 const md5 = require('../helpers/md5');
 const { cleanTags, routerCacheHelper } = require('../helpers/utils');
+const { createRateLimiter } = require('../helpers/ratelimit');
 
 const router = express.Router();
 
@@ -16,8 +16,6 @@ const hasAnalytics = config.get('analytics:enabled');
 const analyticsRetentionSec = config.get('analytics:retention_days') * 24 * 60 * 60;
 const clientsRetentionSec = 2 * 24 * 60 * 60; // 2 days retention for unique client ips
 const jobStatusCacheSec = config.get('settings:job_status_cache_min') * 60;
-const limitPushWindowMsec = config.get('limits:push:window_sec') * 1000;
-const limitPushMaxReq = config.get('limits:push:max_req') * 1;
 
 /**
  * Get language translations
@@ -79,15 +77,7 @@ router.get(
 router.post(
   '/',
   validateHeader('private'),
-  rateLimit({
-    windowMs: limitPushWindowMsec,
-    max: limitPushMaxReq,
-    keyGenerator: (req) => req.token.project_token,
-    message: {
-      status: 429,
-      message: 'Too many requests, please try again later.',
-    },
-  }),
+  createRateLimiter('push'),
   async (req, res) => {
     // authenticate before creating an push job
     const isAuthenticated = await syncer.verifyCredentials({ token: req.token });
