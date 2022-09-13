@@ -9,6 +9,7 @@ const queue = require('../queue');
 const md5 = require('../helpers/md5');
 const { cleanTags, routerCacheHelper } = require('../helpers/utils');
 const { createRateLimiter } = require('../helpers/ratelimit');
+const logger = require('../logger');
 
 const router = express.Router();
 
@@ -57,11 +58,19 @@ async function getContent(req, res) {
 
     const dateDay = dayjs().format('YYYY-MM-DD');
     const keyDay = `analytics:${project}:${dateDay}`;
-    if (await registry.addToSet(`${keyDay}:clients:${lang}`, clientId, clientsRetentionSec)) {
-      registry.incr(`${keyDay}:lang:${lang}`, 1, analyticsRetentionSec);
-      registry.incr(`${keyDay}:sdk:${sdkVersion}`, 1, analyticsRetentionSec);
-      registry.addToSet(`${keyDay}:lang`, `${lang}`, analyticsRetentionSec);
-      registry.addToSet(`${keyDay}:sdk`, `${sdkVersion}`, analyticsRetentionSec);
+
+    // gracefully handle this, because DynamoDB may have some limits
+    try {
+      if (await registry.addToSet(`${keyDay}:clients:${lang}`, clientId, clientsRetentionSec)) {
+        await Promise.all([
+          registry.incr(`${keyDay}:lang:${lang}`, 1, analyticsRetentionSec),
+          registry.incr(`${keyDay}:sdk:${sdkVersion}`, 1, analyticsRetentionSec),
+          registry.addToSet(`${keyDay}:lang`, `${lang}`, analyticsRetentionSec),
+          registry.addToSet(`${keyDay}:sdk`, `${sdkVersion}`, analyticsRetentionSec),
+        ]);
+      }
+    } catch (e) {
+      logger.error(e);
     }
   }
 }
