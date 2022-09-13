@@ -91,6 +91,8 @@ async function getProjectLanguageTranslations(options, langCode) {
  *   },
  *   meta: {
  *     purge: <boolean>,
+ *     override_tags: <boolean>,
+ *     dry_run: <boolean>
  *   },
  * }
  *

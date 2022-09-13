@@ -186,6 +186,10 @@ If `override_tags: true` in `meta` object, then replace the existing string tags
 
 If `override_tags: false` in `meta` object (the default), then append tags from source content to tags of existing strings instead of overwriting them.
 
+**Dry run**
+
+If `dry_run: true` in `meta` object, then emulate a content push, without doing actual changes.
+
 ```
 POST /content
 
@@ -210,7 +214,8 @@ Request body:
   },
   meta: {
     purge: <boolean>,
-    override_tags: <boolean>
+    override_tags: <boolean>,
+    dry_run: <boolean>
   }
 }
 

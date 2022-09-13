@@ -585,26 +585,32 @@ async function pushSourceContent(token, options) {
     }
   }
 
-  // Send for Delete and return errors
-  const deletedStrings = await deleteSourceContent(token, {
-    payload: deletePayloads,
-  });
-  deleted += deletedStrings.count;
-  errors = _.concat(errors, deletedStrings.errors);
+  if (meta.dry_run) {
+    deleted += deletePayloads.length;
+    created += createPayloads.length;
+    updated += updatePayloads.length;
+  } else {
+    // Send for Delete and return errors
+    const deletedStrings = await deleteSourceContent(token, {
+      payload: deletePayloads,
+    });
+    deleted += deletedStrings.count;
+    errors = _.concat(errors, deletedStrings.errors);
 
-  // Send for post and return created and errors
-  const postedStrings = await postSourceContent(token, {
-    payload: createPayloads,
-  });
-  created += postedStrings.createdStrings.length;
-  errors = _.concat(errors, postedStrings.errors);
+    // Send for post and return created and errors
+    const postedStrings = await postSourceContent(token, {
+      payload: createPayloads,
+    });
+    created += postedStrings.createdStrings.length;
+    errors = _.concat(errors, postedStrings.errors);
 
-  // Send for Patch and return updated and errors
-  const patchedStrings = await patchSourceContent(token, {
-    payload: updatePayloads,
-  });
-  updated += patchedStrings.updatedStrings.length;
-  errors = _.concat(errors, patchedStrings.errors);
+    // Send for Patch and return updated and errors
+    const patchedStrings = await patchSourceContent(token, {
+      payload: updatePayloads,
+    });
+    updated += patchedStrings.updatedStrings.length;
+    errors = _.concat(errors, patchedStrings.errors);
+  }
 
   return {
     created,
