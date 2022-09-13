@@ -461,6 +461,29 @@ describe('Push source Content', () => {
     });
   });
 
+  it('should push new strings with dry run', async () => {
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, { data: [], links: {} });
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, { data: [], links: {} });
+
+    const data = dataHelper.getPushSourceContent();
+    const result = await transifexData.pushSourceContent(options, data, {
+      dry_run: true,
+    });
+
+    expect(result).to.eql({
+      created: 2,
+      updated: 0,
+      skipped: 0,
+      deleted: 0,
+      failed: 0,
+      errors: [],
+    });
+  });
+
   it('should return correct report on errors', async () => {
     nock(urls.api)
       .get(urls.source_strings)
