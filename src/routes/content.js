@@ -9,7 +9,6 @@ const queue = require('../queue');
 const md5 = require('../helpers/md5');
 const { cleanTags, routerCacheHelper } = require('../helpers/utils');
 const { createRateLimiter } = require('../helpers/ratelimit');
-const logger = require('../logger');
 
 const router = express.Router();
 
@@ -59,7 +58,8 @@ async function getContent(req, res) {
     const dateDay = dayjs().format('YYYY-MM-DD');
     const keyDay = `analytics:${project}:${dateDay}`;
 
-    // gracefully handle this, because DynamoDB may have some limits
+    // Gracefully handle setting analytics, because DynamoDB registry strategy
+    // may have some limits and cause it to fail.
     try {
       if (await registry.addToSet(`${keyDay}:clients:${lang}`, clientId, clientsRetentionSec)) {
         await Promise.all([
@@ -70,7 +70,7 @@ async function getContent(req, res) {
         ]);
       }
     } catch (e) {
-      logger.error(e);
+      // No-op
     }
   }
 }
