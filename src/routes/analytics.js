@@ -5,6 +5,7 @@ const { validateHeader, validateAuth } = require('../middlewares/headers');
 const registry = require('../services/registry');
 const config = require('../config');
 const logger = require('../logger');
+const { createRateLimiter } = require('../helpers/ratelimit');
 
 const router = express.Router();
 const hasAnalytics = config.get('analytics:enabled');
@@ -29,6 +30,7 @@ router.get(
     }
   },
   validateHeader('trust'),
+  createRateLimiter('analytics'),
   validateAuth,
   async (req, res) => {
     const filterQuery = req.query.filter || {};
