@@ -6,7 +6,10 @@ FROM node:16.13.2-alpine as builder
 ARG USER_ID
 ARG GROUP_ID
 
-RUN if [ ${USER_ID:-0} -ne 0 ] && [ ${GROUP_ID:-0} -ne 0 ]; then \
+RUN apk update && \
+    apk upgrade && \
+    rm -rf /var/cache/apk/* && \
+    if [ ${USER_ID:-0} -ne 0 ] && [ ${GROUP_ID:-0} -ne 0 ]; then \
     deluser node && \
     addgroup -g ${GROUP_ID} node && \
     adduser -u ${USER_ID} -D node -G node \
