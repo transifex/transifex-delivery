@@ -19,6 +19,14 @@ _build:
 		--target ${TARGET_IMAGE} \
 		-t ${TARGET_IMAGE}:${TARGET_TAG} .
 
+trivy:
+	make build_prod && \
+	docker run --rm \
+	-v /var/run/docker.sock:/var/run/docker.sock \
+	aquasec/trivy image \
+	--no-progress --ignore-unfixed --severity HIGH,CRITICAL \
+	transifex-delivery:latest
+
 up:
 	docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 
