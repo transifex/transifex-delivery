@@ -49,6 +49,7 @@ async function getLanguages(options) {
  * @param {Object} options.token
  * @param {Object} options.filter (optional)
  * @param {String} options.filter.tags (optional)
+ * @param {String} options.filter.status (optional)
  * @param {String} lang_code The language code of the translations
  * @returns {Object} An object with the available strings and translations
  * Important: Keep in mind that the `data` key is an object

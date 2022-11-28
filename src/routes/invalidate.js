@@ -37,6 +37,15 @@ router.post(
         } catch (e) {
           // no-op
         }
+        // optionally match {status} filter
+        try {
+          let status = matches[1];
+          status = status.match(/\{(.*)\}/);
+          // eslint-disable-next-line prefer-destructuring
+          filter.status = status[1];
+        } catch (e) {
+          // no-op
+        }
         queue.addJob(jobKey, {
           type: 'syncer:pull',
           key: jobKey,
@@ -105,6 +114,15 @@ router.post(
               tags = tags.match(/\[(.*)\]/);
               // eslint-disable-next-line prefer-destructuring
               filter.tags = tags[1];
+            } catch (e) {
+              // no-op
+            }
+            // optionally match {status} filter
+            try {
+              let status = matches[2];
+              status = status.match(/\{(.*)\}/);
+              // eslint-disable-next-line prefer-destructuring
+              filter.status = status[1];
             } catch (e) {
               // no-op
             }
