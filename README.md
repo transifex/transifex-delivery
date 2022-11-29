@@ -140,6 +140,7 @@ Get localized content for a specific language code.
 ```
 GET /content/<lang-code>
 GET /content/<lang-code>?filter[tags]=tag1,tag2
+GET /content/<lang-code>?filter[status]=translated|reviewed|proofread|finalized
 
 Authorization: Bearer <project-token>
 Content-Type: application/json; charset=utf-8

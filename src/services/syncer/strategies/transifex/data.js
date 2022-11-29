@@ -121,6 +121,7 @@ async function getProjectLanguageTranslations(options, langCode) {
         project_slug: info.token.project_slug,
         resource_slug: info.token.resource_slug,
         filter_tags: _.get(options, 'filter.tags'),
+        filter_status: _.get(options, 'filter.status'),
       });
       return {
         data: Object.fromEntries(parseProjectLanguageSources(result)),
@@ -133,6 +134,7 @@ async function getProjectLanguageTranslations(options, langCode) {
       resource_slug: info.token.resource_slug,
       lang_code: langCode,
       filter_tags: _.get(options, 'filter.tags'),
+      filter_status: _.get(options, 'filter.status'),
     });
     return result;
   } catch (e) {

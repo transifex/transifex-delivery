@@ -115,24 +115,22 @@ async function getTargetLanguages(token, options) {
 async function getProjectLanguageTranslations(token, options) {
   let concatenatedData = new Map();
 
-  let urlKey = 'GET_RESOURCE_TRANSLATIONS';
-  let urlParams = {
+  const urlParams = {
     ORGANIZATION_SLUG: `o:${options.organization_slug}`,
     PROJECT_SLUG: `p:${options.project_slug}`,
     RESOURCE_SLUG: `r:${options.resource_slug}`,
     LANGUAGE_CODE: `l:${options.lang_code}`,
   };
 
-  // add filter
+  // add filters
   if (options.filter_tags) {
-    urlKey = 'GET_RESOURCE_TRANSLATIONS_FILTER_TAGS';
-    urlParams = {
-      ...urlParams,
-      FILTER_TAGS: options.filter_tags,
-    };
+    urlParams.FILTER_TAGS = options.filter_tags;
+  }
+  if (options.filter_status) {
+    urlParams.FILTER_STATUS = options.filter_status;
   }
 
-  let url = apiUrls.getUrl(urlKey, urlParams);
+  let url = apiUrls.getUrl('GET_RESOURCE_TRANSLATIONS', urlParams);
   let result = null;
   while (url) {
     logger.info(`GET ${url}`);
@@ -162,8 +160,7 @@ async function getProjectLanguageTranslations(token, options) {
 async function getSourceContentMap(token, options) {
   let concatenatedData = new Map();
 
-  let urlKey = 'GET_RESOURCE_STRINGS';
-  let urlParams = {
+  const urlParams = {
     ORGANIZATION_SLUG: `o:${options.organization_slug}`,
     PROJECT_SLUG: `p:${options.project_slug}`,
     RESOURCE_SLUG: `r:${options.resource_slug}`,
@@ -171,14 +168,10 @@ async function getSourceContentMap(token, options) {
 
   // add filter
   if (options.filter_tags) {
-    urlKey = 'GET_RESOURCE_STRINGS_FILTER_TAGS';
-    urlParams = {
-      ...urlParams,
-      FILTER_TAGS: options.filter_tags,
-    };
+    urlParams.FILTER_TAGS = options.filter_tags;
   }
 
-  let url = apiUrls.getUrl(urlKey, urlParams);
+  let url = apiUrls.getUrl('GET_RESOURCE_STRINGS', urlParams);
   const headers = apiUrls.getHeaders(token);
 
   let result = null;
@@ -196,20 +189,15 @@ async function getSourceContentMap(token, options) {
 
 async function getRevisions(token, options) {
   const concatenatedData = {};
-  let urlKey = 'GET_RESOURCE_STRINGS_REVISIONS';
-  let urlParams = {
+  const urlParams = {
     ORGANIZATION_SLUG: `o:${options.organization_slug}`,
     PROJECT_SLUG: `p:${options.project_slug}`,
     RESOURCE_SLUG: `r:${options.resource_slug}`,
   };
   if (options.filter_tags) {
-    urlKey = 'GET_RESOURCE_STRINGS_REVISIONS_FILTER_TAGS';
-    urlParams = {
-      ...urlParams,
-      FILTER_TAGS: options.filter_tags,
-    };
+    urlParams.FILTER_TAGS = options.filter_tags;
   }
-  let url = apiUrls.getUrl(urlKey, urlParams);
+  let url = apiUrls.getUrl('GET_RESOURCE_STRINGS_REVISIONS', urlParams);
   const headers = apiUrls.getHeaders(token);
   let result = null;
   while (url) {

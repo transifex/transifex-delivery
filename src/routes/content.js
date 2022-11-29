@@ -30,16 +30,24 @@ async function getContent(req, res) {
   let key = `${req.token.project_token}:${req.params.lang_code}:content`;
 
   // parse tags filter
-  let filter = {};
+  const filter = {};
   const tags = cleanTags(_.get(req.query, 'filter.tags'));
   if (tags) {
     // update filter
-    filter = {
-      tags,
-    };
+    filter.tags = tags;
     // add tags to key
     key = `${key}[${tags}]`;
   }
+
+  // parse status filter
+  const filterStatus = _.get(req.query, 'filter.status');
+  if (filterStatus) {
+    // update filter
+    filter.status = filterStatus;
+    // add status to key
+    key = `${key}{${filterStatus}}`;
+  }
+
   const sentContent = await routerCacheHelper(
     req,
     res,
