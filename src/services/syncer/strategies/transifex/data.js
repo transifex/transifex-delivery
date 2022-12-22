@@ -57,7 +57,10 @@ async function getTokenInformation(options) {
     });
   } catch (e) {
     const status = e.response ? e.response.status : e.status;
-    if (status !== 401 && status !== 404) {
+    if (status !== 400
+        && status !== 401
+        && status !== 404
+    ) {
       logger.error(e.message);
     }
     throw new errors.APIError(e.message, status || 500);
@@ -101,7 +104,10 @@ async function getLanguages(options) {
     }
     return response;
   } catch (e) {
-    if (e.response.status !== 401 && e.response.status !== 404) {
+    if (e.response.status !== 400
+        && e.response.status !== 401
+        && e.response.status !== 404
+    ) {
       logger.error(e);
     }
     throw new errors.APIError(e.message, e.response.status);
@@ -138,7 +144,10 @@ async function getProjectLanguageTranslations(options, langCode) {
     });
     return result;
   } catch (e) {
-    if (e.response.status !== 401 && e.response.status !== 404) {
+    if (e.response.status !== 400
+      && e.response.status !== 401
+      && e.response.status !== 404
+    ) {
       logger.error(e);
     }
     throw new errors.APIError(e.message, e.response.status);
