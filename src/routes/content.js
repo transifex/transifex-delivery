@@ -14,6 +14,7 @@ const router = express.Router();
 
 const hasAnalytics = config.get('analytics:enabled');
 const analyticsRetentionSec = config.get('analytics:retention_days') * 24 * 60 * 60;
+const analyticsSampling = config.get('analytics:sampling');
 const clientsRetentionSec = 2 * 24 * 60 * 60; // 2 days retention for unique client ips
 const jobStatusCacheSec = config.get('settings:job_status_cache_min') * 60;
 
@@ -56,7 +57,7 @@ async function getContent(req, res) {
     'getProjectLanguageTranslations',
     req.params.lang_code,
   );
-  if (hasAnalytics && sentContent) {
+  if (hasAnalytics && sentContent && Math.random() < analyticsSampling) {
     const clientId = md5(req.ip || 'unknown');
 
     const project = req.token.project_token;
