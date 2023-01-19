@@ -184,6 +184,9 @@ analytics:
   # Analytics data retention days
   retention_days: 180
 
+  # Analytics sampling rate. 0 = nothing, 1 = all requests
+  sampling: 0.4
+
 limits:
   # Rate limits for push content (max requests per seconds)
   # https://github.com/nfriedly/express-rate-limit
