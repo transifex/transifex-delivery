@@ -59,11 +59,13 @@ async function getContent(req, res) {
     req.params.lang_code,
   );
 
-  sendToTelemetry('/native/collect/fetch', {
-    token: req.token.project_token,
-    langCode: req.params.lang_code,
-    sdkVersion: req.headers['x-native-sdk'] || 'unknown',
-  });
+  if (sentContent) {
+    sendToTelemetry('/native/collect/fetch', {
+      token: req.token.project_token,
+      langCode: req.params.lang_code,
+      sdkVersion: req.headers['x-native-sdk'] || 'unknown',
+    });
+  }
 
   if (hasAnalytics && sentContent && Math.random() < analyticsSampling) {
     const clientId = md5(req.ip || 'unknown');
