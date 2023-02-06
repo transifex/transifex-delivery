@@ -9,6 +9,7 @@ const queue = require('../queue');
 const md5 = require('../helpers/md5');
 const { cleanTags, routerCacheHelper } = require('../helpers/utils');
 const { createRateLimiter } = require('../helpers/ratelimit');
+const { sendToTelemetry } = require('../telemetry');
 
 const router = express.Router();
 
@@ -57,6 +58,13 @@ async function getContent(req, res) {
     'getProjectLanguageTranslations',
     req.params.lang_code,
   );
+
+  sendToTelemetry('/native/collect/fetch', {
+    token: req.token.project_token,
+    langCode: req.params.lang_code,
+    sdkVersion: req.headers['x-native-sdk'] || 'unknown',
+  });
+
   if (hasAnalytics && sentContent && Math.random() < analyticsSampling) {
     const clientId = md5(req.ip || 'unknown');
 

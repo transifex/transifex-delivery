@@ -5,6 +5,7 @@ const logger = require('../logger');
 const cache = require('../services/cache');
 const registry = require('../services/registry');
 const { createRateLimiter } = require('../helpers/ratelimit');
+const { sendToTelemetry } = require('../telemetry');
 
 const router = express.Router();
 
@@ -29,13 +30,19 @@ router.post(
           }
         }
       })()));
-      const response = {
-        status: 'success',
+
+      // send to telemetry
+      await sendToTelemetry('/native/collect/action', {
         token,
-        count,
-      };
+        action: 'invalidate',
+      });
+
       res.json({
-        data: response,
+        data: {
+          status: 'success',
+          token,
+          count,
+        },
       });
     } catch (e) {
       logger.error(e);
@@ -70,21 +77,26 @@ router.post(
           }
         }
       })()));
-      const response = {
-        status: 'success',
+
+      // send to telemetry
+      await sendToTelemetry('/native/collect/action', {
         token,
-        count,
-      };
+        action: 'invalidate',
+      });
+
       res.json({
-        data: response,
+        data: {
+          status: 'success',
+          token,
+          count,
+        },
       });
     } catch (e) {
       logger.error(e);
-      const response = {
-        status: 'failed',
-      };
       res.status(500).json({
-        data: response,
+        data: {
+          status: 'failed',
+        },
       });
     }
   },

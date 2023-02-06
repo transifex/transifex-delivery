@@ -20,6 +20,9 @@ settings:
 dynamodb:
   tableName: transifex-delivery-test
 
+telemetry:
+  enabled: false
+
 aws:
   config:
     common:

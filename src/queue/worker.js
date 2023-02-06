@@ -5,6 +5,7 @@ const config = require('../config');
 const cache = require('../services/cache');
 const registry = require('../services/registry');
 const syncer = require('../services/syncer/data');
+const { sendToTelemetry } = require('../telemetry');
 
 const pullSuccessExpireSec = config.get('settings:pull_success_cache_min') * 60;
 const pullErrorExpireSec = config.get('settings:pull_error_cache_min') * 60;
@@ -123,6 +124,12 @@ async function syncerPush(job) {
         status: 'completed',
       },
     }, jobStatusCacheSec);
+
+    // send to telemetry
+    await sendToTelemetry('/native/collect/action', {
+      token: token.project_token,
+      action: 'push',
+    });
   } catch (err) {
     const e = err || {};
     // update job status
