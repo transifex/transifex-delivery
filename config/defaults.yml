@@ -203,6 +203,16 @@ limits:
     window_sec: 5
     max_req: 60
 
+telemetry:
+  # If usage telemetry should be enabled
+  enabled: true
+
+  # Telemetry service host
+  host: https://telemetry.svc.transifex.net
+
+  # Request timeout to Telemetry service
+  req_timeout_sec: 5
+
 # # Manually pass AWS config (local testing)
 # aws:
 #   config:
