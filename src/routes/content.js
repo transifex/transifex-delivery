@@ -58,7 +58,7 @@ async function getContent(req, res) {
       token: req.token.project_token,
       langCode: req.params.lang_code,
       sdkVersion: req.headers['x-native-sdk'] || 'unknown',
-    });
+    }, `fetch:${req.token.project_token}`);
   }
 }
 
