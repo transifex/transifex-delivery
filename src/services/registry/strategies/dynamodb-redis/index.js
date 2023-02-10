@@ -42,33 +42,20 @@ function autoSync() {
   }, 2000);
 }
 
-function isAnalytics(key) {
-  return `${key}`.indexOf('analytics:') === 0;
-}
-
 /**
  * @implements {del}
  */
 async function del(key) {
-  if (isAnalytics(key)) {
-    await dynamodb.del(key);
-  } else {
-    await Promise.all([
-      redis.del(key),
-      dynamodb.del(key),
-    ]);
-  }
+  await Promise.all([
+    redis.del(key),
+    dynamodb.del(key),
+  ]);
 }
 
 /**
  * @implements {get}
  */
 async function get(key) {
-  if (isAnalytics(key)) {
-    const value = await dynamodb.get(key);
-    return value;
-  }
-
   // Found in Redis... done
   let value = await redis.get(key);
   if (value !== undefined) {
@@ -89,14 +76,10 @@ async function get(key) {
  * @implements {set}
  */
 async function set(key, data, expireSec) {
-  if (isAnalytics(key)) {
-    await dynamodb.set(key, data, expireSec);
-  } else {
-    await Promise.all([
-      redis.set(key, data, expireSec),
-      dynamodb.set(key, data, expireSec),
-    ]);
-  }
+  await Promise.all([
+    redis.set(key, data, expireSec),
+    dynamodb.set(key, data, expireSec),
+  ]);
 }
 
 /**
@@ -110,29 +93,18 @@ function findAll() {
  * @implements {incr}
  */
 async function incr(key, increment, expireSec) {
-  if (isAnalytics(key)) {
-    await dynamodb.incr(key, increment, expireSec);
-  } else {
-    await Promise.all([
-      dynamodb.incr(key, increment, expireSec),
-      redis.del(key),
-    ]);
-  }
+  await Promise.all([
+    dynamodb.incr(key, increment, expireSec),
+    redis.del(key),
+  ]);
 }
 
 /**
  * @implements {addToSet}
  */
 async function addToSet(key, value, expireSec) {
-  if (!isAnalytics(key)) {
-    const retVal = await dynamodb.addToSet(key, value, expireSec);
-    return retVal;
-  }
-  if (await redis.addToSet(key, value, expireSec)) {
-    const retVal = await dynamodb.addToSet(key, value, expireSec);
-    return retVal;
-  }
-  return false;
+  const retVal = await dynamodb.addToSet(key, value, expireSec);
+  return retVal;
 }
 
 /**

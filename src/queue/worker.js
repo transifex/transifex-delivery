@@ -129,7 +129,7 @@ async function syncerPush(job) {
     await sendToTelemetry('/native/collect/action', {
       token: token.project_token,
       action: 'push',
-    });
+    }, `push:${token.project_token}`);
   } catch (err) {
     const e = err || {};
     // update job status
