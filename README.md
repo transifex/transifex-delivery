@@ -386,53 +386,6 @@ Response body (fail):
 }
 ```
 
-## Analytics
-
-Endpoint to get usage analytics, per language and SDK.
-
-```
-GET /analytics?filter[since]=<YYYY-MM-DD>&filter[until]=<YYYY-MM-DD>
-
-Authorization: Bearer <project-token>:<secret>
-Content-Type: application/json; charset=utf-8
-Accept-version: v2
-
-or
-
-Authorization: Bearer <project-token>
-X-TRANSIFEX-TRUST-SECRET: <transifex-secret>
-Content-Type: application/json; charset=utf-8
-Accept-version: v2
-
-Response status: 200
-Response body:
-{
-  data: [{
-    languages: {
-      <lang-code>: <number of hits>,
-      ...
-    },
-    sdks: {
-      <sdk-version>: <number of hits>,
-      ...
-    },
-    date: <YYYY-MM-DD or YYYY-MM>,
-  }, ...],
-  meta: {
-    total: {
-      languages: {
-        <lang-code>: <total number of hits>,
-        ...
-      },
-      sdks: {
-        <sdk-version>: <total number of hits>,
-        ...
-      },
-    },
-  },
-}
-```
-
 ## Sync strategies
 
 CDS works like a middleware between application SDKs and a place where content lives.
@@ -471,7 +424,6 @@ See "Third Party Integrations" -> "Google Cloud Storage" on how to enable this s
 ## Registry strategies
 
 Registry is a key/value storage used for storing various metadata required for the service to work.
-Also, analytics data are stored in the registry.
 
 ### Redis strategy (default)
 

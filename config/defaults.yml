@@ -24,7 +24,7 @@ settings:
   # https://github.com/expressjs/body-parser#limit
   request_size_limit: '50mb'
 
-  # Minutes to cache authentication credentials (invalidate, analytics endpoints)
+  # Minutes to cache authentication credentials (invalidate endpoints)
   # When a request is made, CDS will try to authenticate with Transifex the project
   # token/secret. The result will be cached for X minutes, before trying to re-authenticate
   # again.
@@ -58,8 +58,8 @@ settings:
 
   # Optional secret for trusting communication between CDS and Transifex.
   # Used for requests supporting the X-TRANSIFEX-TRUST-SECRET authentication
-  # header. This is used for server-2-server authentication, e.g. retrieve
-  # analytics or invalidate the cache of a project token, without having
+  # header. This is used for server-2-server authentication, e.g.
+  # invalidate the cache of a project token, without having
   # to provide a secret key. e.g.
   # TX__SETTINGS__TRUST_SECRET=supersecret
   trust_secret: ''
@@ -176,17 +176,6 @@ queue:
   # Node instance (slow).
   workers: 1
 
-analytics:
-  # Enable or disable analytics collection for popular languages
-  # available under /analytics endpoints
-  enabled: true
-
-  # Analytics data retention days
-  retention_days: 180
-
-  # Analytics sampling rate. 0 = nothing, 1 = all requests
-  sampling: 0.4
-
 limits:
   # Rate limits for push content (max requests per seconds)
   # https://github.com/nfriedly/express-rate-limit
@@ -199,9 +188,6 @@ limits:
   jobs:
     window_sec: 5
     max_req: 120
-  analytics:
-    window_sec: 5
-    max_req: 60
 
 telemetry:
   # If usage telemetry should be enabled

@@ -6,7 +6,6 @@ const config = require('../config');
  * Scopes are:
  * - push
  * - invalidate
- * - analytics
  * - jobs
  *
  * as defined in limits:... in config files.

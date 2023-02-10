@@ -13,7 +13,6 @@ const contentRouter = require('./routes/content');
 const statusRouter = require('./routes/status');
 const invalidateRouter = require('./routes/invalidate');
 const purgeRouter = require('./routes/purge');
-const analyticsRouter = require('./routes/analytics');
 const jobsRouter = require('./routes/jobs');
 
 module.exports = () => {
@@ -71,7 +70,6 @@ module.exports = () => {
   app.use('/status', statusRouter);
   app.use('/invalidate', invalidateRouter);
   app.use('/purge', purgeRouter);
-  app.use('/analytics', analyticsRouter);
   app.use('/jobs', jobsRouter);
 
   app.get('/', (req, res) => res.send('ok'));
