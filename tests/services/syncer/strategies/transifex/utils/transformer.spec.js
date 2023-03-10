@@ -49,9 +49,7 @@ describe('Transformer', () => {
     );
 
     const data = response.data[0];
-    let result = transformer.parseProjectLanguageTranslations(
-      response.data, included,
-    );
+    let result = transformer.parseProjectLanguageTranslations(response.data, included);
 
     let expected = new Map([['hello_world', {
       string: (
@@ -63,9 +61,7 @@ describe('Transformer', () => {
     expect(_.isEqual(result, expected)).to.eql(true);
 
     data.attributes.strings = null;
-    result = transformer.parseProjectLanguageTranslations(
-      response.data, included,
-    );
+    result = transformer.parseProjectLanguageTranslations(response.data, included);
 
     expected = new Map([
       ['hello_world', {
@@ -75,9 +71,7 @@ describe('Transformer', () => {
 
     expect(_.isEqual(result, expected)).to.eql(true);
 
-    result = transformer.parseProjectLanguageTranslations(
-      response.data, new Map(),
-    );
+    result = transformer.parseProjectLanguageTranslations(response.data, new Map());
 
     expected = new Map();
     expect(_.isEqual(result, expected)).to.eql(true);

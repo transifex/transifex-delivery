@@ -410,6 +410,45 @@ async function deleteSourceContent(token, options) {
 }
 
 /**
+ * Delete translations via the API using PATCH
+ *
+ * @param {Object} token
+ * @param {Object} options
+ * @param {String} options.payload A list of payloads to patch
+ * @returns {Object} An object with the updated strings and errors
+ *
+ */
+async function deleteTranslationContent(token, options) {
+  const url = apiUrls.getUrl('RESOURCE_TRANSLATIONS');
+  const headers = apiUrls.getHeaders(token, true);
+  const payloads = _.chunk(options.payload, 150);
+
+  let deletedTranslations = [];
+  let errors = [];
+
+  for (const payload in payloads) {
+    if (Object.prototype.hasOwnProperty.call(payloads, payload)) {
+      try {
+        logger.info(`PATCH ${url}`);
+        const { data } = await axios.patch(
+          url,
+          { data: payloads[payload] },
+          headers,
+        );
+        deletedTranslations = _.concat(deletedTranslations, data.data);
+      } catch (e) {
+        errors = _.concat(errors, e.response.data.errors);
+      }
+    }
+  }
+
+  return {
+    deletedTranslations,
+    errors,
+  };
+}
+
+/**
  * Sends content to Transifex.
  * Gets a request with a payload and applies some logic to differenciate
  * strings that:
@@ -445,6 +484,7 @@ async function pushSourceContent(token, options) {
   const createPayloads = [];
   const updatePayloads = [];
   const deletePayloads = [];
+  const deleteTranslationPayloads = [];
 
   let existingStrings = {};
   let existingRevisions = {};
@@ -474,6 +514,11 @@ async function pushSourceContent(token, options) {
   function preparePayloadForDelete(key) {
     const payload = apiPayloads.getDeleteStringPayload(existingStrings[key].id);
     deletePayloads.push(payload);
+  }
+
+  function preparePayloadForDeleteTranslations(key) {
+    const payload = apiPayloads.getDeleteTranslationsPayload(existingStrings[key].id);
+    deleteTranslationPayloads.push(payload);
   }
 
   const payloadKeys = _.keys(strings);
@@ -553,6 +598,9 @@ async function pushSourceContent(token, options) {
         );
         if (mustPatchStrings || mustPatchMetadata) {
           preparePayloadForPatch(key, attributes, mustPatchStrings);
+          if (mustPatchStrings && meta.keep_translations === false) {
+            preparePayloadForDeleteTranslations(key);
+          }
         } else {
           skipped += 1;
         }
@@ -598,6 +646,31 @@ async function pushSourceContent(token, options) {
     });
     updated += patchedStrings.updatedStrings.length;
     errors = _.concat(errors, patchedStrings.errors);
+
+    // Send for delete translations
+    if (!_.isEmpty(deleteTranslationPayloads)) {
+      // Get target languages
+      let targetLanguageCodes = [];
+      try {
+        const { data } = (await getTargetLanguages(token, options));
+        targetLanguageCodes = _.map(data, (lang) => lang.code);
+      } catch (err) {
+        // no-op
+      }
+      for (let i = 0; i < targetLanguageCodes.length; i += 1) {
+        const langCode = targetLanguageCodes[i];
+        // Add lang code in the payload
+        const payload = _.map(deleteTranslationPayloads, (entry) => ({
+          ...entry,
+          id: `${entry.id}:l:${langCode}`,
+        }));
+        // Delete language batch
+        const deletedTranslations = await deleteTranslationContent(token, {
+          payload,
+        });
+        errors = _.concat(errors, deletedTranslations.errors);
+      }
+    }
   }
 
   return {

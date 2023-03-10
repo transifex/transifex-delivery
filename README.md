@@ -187,6 +187,12 @@ If `override_tags: true` in `meta` object, then replace the existing string tags
 
 If `override_tags: false` in `meta` object (the default), then append tags from source content to tags of existing strings instead of overwriting them.
 
+**Keep translations**
+
+if `keep_translations: true` in `meta` object (the default), then preserve translations on source content updates.
+
+if `keep_translations: false` in `meta` object, then delete translations on source string content updates.
+
 **Dry run**
 
 If `dry_run: true` in `meta` object, then emulate a content push, without doing actual changes.
@@ -216,6 +222,7 @@ Request body:
   meta: {
     purge: <boolean>,
     override_tags: <boolean>,
+    keep_translations: <boolean>,
     dry_run: <boolean>
   }
 }

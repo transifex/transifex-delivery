@@ -1,6 +1,6 @@
 {
   "name": "transifex-delivery",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Transifex Content Delivery Service",
   "keywords": [
     "transifex",
@@ -13,7 +13,7 @@
     "test": "tests"
   },
   "scripts": {
-    "eslint": "eslint src/",
+    "eslint": "eslint src/ tests/",
     "start": "node ./src/index.js",
     "start-web": "node ./src/index.js --only=web",
     "start-worker": "node ./src/index.js --only=worker",
@@ -28,12 +28,12 @@
   "homepage": "https://github.com/transifex/transifex-delivery",
   "license": "Apache-2.0",
   "dependencies": {
-    "@google-cloud/storage": "^6.9.2",
-    "@sentry/node": "^7.37.0",
-    "aws-sdk": "^2.1312.0",
-    "axios": "^1.3.2",
+    "@google-cloud/storage": "^6.9.4",
+    "@sentry/node": "^7.43.0",
+    "aws-sdk": "^2.1336.0",
+    "axios": "^1.3.4",
     "axios-retry": "^3.4.0",
-    "body-parser": "^1.20.1",
+    "body-parser": "^1.20.2",
     "bull": "^4.10.4",
     "chai-http": "^4.3.0",
     "compression": "^1.7.4",
@@ -43,31 +43,31 @@
     "express-prom-bundle": "^6.6.0",
     "express-rate-limit": "^6.7.0",
     "glob": "^8.1.0",
-    "ioredis": "^5.3.0",
+    "ioredis": "^5.3.1",
     "joi": "^14.3.1",
     "lodash": "^4.17.21",
     "morgan": "^1.10.0",
     "nconf": "^0.12.0",
     "nconf-yaml": "^1.0.2",
-    "newrelic": "^9.10.0",
+    "newrelic": "^9.12.1",
     "node-cache": "^5.1.2",
-    "prom-client": "^14.1.1",
+    "prom-client": "^14.2.0",
     "rate-limiter-flexible": "^2.4.1",
     "uuid": "^8.3.2",
     "winston": "^3.8.2",
     "winston-transport": "^4.5.0",
-    "yargs": "^17.6.2"
+    "yargs": "^17.7.1"
   },
   "devDependencies": {
     "chai": "^4.3.7",
-    "eslint": "^8.33.0",
+    "eslint": "^8.36.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.27.5",
     "mocha": "^10.2.0",
     "nock": "^13.3.0",
-    "nodemon": "^2.0.20",
+    "nodemon": "^2.0.21",
     "nyc": "^15.1.0",
-    "sinon": "^15.0.1",
+    "sinon": "^15.0.2",
     "supertest": "^6.3.3"
   }
 }
