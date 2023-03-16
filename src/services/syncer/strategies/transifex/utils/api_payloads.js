@@ -37,6 +37,16 @@ function getDeleteStringPayload(stringId) {
   };
 }
 
+function getDeleteTranslationsPayload(stringId) {
+  return {
+    attributes: {
+      strings: null,
+    },
+    id: stringId,
+    type: 'resource_translations',
+  };
+}
+
 // If the string extracted from the codebase is unknown to Transifex (ie is
 // neither the latest upstream version nor any of the previous revisions), we
 // must update the string on Transifex
@@ -75,6 +85,7 @@ module.exports = {
   getPushStringPayload,
   getPatchStringPayload,
   getDeleteStringPayload,
+  getDeleteTranslationsPayload,
   stringMetadataChanged,
   stringContentChanged,
 };

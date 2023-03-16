@@ -10,6 +10,7 @@ const PUSH_SOURCE_CONTENT_SCHEMA = joi.object().keys({
   meta: joi.object().keys({
     purge: joi.boolean(),
     override_tags: joi.boolean(),
+    keep_translations: joi.boolean(),
     dry_run: joi.boolean(),
   }),
 });
