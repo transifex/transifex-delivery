@@ -540,6 +540,28 @@ TX__CACHE__GCS__BUCKET=<name of bucket>
 TX__CACHE__GCS__LOCATION="https://storage.googleapis.com/<name of bucket>/"  (<-- note the trailing slash)
 ```
 
+### Azure Storage
+
+You may use an Azure Blob Storage to store the cached content and optionally set a CDN (e.g. Azure CDN) on top of it to serve
+the content.
+
+To enable Azure integration you need to ensure that Azure SDK can authenticate by following the [offical docs](https://www.npmjs.com/package/@azure/storage-blob).
+
+Optionally you can set an Azure storage connection string by setting the following environment variable:
+
+```
+TX__CACHE__AZURE__CONNECTION_STRING=<azure-storage-connection-string>
+```
+
+Then, you need to configure some environment variables to enable the integration:
+
+```
+TX__SETTINGS__CACHE=azure
+TX__CACHE__AZURE__ACCOUNT=<azure-account-name>
+TX__CACHE__AZURE__CONTAINER=<azure-storage-container-name>
+TX__CACHE__AZURE__LOCATION="https://<account>.blob.core.windows.net/<container>/"  (<-- note the trailing slash)
+```
+
 ### Sentry
 
 To integrate with Sentry, provide the appropriate Sentry DSN endpoint as an environment variable:
