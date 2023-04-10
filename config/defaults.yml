@@ -70,7 +70,7 @@ settings:
   syncer: transifex
 
   # Cache strategy. Defines where cached content is stored.
-  # Options are: [redis, s3, gcs]
+  # Options are: [redis, s3, gcs, azure]
   # e.g. TX__SETTINGS__CACHE=redis
   cache: redis
 
@@ -153,6 +153,30 @@ cache:
     # Controls the following GCS attribute:
     # CacheControl: `max-age=${maxAge}`
     max_age: 86400
+
+  # Azure blob storage cache options
+  azure:
+    # Name of the Storage account. Modify using
+    # TX__CACHE__AZURE__ACCOUNT=myaccount
+    account: 'txdelivery'
+
+    # Name of the Storage account container. Modify using
+    # TX__CACHE__AZURE__CONTAINER=mycontainer
+    container: 'txdelivery'
+
+    # Use connection string or leave empty for default identity credentials.
+    # https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string#configure-a-connection-string-for-an-azure-storage-account
+    # https://www.npmjs.com/package/@azure/storage-blob#create-the-blob-service-client
+    #
+    # Modify using:
+    # TX__CACHE__AZURE__CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=..."
+    connection_string: ''
+
+    # Location of content during GET requests. By default CDS will read from Azure blob
+    # and return the content. If you want CDS to redirect response and have clients read
+    # directly from Azure CDN, you should modify this value. e.g.
+    # TX__CACHE__AZURE__LOCATION="https://cds.azureedge.net/txdelivery/"  (<-- note the trailing slash)
+    location: 'cache://'
 
 metrics:
   # Enable Prometheus metrics under /metric endpoint
