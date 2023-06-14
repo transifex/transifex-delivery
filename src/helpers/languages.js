@@ -2337,13 +2337,13 @@ const LANGUAGES = {
   'zh-Hans': {
     code: 'zh-Hans',
     name: 'Chinese Simplified',
-    localized_name: '中文 (简)',
+    localized_name: '简体中文',
     rtl: false,
   },
   'zh-Hant': {
     code: 'zh-Hant',
     name: 'Chinese Traditional',
-    localized_name: '中文 (傳統)',
+    localized_name: '繁體中文',
     rtl: false,
   },
   tzl: {
