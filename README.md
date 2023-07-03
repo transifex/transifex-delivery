@@ -119,15 +119,15 @@ Response body:
 {
   "data": [
     {
-      "name": "<lang name>",
-      "code": "<lang code>",
-      "localized_name": "<localized version of name>",
-      "rtl": true/false
+      "name": "<string>",
+      "code": "<string>",
+      "localized_name": "<string>",
+      "rtl": <boolean>
     },
     { ... }
   ],
   "meta": {
-    source_lang_code: "<lang code>",
+    "source_lang_code": "<string>",
     ...
   }
 }
@@ -156,12 +156,12 @@ Response status: 302
 Response status: 200
 Response body:
 {
-  data: {
-    <key>: {
-      'string': <string>
+  "data": {
+    "<key>": {
+      "string": "<string>"
     }
   },
-  meta: {
+  "meta": {
     ...
   }
 }
@@ -206,34 +206,34 @@ Accept-version: v2
 
 Request body:
 {
-  data: {
-    <key>: {
-      string: <string>,
-      meta: {
-        context: <string>
-        developer_comment: <string>,
-        character_limit: <number>,
-        tags: <array>,
-        occurrences: <array>,
+  "data": {
+    "<key>": {
+      "string": "<string>",
+      "meta": {
+        "context": "<string>"
+        "developer_comment": "<string>",
+        "character_limit": <number>,
+        "tags": ["<string>", "<string>", ...],
+        "occurrences": ["<string>", "<string>", ...]
       }
     }
-    <key>: { .. }
+    "<key>": { .. }
   },
-  meta: {
-    purge: <boolean>,
-    override_tags: <boolean>,
-    keep_translations: <boolean>,
-    dry_run: <boolean>
+  "meta": {
+    "purge": <boolean>,
+    "override_tags": <boolean>,
+    "keep_translations": <boolean>,
+    "dry_run": <boolean>
   }
 }
 
 Response status: 202
 Response body:
 {
-  data: {
-    id: <string>,
-    links: {
-      job: <string>
+  "data": {
+    "id": "<string>",
+    "links": {
+      "job": "<string>"
     }
   }
 }
@@ -241,15 +241,15 @@ Response body:
 Response status: 409
 Response body:
 {
-  status: 409,
-  message: 'Another content upload is already in progress',
+  "status": 409,
+  "message": "Another content upload is already in progress"
 }
 
 Response status: 429
 Response body:
 {
-  status: 429,
-  message: 'Too many requests, please try again later.',
+  "status": 429,
+  "message": "Too many requests, please try again later."
 }
 ```
 
@@ -270,41 +270,54 @@ Accept-version: v2
 Response status: 200
 Response body:
 {
-  data: {
-    status: "pending",
-  },
+  "data": {
+    "status": "pending"
+  }
 }
 
 Response status: 200
 Response body:
 {
-  data: {
-    status: "processing",
-  },
+  "data": {
+    "status": "processing"
+  }
 }
 
 Response status: 200
 Response body:
 {
-  data: {
-    details: {
-      created: <number>,
-      updated: <number>,
-      skipped: <number>,
-      deleted: <number>,
-      failed: <number>
-    }
-    errors: [..],
-    status: "completed",
-  },
+  "data": {
+    "details": {
+      "created": <number>,
+      "updated": <number>,
+      "skipped": <number>,
+      "deleted": <number>,
+      "failed": <number>
+    },
+    "errors": [..],
+    "status": "completed"
+  }
 }
 
 Response status: 200
 Response body:
 {
-  data: {
-    errors: [..],
-    status: "failed",
+  "data": {
+    "details": {
+      "created": <number>,
+      "updated": <number>,
+      "skipped": <number>,
+      "deleted": <number>,
+      "failed": <number>
+    },
+    "errors": [{
+      status: "<string>",
+      code: "<string>",
+      detail: "<string>",
+      title: "<string>",
+      source: { .. }
+    }],
+    "status": "failed"
   },
 }
 ```
@@ -314,6 +327,8 @@ Response body:
 Endpoint to force cache invalidation for a specific language or for
 all project languages. Invalidation triggers background fetch of fresh
 content for languages that are already cached in the service.
+
+Returns the number of resources invalidated in the `count` field.
 
 ```
 POST /invalidate
@@ -336,25 +351,27 @@ Request body:
 Response status: 200
 Response body (success):
 {
-  data: {
-    status: 'success',
-    token: <project-token>,
-    count: <number of resources invalidated>,
+  "data": {
+    "status": "success",
+    "token": "<string>",
+    "count": <number>
   },
 }
 
 Response status: 500
 Response body (fail):
 {
-  data: {
-    status: 'failed',
-  },
+  "data": {
+    "status": "failed"
+  }
 }
 ```
 
 ## Purge cache
 
 Endpoint to purge cache for a specific resource content.
+
+Returns the number of resources purged in the `count` field.
 
 ```
 POST /purge
@@ -377,19 +394,19 @@ Request body:
 Response status: 200
 Response body (success):
 {
-  data: {
-    status: 'success',
-    token: <project-token>,
-    count: <number of resources purged>,
+  "data": {
+    "status": "success",
+    "token": "<string>",
+    "count": <number>
   }
 }
 
 Response status: 500
 Response body (fail):
 {
-  data: {
-    status: 'failed',
-  },
+  "data": {
+    "status": "failed"
+  }
 }
 ```
 

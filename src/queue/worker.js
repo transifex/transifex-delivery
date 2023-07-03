@@ -132,17 +132,24 @@ async function syncerPush(job) {
     }, `push:${token.project_token}`);
   } catch (err) {
     const e = err || {};
+    const errors = [{
+      status: `${e.status || 500}`,
+      code: `${e.code || 'server error'}`,
+      detail: JSON.stringify(e.details || 'Something went wrong'),
+      title: e.message || 'Something went wrong',
+      source: _.isObject(e.source) ? e.source : {},
+    }];
+
     // update job status
-    let errors = [e.message];
-    if (e.details) {
-      if (_.isArray(e.details)) {
-        errors = errors.concat(e.details);
-      } else {
-        errors.push(e.details);
-      }
-    }
     await registry.set(`job:status:${jobId}`, {
       data: {
+        details: {
+          created: 0,
+          updated: 0,
+          skipped: 0,
+          deleted: 0,
+          failed: _.keys((payload || {}).data || []).length,
+        },
         errors,
         status: 'failed',
       },

@@ -32,6 +32,7 @@ function handleResult(error, isWeb) {
       err.message = 'Invalid Payload';
       err.details = details;
       err.status = 422;
+      err.code = 'invalid';
     } else {
       err.message = details.map((i) => i.message).join(',');
     }
