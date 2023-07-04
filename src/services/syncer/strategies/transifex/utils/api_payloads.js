@@ -1,6 +1,6 @@
 const _ = require('lodash');
 
-const PATCH_ATTRIBUTES = ['character_limit', 'tags', 'developer_comment'];
+const PATCH_ATTRIBUTES = ['character_limit', 'tags', 'developer_comment', 'occurrences'];
 
 function getPushStringPayload(resourceId, attributes) {
   return {

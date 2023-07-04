@@ -579,7 +579,18 @@ async function pushSourceContent(token, options) {
         common.add(key);
         // append tags
         if (meta.override_tags !== true) {
-          attributes.tags = _.uniq(_.union(existingString.attributes.tags, attributes.tags));
+          attributes.tags = _.compact(_.uniq(
+            _.union(existingString.attributes.tags, attributes.tags),
+          ));
+        }
+        // append occurences
+        if (meta.override_occurrences !== true) {
+          attributes.occurrences = _.compact(_.uniq(
+            _.union(
+              (existingString.attributes.occurrences || '').split(','),
+              (attributes.occurrences || '').split(','),
+            ),
+          )).join(',');
         }
       }
 
