@@ -187,6 +187,12 @@ If `override_tags: true` in `meta` object, then replace the existing string tags
 
 If `override_tags: false` in `meta` object (the default), then append tags from source content to tags of existing strings instead of overwriting them.
 
+**Replace occurrences**
+
+If `override_occurrences: true` in `meta` object, then replace the existing string occurrences with the occurrences of this request.
+
+If `override_occurrences: false` in `meta` object (the default), then append occurrences from source content to occurrences of existing strings instead of overwriting them.
+
 **Keep translations**
 
 if `keep_translations: true` in `meta` object (the default), then preserve translations on source content updates.
@@ -222,6 +228,7 @@ Request body:
   "meta": {
     "purge": <boolean>,
     "override_tags": <boolean>,
+    "override_occurrences": <boolean>,
     "keep_translations": <boolean>,
     "dry_run": <boolean>
   }
