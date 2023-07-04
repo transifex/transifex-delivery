@@ -481,17 +481,20 @@ describe('POST /content', () => {
 
     expect(res.body).to.eqls({
       data: {
-        errors: [
-          'Invalid Payload',
-          {
-            message: '"data" is required',
-            path: ['data'],
-            type: 'any.required',
-            context: {
-              key: 'data',
-              label: 'data',
-            },
-          }],
+        details: {
+          created: 0,
+          updated: 0,
+          skipped: 0,
+          deleted: 0,
+          failed: 0,
+        },
+        errors: [{
+          code: 'invalid',
+          detail: '[{"message":"\\"data\\" is required","path":["data"],"type":"any.required","context":{"key":"data","label":"data"}}]',
+          status: '422',
+          title: 'Invalid Payload',
+          source: {},
+        }],
         status: 'failed',
       },
     });
