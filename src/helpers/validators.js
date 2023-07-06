@@ -1,9 +1,9 @@
 const joi = require('joi');
 
 const PUSH_SOURCE_CONTENT_SCHEMA = joi.object().keys({
-  data: joi.object().pattern(/\w/, joi.object().keys(
+  data: joi.object().pattern(/./, joi.object().keys(
     {
-      string: joi.string().required(),
+      string: joi.string().allow(''),
       meta: joi.any(),
     },
   )).required(),
