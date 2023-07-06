@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const config = require('../../config');
 const logger = require('../../logger');
 const validators = require('../../helpers/validators');
@@ -111,9 +112,21 @@ async function getProjectLanguageTranslations(options, langCode) {
  */
 async function pushSourceContent(options, payload) {
   validators.validatePushSourceContent(payload);
+
+  // Remove empty keys and empty strings from payload
+  // There are several Native SDKs that might send invalid
+  // data due to parsing of empty key or strings
+  const cleanData = {};
+  _.each(payload.data, (value, key) => {
+    if (key.trim() && value.string) {
+      cleanData[key] = value;
+    }
+  });
+
+  // Send valid payload to syncer
   const data = await syncer.pushSourceContent(
     options,
-    payload.data,
+    cleanData,
     payload.meta || {},
   );
   return data;

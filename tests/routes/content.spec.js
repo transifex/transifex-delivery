@@ -331,6 +331,70 @@ describe('POST /content', () => {
     });
   });
 
+  it('should discard empty keys of strings', async () => {
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, { data: [], links: {} });
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, { data: [], links: {} });
+
+    nock(urls.api).post(urls.resource_strings)
+      .reply(200, {
+        data: [
+          {
+            somekey: 'somevalue',
+          },
+          {
+            someotherkey: 'somevalue',
+          },
+        ],
+      });
+
+    const data = dataHelper.getPushSourceContent();
+
+    let res = await request(app)
+      .post('/content')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}:secret`)
+      .send({
+        data: {
+          ...data,
+          ' ': { string: 'empty key' },
+          '    ': { string: '' },
+          'Empty string key': { string: '' },
+        },
+      });
+
+    expect(res.status).to.eql(202);
+
+    // poll
+    let status = '';
+    const jobUrl = res.body.data.links.job;
+    while (status !== 'completed') {
+      await sleep(100);
+      res = await request(app)
+        .get(jobUrl)
+        .set('Authorization', `Bearer ${token}:secret`);
+      expect(res.status).to.eql(200);
+      status = res.body.data.status;
+    }
+
+    expect(res.body).to.eqls({
+      data: {
+        details: {
+          created: 2,
+          updated: 0,
+          skipped: 0,
+          deleted: 0,
+          failed: 0,
+        },
+        errors: [],
+        status: 'completed',
+      },
+    });
+  });
+
   it('should get correct report and errors', async () => {
     nock(urls.api)
       .get(urls.source_strings)
