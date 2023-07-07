@@ -348,6 +348,9 @@ describe('POST /content', () => {
           {
             someotherkey: 'somevalue',
           },
+          {
+            'hello\n你好世\n': 'somevalue',
+          },
         ],
       });
 
@@ -360,7 +363,9 @@ describe('POST /content', () => {
       .send({
         data: {
           ...data,
-          ' ': { string: 'empty key' },
+          'hello\n你好世\n': { string: 'somevalue' },
+          '': { string: 'empty key' },
+          ' ': { string: 'key as space' },
           '    ': { string: '' },
           'Empty string key': { string: '' },
         },
@@ -383,7 +388,7 @@ describe('POST /content', () => {
     expect(res.body).to.eqls({
       data: {
         details: {
-          created: 2,
+          created: 3,
           updated: 0,
           skipped: 0,
           deleted: 0,
@@ -560,6 +565,52 @@ describe('POST /content', () => {
           source: {},
         }],
         status: 'failed',
+      },
+    });
+  });
+
+  it('should not throw an error if data has no strings', async () => {
+    const sourceData = dataHelper.getSourceString();
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, sourceData);
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, { data: [], links: {} });
+
+    nock(urls.api)
+      .post(urls.resource_strings)
+      .reply(200, {});
+
+    let res = await request(app)
+      .post('/content')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}:secret`)
+      .send({ data: {} });
+
+    // poll
+    let status = '';
+    const jobUrl = res.body.data.links.job;
+    while (status !== 'completed') {
+      await sleep(100);
+      res = await request(app)
+        .get(jobUrl)
+        .set('Authorization', `Bearer ${token}:secret`);
+      expect(res.status).to.eql(200);
+      status = res.body.data.status;
+    }
+
+    expect(res.body).to.eqls({
+      data: {
+        details: {
+          created: 0,
+          updated: 0,
+          skipped: 0,
+          deleted: 0,
+          failed: 0,
+        },
+        errors: [],
+        status: 'completed',
       },
     });
   });

@@ -1,19 +1,23 @@
 const joi = require('joi');
 
-const PUSH_SOURCE_CONTENT_SCHEMA = joi.object().keys({
-  data: joi.object().pattern(/./, joi.object().keys(
-    {
-      string: joi.string().allow(''),
-      meta: joi.any(),
-    },
-  )).required(),
-  meta: joi.object().keys({
-    purge: joi.boolean(),
-    override_tags: joi.boolean(),
-    override_occurrences: joi.boolean(),
-    keep_translations: joi.boolean(),
-    dry_run: joi.boolean(),
-  }),
+const PUSH_SOURCE_CONTENT_ROOT_SCHEMA = joi.object().keys({
+  data: joi.object().required(),
+  meta: joi.object(),
+}).required();
+
+const PUSH_SOURCE_CONTENT_DATA_SCHEMA = joi.object().pattern(/./, joi.object().keys(
+  {
+    string: joi.string().allow(''),
+    meta: joi.any(),
+  },
+)).required();
+
+const PUSH_SOURCE_CONTENT_META_SCHEMA = joi.object().keys({
+  purge: joi.boolean(),
+  override_tags: joi.boolean(),
+  override_occurrences: joi.boolean(),
+  keep_translations: joi.boolean(),
+  dry_run: joi.boolean(),
 });
 
 /**
@@ -41,11 +45,23 @@ function handleResult(error, isWeb) {
   }
 }
 
-function validatePushSourceContent(payload) {
-  const { error } = joi.validate(payload, PUSH_SOURCE_CONTENT_SCHEMA);
+function validatePushSourceContentRoot(payload) {
+  const { error } = joi.validate(payload, PUSH_SOURCE_CONTENT_ROOT_SCHEMA);
+  handleResult(error, true);
+}
+
+function validatePushSourceContentData(payload) {
+  const { error } = joi.validate(payload, PUSH_SOURCE_CONTENT_DATA_SCHEMA);
+  handleResult(error, true);
+}
+
+function validatePushSourceContentMeta(payload) {
+  const { error } = joi.validate(payload, PUSH_SOURCE_CONTENT_META_SCHEMA);
   handleResult(error, true);
 }
 
 module.exports = {
-  validatePushSourceContent,
+  validatePushSourceContentRoot,
+  validatePushSourceContentData,
+  validatePushSourceContentMeta,
 };

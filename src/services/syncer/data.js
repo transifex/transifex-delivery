@@ -111,7 +111,8 @@ async function getProjectLanguageTranslations(options, langCode) {
  * }
  */
 async function pushSourceContent(options, payload) {
-  validators.validatePushSourceContent(payload);
+  validators.validatePushSourceContentRoot(payload);
+  validators.validatePushSourceContentMeta(payload.meta);
 
   // Remove empty keys and empty strings from payload
   // There are several Native SDKs that might send invalid
@@ -122,6 +123,7 @@ async function pushSourceContent(options, payload) {
       cleanData[key] = value;
     }
   });
+  validators.validatePushSourceContentData(cleanData);
 
   // Send valid payload to syncer
   const data = await syncer.pushSourceContent(
