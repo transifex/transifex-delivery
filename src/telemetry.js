@@ -24,7 +24,7 @@ async function sendToTelemetry(path, payload, ratelimiterKey) {
   if (!hasTelemetry) return;
   if (ratelimiterKey) {
     try {
-      await rateLimiter.consume(rateLimiter, 1);
+      await rateLimiter.consume(ratelimiterKey, 1);
     } catch (e) {
       return;
     }
