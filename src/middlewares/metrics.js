@@ -6,7 +6,7 @@ const queue = require('../queue');
 
 const isEnabled = config.get('metrics:enabled');
 const prometheusBundle = isEnabled ? promBundle({
-  includePath: true,
+  includePath: false,
   includeMethod: true,
   autoregister: false, // Do not register the metrics endpoint
   promClient: {
