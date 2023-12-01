@@ -1,7 +1,7 @@
 #####################
 ### builder image ###
 
-FROM node:20.5.0-alpine as builder
+FROM node:20.10.0-alpine as builder
 
 ARG USER_ID
 ARG GROUP_ID

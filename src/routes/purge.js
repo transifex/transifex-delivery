@@ -32,7 +32,7 @@ router.post(
       })()));
 
       // send to telemetry
-      await sendToTelemetry('/native/collect/action', {
+      sendToTelemetry('/native/collect/action', {
         token,
         action: 'invalidate',
       }, `invalidate:${token}`);
@@ -79,7 +79,7 @@ router.post(
       })()));
 
       // send to telemetry
-      await sendToTelemetry('/native/collect/action', {
+      sendToTelemetry('/native/collect/action', {
         token,
         action: 'invalidate',
       }, `invalidate:${token}`);

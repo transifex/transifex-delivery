@@ -1,6 +1,6 @@
 // globally patch axios with retry logic
 const axios = require('axios');
-const axiosRetry = require('axios-retry');
+const axiosRetry = require('axios-retry').default;
 const logger = require('../logger');
 
 // add a default timeout
