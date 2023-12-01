@@ -223,6 +223,9 @@ telemetry:
   # Request timeout to Telemetry service
   req_timeout_sec: 5
 
+  # Max concurrent requests per process
+  max_concurrent_req: 10
+
 # # Manually pass AWS config (local testing)
 # aws:
 #   config:

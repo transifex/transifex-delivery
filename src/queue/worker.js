@@ -126,7 +126,7 @@ async function syncerPush(job) {
     }, jobStatusCacheSec);
 
     // send to telemetry
-    await sendToTelemetry('/native/collect/action', {
+    sendToTelemetry('/native/collect/action', {
       token: token.project_token,
       action: 'push',
     }, `push:${token.project_token}`);

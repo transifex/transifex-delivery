@@ -18,7 +18,7 @@ function createRateLimiter(scope) {
   const limitPushMaxReq = config.get(`limits:${scope}:max_req`) * 1;
   return rateLimit({
     windowMs: limitPushWindowMsec,
-    max: limitPushMaxReq,
+    limit: limitPushMaxReq,
     keyGenerator: (req) => req.token.project_token,
     message: {
       status: 429,
