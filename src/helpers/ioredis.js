@@ -1,6 +1,8 @@
 const Redis = require('ioredis');
 const config = require('../config');
 
+let singletonClient;
+
 function createClient() {
   const redisUrl = config.get('redis:host');
   if (redisUrl) {
@@ -21,6 +23,15 @@ function createClient() {
   });
 }
 
+function getClient() {
+  if (singletonClient) {
+    return singletonClient;
+  }
+  singletonClient = createClient();
+  return singletonClient;
+}
+
 module.exports = {
   createClient,
+  getClient,
 };

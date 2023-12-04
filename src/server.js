@@ -10,7 +10,6 @@ const logger = require('./logger');
 const metrics = require('./middlewares/metrics');
 const languagesRouter = require('./routes/languages');
 const contentRouter = require('./routes/content');
-const statusRouter = require('./routes/status');
 const invalidateRouter = require('./routes/invalidate');
 const purgeRouter = require('./routes/purge');
 const jobsRouter = require('./routes/jobs');
@@ -67,12 +66,11 @@ module.exports = () => {
 
   app.use('/languages', languagesRouter);
   app.use('/content', contentRouter);
-  app.use('/status', statusRouter);
   app.use('/invalidate', invalidateRouter);
   app.use('/purge', purgeRouter);
   app.use('/jobs', jobsRouter);
 
-  app.get('/', (req, res) => res.send('ok'));
+  app.get('/', (req, res) => res.send(`Transifex CDS - v${version}`));
 
   // The error handler must be before any other error middleware
   sentry.expressError(app);

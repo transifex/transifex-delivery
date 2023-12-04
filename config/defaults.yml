@@ -203,6 +203,9 @@ queue:
 limits:
   # Rate limits for push content (max requests per seconds)
   # https://github.com/nfriedly/express-rate-limit
+  pull:
+    window_sec: 2
+    max_req: 1000
   push:
     window_sec: 60
     max_req: 20
@@ -212,19 +215,27 @@ limits:
   jobs:
     window_sec: 5
     max_req: 120
+  # Prefix namespace for keys in Redis. Modify if you want to separate
+  # data, between multiple environments (e.g. beta, staging) that are using
+  # the same Redis instance, e.g.
+  # TX__LIMITS__PREFIX="beta:ratelimit:"
+  prefix: 'ratelimit:'
+
 
 telemetry:
   # If usage telemetry should be enabled
   enabled: true
-
   # Telemetry service host
   host: https://telemetry.svc.transifex.net
-
   # Request timeout to Telemetry service
   req_timeout_sec: 5
-
   # Max concurrent requests per process
   max_concurrent_req: 10
+  # Prefix namespace for keys in Redis. Modify if you want to separate
+  # data, between multiple environments (e.g. beta, staging) that are using
+  # the same Redis instance, e.g.
+  # TX__TELEMETRY__PREFIX="beta:telemetry:"
+  prefix: 'telemetry:'
 
 # # Manually pass AWS config (local testing)
 # aws:

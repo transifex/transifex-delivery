@@ -67,6 +67,7 @@ async function getContent(req, res) {
 router.get(
   '/:lang_code',
   validateHeader('public'),
+  createRateLimiter('pull'),
   getContent,
 );
 

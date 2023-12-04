@@ -35,6 +35,7 @@ async function launch() {
     const keepAliveTimeoutSec = config.get('settings:keep_alive_timeout_sec');
     if (isNumber(keepAliveTimeoutSec) && keepAliveTimeoutSec >= 0) {
       attachedApplication.keepAliveTimeout = keepAliveTimeoutSec * 1000;
+      attachedApplication.headersTimeout = (keepAliveTimeoutSec + 1) * 1000;
     }
 
     // graceful shutdown of server
