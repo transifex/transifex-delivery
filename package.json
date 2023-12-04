@@ -53,6 +53,7 @@
     "newrelic": "^11.6.0",
     "node-cache": "^5.1.2",
     "prom-client": "^15.0.0",
+    "rate-limit-redis": "^4.2.0",
     "rate-limiter-flexible": "^3.0.4",
     "uuid": "^8.3.2",
     "winston": "^3.11.0",

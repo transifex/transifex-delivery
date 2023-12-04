@@ -1,16 +1,21 @@
-const { RateLimiterMemory } = require('rate-limiter-flexible');
+const { RateLimiterRedis } = require('rate-limiter-flexible');
 const config = require('./config');
 const logger = require('./logger');
 const axios = require('./helpers/axios');
+const { getClient } = require('./helpers/ioredis');
 
+const redisClient = getClient();
 const hasTelemetry = config.get('telemetry:enabled');
 const telemetryHost = config.get('telemetry:host');
 const reqTelemetryTimeoutMsec = config.get('telemetry:req_timeout_sec') * 1000;
 const maxConcurrentReq = config.get('telemetry:max_concurrent_req');
+const redisKeyPrefix = config.get('telemetry:prefix');
 
-const rateLimiter = new RateLimiterMemory({
+const rateLimiter = new RateLimiterRedis({
+  storeClient: redisClient,
   points: 2, // points to consume
   duration: 1, // per seconds
+  keyPrefix: redisKeyPrefix,
 });
 
 let concurrentReq = 0;

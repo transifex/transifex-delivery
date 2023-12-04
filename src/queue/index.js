@@ -5,6 +5,7 @@ const logger = require('../logger');
 const config = require('../config');
 const worker = require('./worker');
 
+// Always create a new Redis client
 const queue = new Queue(config.get('queue:name'), {
   createClient: () => createClient(),
 });
