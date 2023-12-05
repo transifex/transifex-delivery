@@ -1,6 +1,7 @@
 const { rateLimit } = require('express-rate-limit');
 const { default: RedisStore } = require('rate-limit-redis');
 const config = require('../config');
+const logger = require('../logger');
 const { getClient } = require('./ioredis');
 
 const redisClient = getClient();
@@ -25,9 +26,12 @@ function createRateLimiter(scope) {
     windowMs: limitPushWindowMsec,
     limit: limitPushMaxReq,
     keyGenerator: (req) => req.token.project_token,
-    message: {
-      status: 429,
-      message: 'Too many requests, please try again later.',
+    message: (req) => {
+      logger.info(`Request throttled for ${scope}, on token:${req.token.project_token} and ip:${req.ip}`);
+      return {
+        status: 429,
+        message: 'Too many requests, please try again later.',
+      };
     },
     // Redis store configuration
     store: new RedisStore({

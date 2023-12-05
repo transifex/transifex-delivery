@@ -204,7 +204,7 @@ limits:
   # Rate limits for push content (max requests per seconds)
   # https://github.com/nfriedly/express-rate-limit
   pull:
-    window_sec: 2
+    window_sec: 4
     max_req: 1000
   push:
     window_sec: 60
