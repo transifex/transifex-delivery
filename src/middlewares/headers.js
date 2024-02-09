@@ -144,18 +144,18 @@ async function validateAuth(req, res, next) {
   const authKey = `auth:${req.token.project_token}`;
   const clientToken = md5(req.token.original);
 
-  let serverToken = await registry.get(authKey);
+  let serverToken = await registry.get(authKey, { local: true });
   if (!serverToken && req.token.project_secret) {
     const lockKey = `disable:auth:${clientToken}`;
-    if (!(await registry.get(lockKey))) {
+    if (!(await registry.get(lockKey, { local: true }))) {
       if (await syncer.verifyCredentials({ token: req.token })) {
         // update authentication registry
-        await registry.set(authKey, clientToken, authCacheSec);
+        await registry.set(authKey, clientToken, authCacheSec, { local: true });
         serverToken = clientToken;
         logger.info(`Validated credentials for project: ${req.token.project_token}`);
       } else {
         // lock credentials to throttle requests
-        await registry.set(lockKey, 1, authCacheSec);
+        await registry.set(lockKey, 1, authCacheSec, { local: true });
         logger.warn(`Invalid auth credentials: ${req.token.original}`);
       }
     }

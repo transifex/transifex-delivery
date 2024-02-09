@@ -559,7 +559,7 @@ describe('POST /content', () => {
         },
         errors: [{
           code: 'invalid',
-          detail: '[{"message":"\\"data\\" is required","path":["data"],"type":"any.required","context":{"key":"data","label":"data"}}]',
+          detail: '"\\"data\\" is required"',
           status: '422',
           title: 'Invalid Payload',
           source: {},

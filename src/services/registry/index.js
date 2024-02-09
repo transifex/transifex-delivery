@@ -8,20 +8,22 @@ logger.info(`Registry strategy: ${config.get('settings:registry')}`);
  * Delete a key from registry
  *
  * @param {String} key
+ * @param {Object} params (optional)
  * @returns {Promise}
  */
-function del(key) {
-  return registry.del(key);
+function del(key, params) {
+  return registry.del(key, params);
 }
 
 /**
  * Get registry value by key
  *
  * @param {String} key
+ * @param {Object} params (optional)
  * @returns {Promise<value>}
  */
-function get(key) {
-  return registry.get(key);
+function get(key, params) {
+  return registry.get(key, params);
 }
 
 /**
@@ -30,19 +32,21 @@ function get(key) {
  * @param {String} key
  * @param {*} data
  * @param {Number} expireSec (optional)
+ * @param {Object} params (optional)
  * @returns {Promise}
  */
-function set(key, data, expireSec) {
-  return registry.set(key, data, expireSec);
+function set(key, data, expireSec, params) {
+  return registry.set(key, data, expireSec, params);
 }
 
 /**
  * Find all keys in registry
  *
+ * @param {Object} params (optional)
  * @returns {Promise<Array[String]>}
  */
-function findAll() {
-  return registry.findAll();
+function findAll(params) {
+  return registry.findAll(params);
 }
 
 /**
@@ -51,10 +55,11 @@ function findAll() {
  * @param {String} key
  * @param {Number} increment
  * @param {Number} expireSec (optional)
+ * @param {Object} params (optional)
  * @returns {Promise}
  */
-function incr(key, increment, expireSec) {
-  return registry.incr(key, increment, expireSec);
+function incr(key, increment, expireSec, params) {
+  return registry.incr(key, increment, expireSec, params);
 }
 
 /**
@@ -63,20 +68,22 @@ function incr(key, increment, expireSec) {
  * @param {String} key
  * @param {*} value
  * @param {Number} expireSec (optional)
+ * @param {Object} params (optional)
  * @returns {Promise<Boolean>} - whether a new value was added
  */
-function addToSet(key, value, expireSec) {
-  return registry.addToSet(key, value, expireSec);
+function addToSet(key, value, expireSec, params) {
+  return registry.addToSet(key, value, expireSec, params);
 }
 
 /**
  * Get all values from set
  *
  * @param {String} key
+ * @param {Object} params (optional)
  * @returns {Promise<Array>}
  */
-function listSet(key) {
-  return registry.listSet(key);
+function listSet(key, params) {
+  return registry.listSet(key, params);
 }
 
 /**
@@ -84,10 +91,11 @@ function listSet(key) {
  * Return 0 if key does not exist
  *
  * @param {String} key
+ * @param {Object} params (optional)
  * @returns {Promise<Number>}
  */
-function getTTLSec(key) {
-  return registry.getTTLSec(key);
+function getTTLSec(key, params) {
+  return registry.getTTLSec(key, params);
 }
 
 /**
