@@ -8,7 +8,8 @@ const SYNC_KEYS = {};
 // auto refresh lookups in redis
 function autoSync() {
   let SYNC_PROCESSING = false;
-  setInterval(() => {
+
+  setInterval(async () => {
     if (SYNC_PROCESSING) return;
 
     const keys = _.keys(SYNC_KEYS);
@@ -17,28 +18,28 @@ function autoSync() {
     logger.info(`DynamoDB-Redis: Syncing ${keys.length} keys`);
 
     SYNC_PROCESSING = true;
-    Promise.all(_.map(keys, (key) => (async () => {
-      const syncValue = SYNC_KEYS[key];
-      const value = await dynamodb.get(key);
-      // remove from syncer
-      delete SYNC_KEYS[key];
-      // key no longer exists, delete it from redis
-      if (value === undefined) {
-        await redis.del(key);
-        return;
+
+    // Do this serially to avoid throttling errors from DynamoDB
+    for (let i = 0; i < keys.length; i += 1) {
+      try {
+        const key = keys[i];
+        const syncValue = SYNC_KEYS[key];
+        const value = await dynamodb.get(key);
+        // remove from syncer
+        delete SYNC_KEYS[key];
+        // key no longer exists, delete it from redis
+        if (value === undefined) {
+          await redis.del(key);
+        } else if (JSON.stringify(value) !== syncValue) {
+          const expireSec = await dynamodb.getTTLSec(key);
+          await redis.set(key, value, expireSec > 0 ? expireSec : undefined);
+        }
+      } catch (err) {
+        logger.error(err);
       }
-      // value has not been modified, abort
-      if (JSON.stringify(value) === syncValue) {
-        return;
-      }
-      const expireSec = await dynamodb.getTTLSec(key);
-      await redis.set(key, value, expireSec > 0 ? expireSec : undefined);
-    })())).then(() => {
-      SYNC_PROCESSING = false;
-    }).catch((err) => {
-      logger.error(err);
-      SYNC_PROCESSING = false;
-    });
+    }
+
+    SYNC_PROCESSING = false;
   }, 2000);
 }
 
@@ -55,9 +56,15 @@ async function del(key) {
 /**
  * @implements {get}
  */
-async function get(key) {
+async function get(key, params) {
   // Found in Redis... done
   let value = await redis.get(key);
+
+  // Special flag to not propagate to DynamoDB
+  if (params && params.local === true) {
+    return value;
+  }
+
   if (value !== undefined) {
     SYNC_KEYS[key] = JSON.stringify(value);
     return value;
@@ -75,7 +82,13 @@ async function get(key) {
 /**
  * @implements {set}
  */
-async function set(key, data, expireSec) {
+async function set(key, data, expireSec, params) {
+  // Special flag to not propagate to DynamoDB
+  if (params && params.local === true) {
+    await redis.set(key, data, expireSec);
+    return;
+  }
+
   await Promise.all([
     redis.set(key, data, expireSec),
     dynamodb.set(key, data, expireSec),
