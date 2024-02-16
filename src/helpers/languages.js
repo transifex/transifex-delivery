@@ -1719,7 +1719,7 @@ const LANGUAGES = {
   es_419: {
     code: 'es_419',
     name: 'Spanish (Latin America)',
-    localized_name: 'Spanish (Latin America)',
+    localized_name: 'Español (Latinoamérica)',
     rtl: false,
   },
   de_AT: {
