@@ -10,6 +10,7 @@ const { sendToTelemetry } = require('../telemetry');
 const pullSuccessExpireSec = config.get('settings:pull_success_cache_min') * 60;
 const pullErrorExpireSec = config.get('settings:pull_error_cache_min') * 60;
 const jobStatusCacheSec = config.get('settings:job_status_cache_min') * 60;
+const autoSyncJitterMin = config.get('settings:autosync_jitter_min') * 1;
 
 /**
  * Pull content from API syncer job
@@ -40,6 +41,7 @@ async function syncerPull(job) {
       registry.set(`cache:${key}`, {
         status: 'success',
         ts: Date.now(),
+        ts_jitter: _.random(autoSyncJitterMin) * 60 * 1000,
         etag,
         location,
         cacheKey,
@@ -70,6 +72,7 @@ async function syncerPull(job) {
         registry.set(`cache:${key}`, {
           status: 'error',
           ts: Date.now(),
+          ts_jitter: _.random(autoSyncJitterMin) * 60 * 1000,
           statusCode,
           statusMessage,
         }, pullErrorExpireSec),

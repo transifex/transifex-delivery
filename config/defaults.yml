@@ -50,6 +50,12 @@ settings:
   # TX__SETTINGS__AUTOSYNC_MIN=15
   autosync_min: 60
 
+  # A jitter to add to autosync functionality to randomly
+  # distribute cache invalidations over time. Cache will automatically
+  # invalidate at lastUpdate + autosync_min + random(autosync_jitter_min)
+  # TX__SETTINGS__AUTOSYNC_JITTER_MIN=15
+  autosync_jitter_min: 30
+
   # Optionally, a whitelist of project tokens. Set this value if you need
   # to limit access to only a subset of Native Project Tokens, vs having
   # CDS cache everything. e.g.
