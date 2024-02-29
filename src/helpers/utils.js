@@ -66,7 +66,7 @@ async function routerCacheHelper(req, res, key, filter, syncFunc, ...syncFuncPar
           sentContent = true;
         }
         // check for auto refresh
-        if ((Date.now() - rdata.ts) >= autoSyncMSec) {
+        if ((Date.now() - (rdata.ts + (rdata.ts_jitter || 0))) >= autoSyncMSec) {
           addJob();
         }
         break;
