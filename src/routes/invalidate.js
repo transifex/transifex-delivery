@@ -58,6 +58,8 @@ router.post(
         count += 1;
       });
 
+      logger.info(`Invalidate ${token} over ${count} resources for ${langCode} language`);
+
       // send to telemetry
       sendToTelemetry('/native/collect/action', {
         token,
@@ -144,6 +146,8 @@ router.post(
           }
         }
       });
+
+      logger.info(`Invalidate ${token} over ${count} resources for all languages`);
 
       // send to telemetry
       sendToTelemetry('/native/collect/action', {
