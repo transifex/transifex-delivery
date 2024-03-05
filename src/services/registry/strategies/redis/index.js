@@ -142,6 +142,22 @@ function addToSet(key, value, expireSec) {
 }
 
 /**
+ * @implements {delFromSet}
+ */
+function delFromSet(key, value) {
+  return new Promise((resolve, reject) => {
+    const stringValue = JSON.stringify(value);
+    client.srem(keyToRedis(key), stringValue, (err, count) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(count > 0);
+      }
+    });
+  });
+}
+
+/**
  * @implements {listSet}
  */
 function listSet(key) {
@@ -205,6 +221,7 @@ module.exports = {
   findAll,
   incr,
   addToSet,
+  delFromSet,
   listSet,
   getTTLSec,
   // private
