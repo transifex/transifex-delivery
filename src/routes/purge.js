@@ -17,7 +17,8 @@ router.post(
   async (req, res) => {
     try {
       const token = req.token.project_token;
-      let keys = await registry.listSet(`cache:${token}:keys`);
+      const setKey = `cache:${token}:keys`;
+      let keys = await registry.listSet(setKey);
       keys = _.filter(keys, (key) => key.indexOf(`cache:${token}:${req.params.lang_code}:`) === 0);
       let count = 0;
       await Promise.all(_.map(keys, (key) => (async () => {
@@ -29,6 +30,7 @@ router.post(
             await cache.delContent(data.cacheKey);
           }
         }
+        await registry.delFromSet(setKey, key);
       })()));
 
       // send to telemetry
@@ -64,7 +66,8 @@ router.post(
   async (req, res) => {
     try {
       const token = req.token.project_token;
-      let keys = await registry.listSet(`cache:${token}:keys`);
+      const setKey = `cache:${token}:keys`;
+      let keys = await registry.listSet(setKey);
       keys = _.filter(keys, (key) => key.indexOf(`cache:${token}:`) === 0);
       let count = 0;
       await Promise.all(_.map(keys, (key) => (async () => {
@@ -76,6 +79,7 @@ router.post(
             await cache.delContent(data.cacheKey);
           }
         }
+        await registry.delFromSet(setKey, key);
       })()));
 
       // send to telemetry

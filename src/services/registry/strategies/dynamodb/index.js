@@ -196,6 +196,30 @@ async function addToSet(key, value, expireSec) {
 }
 
 /**
+ * @implements {delFromSet}
+ */
+async function delFromSet(key, value) {
+  const params = {
+    TableName: tableName,
+    Key: {
+      key: keyToDb(key),
+    },
+    ExpressionAttributeNames: {
+      '#value': 'value',
+    },
+    ExpressionAttributeValues: {
+      ':set': docClient.createSet([`${value}`]),
+    },
+    UpdateExpression: 'DELETE #value :set',
+    ReturnValues: 'UPDATED_OLD',
+  };
+
+  const data = await docClient.update(params).promise();
+  const prevSet = ((data.Attributes || {}).value || {}).values || [];
+  return (prevSet.indexOf(value) !== -1);
+}
+
+/**
  * @implements {listSet}
  */
 async function listSet(key) {
@@ -247,6 +271,7 @@ module.exports = {
   findAll,
   incr,
   addToSet,
+  delFromSet,
   listSet,
   getTTLSec,
 };

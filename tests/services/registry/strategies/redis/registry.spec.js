@@ -85,4 +85,18 @@ describe('Redis registry', () => {
     const values = await registry.listSet('test:list_set');
     expect(values.sort()).to.deep.equal(['a', 'b'].sort());
   });
+
+  it('removes from set', async () => {
+    await registry.addToSet('test:del_from_set', 'a');
+    await registry.addToSet('test:del_from_set', 'b');
+    expect(await registry.delFromSet('test:del_from_set', 'a')).to.equal(true);
+    expect(await registry.delFromSet('test:del_from_set', 'a')).to.equal(false);
+
+    let values = await registry.listSet('test:del_from_set');
+    expect(values).to.deep.equal(['b']);
+
+    expect(await registry.delFromSet('test:del_from_set', 'b')).to.equal(true);
+    values = await registry.listSet('test:del_from_set');
+    expect(values).to.deep.equal([]);
+  });
 });

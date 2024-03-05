@@ -76,6 +76,18 @@ function addToSet(key, value, expireSec, params) {
 }
 
 /**
+ * Remove value from set
+ *
+ * @param {String} key
+ * @param {*} value
+ * @param {Object} params (optional)
+ * @returns {Promise<Boolean>} - whether the value was removed
+ */
+function delFromSet(key, value, params) {
+  return registry.delFromSet(key, value, params);
+}
+
+/**
  * Get all values from set
  *
  * @param {String} key
@@ -125,6 +137,7 @@ module.exports = {
   findAll,
   incr,
   addToSet,
+  delFromSet,
   listSet,
   getTTLSec,
 };

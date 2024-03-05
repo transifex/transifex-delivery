@@ -121,6 +121,14 @@ async function addToSet(key, value, expireSec) {
 }
 
 /**
+ * @implements {delFromSet}
+ */
+async function delFromSet(key, value) {
+  const retVal = await dynamodb.delFromSet(key, value);
+  return retVal;
+}
+
+/**
  * @implements {listSet}
  */
 function listSet(key) {
@@ -164,6 +172,7 @@ module.exports = {
   findAll,
   incr,
   addToSet,
+  delFromSet,
   listSet,
   getTTLSec,
 };

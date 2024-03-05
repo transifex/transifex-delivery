@@ -19,12 +19,28 @@ router.post(
       const token = req.token.project_token;
       const langCode = req.params.lang_code;
       // find all language keys from redis
-      let keys = await registry.listSet(`cache:${token}:keys`);
+      const setKey = `cache:${token}:keys`;
+      let keys = await registry.listSet(setKey);
       keys = _.filter(keys, (key) => key.indexOf(`cache:${token}:${langCode}:content`) === 0);
       // Regular expression to match cache key with optional [tags] filter
       const contentRE = new RegExp(`cache:${_.escapeRegExp(token)}:${_.escapeRegExp(langCode)}:content(.*)`);
       let count = 0;
-      _.each(keys, (key) => {
+
+      await Promise.all(_.map(keys, (key) => (async () => {
+        // Clean up remnant keys
+        const data = await registry.get(key);
+        if (!data) {
+          logger.info(`Remove empty cache key ${key} during invalidation`);
+          await registry.delFromSet(setKey, key);
+          return;
+        }
+        if (data.status !== 'success') {
+          logger.info(`Remove failed cache key ${key} during invalidation`);
+          await registry.del(key);
+          await registry.delFromSet(setKey, key);
+          return;
+        }
+
         const filter = {};
         const jobKey = key.replace('cache:', '');
         const matches = key.match(contentRE);
@@ -47,7 +63,7 @@ router.post(
         } catch (e) {
           // no-op
         }
-        queue.addJob(jobKey, {
+        await queue.addJob(jobKey, {
           type: 'syncer:pull',
           key: jobKey,
           token: req.token,
@@ -56,7 +72,7 @@ router.post(
           syncFuncParams: [langCode],
         });
         count += 1;
-      });
+      })()));
 
       logger.info(`Invalidate ${token} over ${count} resources for ${langCode} language`);
 
@@ -93,16 +109,32 @@ router.post(
     try {
       const token = req.token.project_token;
       // find all keys from redis
-      let keys = await registry.listSet(`cache:${token}:keys`);
+      const setKey = `cache:${token}:keys`;
+      let keys = await registry.listSet(setKey);
       keys = _.filter(keys, (key) => key.indexOf(`cache:${token}:`) === 0);
       // Regular expression to match cache key with optional [tags] filter
       const contentRE = new RegExp(`cache:${_.escapeRegExp(token)}:(.*):content(.*)`);
       let count = 0;
-      _.each(keys, (key) => {
+
+      await Promise.all(_.map(keys, (key) => (async () => {
+        // Clean up remnant keys
+        const data = await registry.get(key);
+        if (!data) {
+          logger.info(`Remove empty cache key ${key} during invalidation`);
+          await registry.delFromSet(setKey, key);
+          return;
+        }
+        if (data.status !== 'success') {
+          logger.info(`Remove failed cache key ${key} during invalidation`);
+          await registry.del(key);
+          await registry.delFromSet(setKey, key);
+          return;
+        }
+
         const filter = {};
         const jobKey = key.replace('cache:', '');
         if (key === `cache:${token}:languages`) {
-          queue.addJob(jobKey, {
+          await queue.addJob(jobKey, {
             type: 'syncer:pull',
             key: jobKey,
             token: req.token,
@@ -134,7 +166,7 @@ router.post(
             } catch (e) {
               // no-op
             }
-            queue.addJob(jobKey, {
+            await queue.addJob(jobKey, {
               type: 'syncer:pull',
               key: jobKey,
               token: req.token,
@@ -143,9 +175,13 @@ router.post(
               syncFuncParams: [matches[1]],
             });
             count += 1;
+          } else {
+            logger.info(`Remove erroneous cache key ${key} during invalidation`);
+            await registry.del(key);
+            await registry.delFromSet(setKey, key);
           }
         }
-      });
+      })()));
 
       logger.info(`Invalidate ${token} over ${count} resources for all languages`);
 
