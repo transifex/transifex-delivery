@@ -118,8 +118,42 @@ function cleanTags(tagsStr) {
   return tags;
 }
 
+/**
+ * Detect potential injection attempts in a tags list
+ *
+ * @param {String} string
+ * @return {Boolean}
+ */
+function isValidTagList(string) {
+  if (!string) return true;
+
+  // Allow comma separated list of tags with characters, numbers and special symbols
+  const regex = /^[\w!@#$%^&*()-_+=[\]{};:'"\\|<>,.?/]+(,[\w!@#$%^&*()-_+=[\]{};:'"\\|<>,.?/]+)*$/;
+  if (!regex.test(string)) return false;
+
+  // Check for common injection attempts
+  const patterns = [
+    // Special characters
+    /[\n\r]/,
+    /\0/,
+    // SQL
+    /('|").*\s*(OR|AND)\s*('|").*('|")\s*=/i,
+    /;.*(--|\/\*|\*\/)/i,
+    /\/\*\*/i,
+    // Path
+    /(\.\.\/|\.\.\\)/,
+    /(\/etc\/passwd|\/windows\/win.ini|\/.git\/)/i,
+    /(%2e%2e\/|%2e%2e\\)/i,
+    /\?file=|\.php\?|\.asp\?|\.jsp\?|\.cgi\?/i,
+    /[a-zA-Z]:\\[^\0\n\r]*/,
+  ];
+
+  return !patterns.some((pattern) => pattern.test(string));
+}
+
 module.exports = {
   routerCacheHelper,
   arrayContainsArray,
   cleanTags,
+  isValidTagList,
 };

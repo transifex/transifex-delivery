@@ -6,7 +6,7 @@ const syncer = require('../services/syncer/data');
 const registry = require('../services/registry');
 const queue = require('../queue');
 const md5 = require('../helpers/md5');
-const { cleanTags, routerCacheHelper } = require('../helpers/utils');
+const { cleanTags, routerCacheHelper, isValidTagList } = require('../helpers/utils');
 const { createRateLimiter } = require('../helpers/ratelimit');
 const { sendToTelemetry } = require('../telemetry');
 
@@ -29,6 +29,16 @@ async function getContent(req, res) {
   const filter = {};
   const tags = cleanTags(_.get(req.query, 'filter.tags'));
   if (tags) {
+    // Check if tags are valid
+    if (!isValidTagList(tags)) {
+      res.status(400).json({
+        status: 400,
+        message: 'Bad Request',
+        details: 'Invalid tags filter',
+      });
+      return;
+    }
+
     // update filter
     filter.tags = tags;
     // add tags to key

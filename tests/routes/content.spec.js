@@ -155,6 +155,15 @@ describe('GET /content', () => {
     expect(res.body).to.eql(expected);
   });
 
+  it('should not get content on invalid tags', async () => {
+    const res = await request(app)
+      .get('/content/en?filter[tags]=/../../')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}:secret`);
+
+    expect(res.status).to.equal(400);
+  });
+
   it('should always return an Etag while responding', async () => {
     nock(urls.api)
       .get(urls.get_translations)
