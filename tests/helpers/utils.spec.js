@@ -44,5 +44,8 @@ describe('isValidTagList', () => {
     expect(isValidTagList('C:\\Windows\\System32')).to.equal(false);
     expect(isValidTagList("!@#$%^&*()-_+=[{}]';:\\|<>,.?/")).to.equal(true);
     expect(isValidTagList('tag1!,tag2@,tag3#')).to.equal(true);
+    expect(isValidTagList('Here,md5(abc123),foo')).to.equal(false);
+    expect(isValidTagList('No,md5,here')).to.equal(true);
+    expect(isValidTagList('md5(),here')).to.equal(false);
   });
 });
