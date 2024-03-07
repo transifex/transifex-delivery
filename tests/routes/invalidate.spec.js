@@ -36,7 +36,7 @@ describe('Invalidate as user', () => {
   });
 
   it('should invalidate all languages', async () => {
-    const spy = sandbox.spy(queue, 'addJob');
+    const spy = sandbox.stub(queue, 'addJob');
 
     const res = await req
       .post('/invalidate')
@@ -55,7 +55,7 @@ describe('Invalidate as user', () => {
   });
 
   it('should invalidate specific languages', async () => {
-    const spy = sandbox.spy(queue, 'addJob');
+    const spy = sandbox.stub(queue, 'addJob');
 
     const res = await req
       .post('/invalidate/en')
@@ -83,6 +83,126 @@ describe('Invalidate as user', () => {
 
     expect(res.status).to.equal(403);
   });
+
+  it('should invalidate with tags', async () => {
+    const spy = sandbox.stub(queue, 'addJob');
+    await populateRegistry(token, `${key}[tag1,tag2]`, content);
+
+    const res = await req
+      .post('/invalidate')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}:secret`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 2,
+      },
+    });
+    expect(spy.callCount).to.equal(2);
+  });
+
+  it('should invalidate with status', async () => {
+    const spy = sandbox.stub(queue, 'addJob');
+    await populateRegistry(token, `${key}{reviewed}`, content);
+
+    const res = await req
+      .post('/invalidate')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}:secret`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 2,
+      },
+    });
+    expect(spy.callCount).to.equal(2);
+  });
+
+  it('should invalidate with valid tags only', async () => {
+    const spy = sandbox.stub(queue, 'addJob');
+    await populateRegistry(token, `${key}[md5(foo)]`, content);
+
+    const res = await req
+      .post('/invalidate')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}:secret`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 1,
+      },
+    });
+    expect(spy.callCount).to.equal(1);
+  });
+
+  it('should invalidate specific language with tags', async () => {
+    const spy = sandbox.stub(queue, 'addJob');
+    await populateRegistry(token, `${key}[tag1,tag2]`, content);
+
+    const res = await req
+      .post('/invalidate/en')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}:secret`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 2,
+      },
+    });
+    expect(spy.callCount).to.equal(2);
+  });
+
+  it('should invalidate specific language with status', async () => {
+    const spy = sandbox.stub(queue, 'addJob');
+    await populateRegistry(token, `${key}{reviewed}`, content);
+
+    const res = await req
+      .post('/invalidate/en')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}:secret`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 2,
+      },
+    });
+    expect(spy.callCount).to.equal(2);
+  });
+
+  it('should invalidate specific language with valid tags only', async () => {
+    const spy = sandbox.stub(queue, 'addJob');
+    await populateRegistry(token, `${key}[md5(foo)]`, content);
+
+    const res = await req
+      .post('/invalidate/en')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}:secret`);
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 1,
+      },
+    });
+    expect(spy.callCount).to.equal(1);
+  });
 });
 
 describe('Invalidate as Transifex', () => {
@@ -104,7 +224,7 @@ describe('Invalidate as Transifex', () => {
   });
 
   it('should invalidate all languages', async () => {
-    const spy = sandbox.spy(queue, 'addJob');
+    const spy = sandbox.stub(queue, 'addJob');
 
     const res = await req
       .post('/invalidate')
@@ -124,7 +244,7 @@ describe('Invalidate as Transifex', () => {
   });
 
   it('should invalidate specific languages', async () => {
-    const spy = sandbox.spy(queue, 'addJob');
+    const spy = sandbox.stub(queue, 'addJob');
 
     const res = await req
       .post('/invalidate/en')
@@ -153,5 +273,131 @@ describe('Invalidate as Transifex', () => {
       .set('X-Transifex-Trust-Secret', 'invalid');
 
     expect(res.status).to.equal(403);
+  });
+
+  it('should invalidate with tags', async () => {
+    const spy = sandbox.stub(queue, 'addJob');
+    await populateRegistry(token, `${key}[tag1,tag2]`, content);
+
+    const res = await req
+      .post('/invalidate')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}`)
+      .set('X-Transifex-Trust-Secret', 'txsecret');
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 2,
+      },
+    });
+    expect(spy.callCount).to.equal(2);
+  });
+
+  it('should invalidate with status', async () => {
+    const spy = sandbox.stub(queue, 'addJob');
+    await populateRegistry(token, `${key}{reviewed}`, content);
+
+    const res = await req
+      .post('/invalidate')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}`)
+      .set('X-Transifex-Trust-Secret', 'txsecret');
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 2,
+      },
+    });
+    expect(spy.callCount).to.equal(2);
+  });
+
+  it('should invalidate with valid tags only', async () => {
+    const spy = sandbox.stub(queue, 'addJob');
+    await populateRegistry(token, `${key}[md5(foo)]`, content);
+
+    const res = await req
+      .post('/invalidate')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}`)
+      .set('X-Transifex-Trust-Secret', 'txsecret');
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 1,
+      },
+    });
+    expect(spy.callCount).to.equal(1);
+  });
+
+  it('should invalidate specific language with tags', async () => {
+    const spy = sandbox.stub(queue, 'addJob');
+    await populateRegistry(token, `${key}[tag1,tag2]`, content);
+
+    const res = await req
+      .post('/invalidate/en')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}`)
+      .set('X-Transifex-Trust-Secret', 'txsecret');
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 2,
+      },
+    });
+    expect(spy.callCount).to.equal(2);
+  });
+
+  it('should invalidate specific language with status', async () => {
+    const spy = sandbox.stub(queue, 'addJob');
+    await populateRegistry(token, `${key}{reviewed}`, content);
+
+    const res = await req
+      .post('/invalidate/en')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}`)
+      .set('X-Transifex-Trust-Secret', 'txsecret');
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 2,
+      },
+    });
+    expect(spy.callCount).to.equal(2);
+  });
+
+  it('should invalidate specific language with valid tags only', async () => {
+    const spy = sandbox.stub(queue, 'addJob');
+    await populateRegistry(token, `${key}[md5(foo)]`, content);
+
+    const res = await req
+      .post('/invalidate/en')
+      .set('Accept-version', 'v2')
+      .set('Authorization', `Bearer ${token}`)
+      .set('X-Transifex-Trust-Secret', 'txsecret');
+
+    expect(res.status).to.equal(200);
+    expect(res.body).to.deep.equal({
+      data: {
+        status: 'success',
+        token,
+        count: 1,
+      },
+    });
+    expect(spy.callCount).to.equal(1);
   });
 });

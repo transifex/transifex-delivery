@@ -100,6 +100,7 @@ describe('GET /content', () => {
         .get('/content/lcode')
         .set('Accept-version', 'v2')
         .set('Authorization', `Bearer ${token}:secret`);
+      await sleep(50);
     } while (res.status === 202);
 
     expect(res.status).to.equal(401);
@@ -116,6 +117,7 @@ describe('GET /content', () => {
         .get('/content/lcode')
         .set('Accept-version', 'v2')
         .set('Authorization', `Bearer ${token}:secret`);
+      await sleep(50);
     } while (res.status === 202);
 
     const expected = {
@@ -141,6 +143,7 @@ describe('GET /content', () => {
         .get('/content/en')
         .set('Accept-version', 'v2')
         .set('Authorization', `Bearer ${token}:secret`);
+      await sleep(50);
     } while (res.status === 202);
 
     const expected = {
@@ -175,6 +178,7 @@ describe('GET /content', () => {
         .get('/content/lcode')
         .set('Accept-version', 'v2')
         .set('Authorization', `Bearer ${token}:secret`);
+      await sleep(50);
     } while (res.status === 202);
 
     expect(res.status).to.equal(200);
@@ -194,6 +198,7 @@ describe('GET /content', () => {
         .get('/content/lcode')
         .set('Accept-version', 'v2')
         .set('Authorization', `Bearer ${token}:secret`);
+      await sleep(50);
     } while (res.status === 202);
 
     expect(res.body).to.eqls({
@@ -214,6 +219,7 @@ describe('GET /content', () => {
         .set('Accept-version', 'v2')
         .set('Authorization', `Bearer ${token}:secret`)
         .set('If-None-Match', 'obsolete_value');
+      await sleep(50);
     } while (firstRes.status === 202);
 
     expect(firstRes.status).to.equal(200);
