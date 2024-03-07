@@ -6,6 +6,7 @@ const queue = require('../queue');
 const registry = require('../services/registry');
 const { createRateLimiter } = require('../helpers/ratelimit');
 const { sendToTelemetry } = require('../telemetry');
+const { isValidTagList } = require('../helpers/utils');
 
 const router = express.Router();
 
@@ -51,6 +52,13 @@ router.post(
           tags = tags.match(/\[(.*)\]/);
           // eslint-disable-next-line prefer-destructuring
           filter.tags = tags[1];
+          // Do a sanity check
+          if (!isValidTagList(filter.tags)) {
+            logger.info(`Remove previously invalid cache key ${key} during invalidation`);
+            await registry.del(key);
+            await registry.delFromSet(setKey, key);
+            return;
+          }
         } catch (e) {
           // no-op
         }
@@ -154,6 +162,13 @@ router.post(
               tags = tags.match(/\[(.*)\]/);
               // eslint-disable-next-line prefer-destructuring
               filter.tags = tags[1];
+              // Do a sanity check
+              if (!isValidTagList(filter.tags)) {
+                logger.info(`Remove previously invalid cache key ${key} during invalidation`);
+                await registry.del(key);
+                await registry.delFromSet(setKey, key);
+                return;
+              }
             } catch (e) {
               // no-op
             }

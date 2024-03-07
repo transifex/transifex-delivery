@@ -16,6 +16,11 @@ const cachedKey = `${cachedToken}:en:content`;
 const uncachedToken = '1/efgh';
 const content = JSON.stringify({ foo: 'bar' });
 
+function sleep(ms) {
+  // eslint-disable-next-line no-promise-executor-return
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 describe('Content cache', () => {
   let sandbox;
 
@@ -36,6 +41,7 @@ describe('Content cache', () => {
         .get('/content/en')
         .set('Accept-version', 'v2')
         .set('Authorization', `Bearer ${cachedToken}:secret`);
+      await sleep(50);
     } while (res.status === 202);
 
     expect(res.status).to.equal(200);
@@ -54,6 +60,7 @@ describe('Content cache', () => {
         .get('/content/en')
         .set('Accept-version', 'v2')
         .set('Authorization', `Bearer ${uncachedToken}:secret`);
+      await sleep(50);
     } while (res.status === 202);
 
     expect(res.status).to.equal(200);

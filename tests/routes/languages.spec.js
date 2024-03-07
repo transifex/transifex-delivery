@@ -20,6 +20,11 @@ const urls = {
   languages: '/projects/o:oslug:p:pslug/languages',
 };
 
+function sleep(ms) {
+  // eslint-disable-next-line no-promise-executor-return
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 describe('GET /languages', () => {
   beforeEach(async () => {
     nock(urls.api)
@@ -95,6 +100,7 @@ describe('GET /languages', () => {
         .get('/languages')
         .set('Accept-version', 'v2')
         .set('Authorization', `Bearer ${token}:secret`);
+      await sleep(50);
     } while (res.status === 202);
 
     expect(res.status).to.equal(200);
