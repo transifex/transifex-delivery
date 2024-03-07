@@ -146,6 +146,8 @@ function isValidTagList(string) {
     /(%2e%2e\/|%2e%2e\\)/i,
     /\?file=|\.php\?|\.asp\?|\.jsp\?|\.cgi\?/i,
     /[a-zA-Z]:\\[^\0\n\r]*/,
+    // Other
+    /md5\(.*?\)/,
   ];
 
   return !patterns.some((pattern) => pattern.test(string));
