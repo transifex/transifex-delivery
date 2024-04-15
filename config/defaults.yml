@@ -48,6 +48,9 @@ settings:
   # passed. After an hour, content will be re-fetched and re-cached with
   # fresh data. Lower this value if you need more frequent updates. e.g.
   # TX__SETTINGS__AUTOSYNC_MIN=15
+  # ---
+  # To disable autosync, set to zero, e.g.
+  # TX__SETTINGS__AUTOSYNC_MIN=0
   autosync_min: 60
 
   # A jitter to add to autosync functionality to randomly
