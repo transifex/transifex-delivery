@@ -59,7 +59,11 @@ async function sendToTelemetry(path, payload, ratelimiterKey) {
       },
     );
   } catch (e) {
-    logger.error(e);
+    if (e.response && e.response.status === 429) {
+      logger.info(e);
+    } else {
+      logger.error(e);
+    }
   }
 
   // Decrease concurrency
