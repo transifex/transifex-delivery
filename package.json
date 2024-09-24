@@ -50,7 +50,7 @@
     "morgan": "^1.10.0",
     "nconf": "^0.12.1",
     "nconf-yaml": "^1.0.2",
-    "newrelic": "^11.15.0",
+    "newrelic": "^12.5.1",
     "node-cache": "^5.1.2",
     "prom-client": "^15.1.1",
     "rate-limit-redis": "^4.2.0",
