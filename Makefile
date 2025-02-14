@@ -28,25 +28,25 @@ trivy:
 	transifex-delivery:latest
 
 up:
-	docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 
 eslint:
-	docker-compose run --rm transifex-delivery npm run eslint
+	docker compose run --rm transifex-delivery npm run eslint
 
 ci-tests:
-	docker-compose run --rm transifex-delivery npm test
+	docker compose run --rm transifex-delivery npm test
 
 test:
-	docker-compose -f docker-compose.yml -f docker-compose.dev.yml run --rm transifex-delivery npm test
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm transifex-delivery npm test
 
 stop:
-	docker-compose stop
+	docker compose stop
 
 shell:
-	docker-compose -f docker-compose.yml -f docker-compose.dev.yml run --rm transifex-delivery sh
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm transifex-delivery sh
 
 delete:
-	docker-compose down --rmi local -v
+	docker compose down --rmi local -v
 
 debug:
-	docker-compose -f docker-compose.yml -f docker-compose.dev.yml run --rm --service-ports transifex-delivery npm run start-debugger
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm --service-ports transifex-delivery npm run start-debugger
