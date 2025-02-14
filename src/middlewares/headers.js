@@ -116,6 +116,16 @@ function validateHeader(scope = 'private') {
         throw new Error('Invalid Token');
       }
     } catch (e) {
+      logger.info(`Forbidden error: ${e.message},
+        Scope: ${scope},
+        Token: ${JSON.stringify(req.token)},
+        Headers: ${JSON.stringify(req.headers)},
+        IP Address: ${req.ip},
+        Request Details: ${JSON.stringify({
+    method: req.method,
+    url: req.originalUrl,
+    query: req.query,
+  })}`);
       res.status(403).json({
         status: 403,
         message: 'Forbidden',
@@ -164,6 +174,15 @@ async function validateAuth(req, res, next) {
   if (serverToken && serverToken === clientToken) {
     next();
   } else {
+    logger.info(`Forbidden error: Invalid credentials,
+      Token: ${JSON.stringify(req.token)},
+      Headers: ${JSON.stringify(req.headers)},
+      IP Address: ${req.ip},
+      Request Details: ${JSON.stringify({
+    method: req.method,
+    url: req.originalUrl,
+    query: req.query,
+  })}`);
     res.status(403).json({
       status: 403,
       message: 'Forbidden',

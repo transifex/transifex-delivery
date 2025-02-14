@@ -9,6 +9,7 @@ const md5 = require('../helpers/md5');
 const { cleanTags, routerCacheHelper, isValidTagList } = require('../helpers/utils');
 const { createRateLimiter } = require('../helpers/ratelimit');
 const { sendToTelemetry } = require('../telemetry');
+const logger = require('../logger');
 
 const router = express.Router();
 const jobStatusCacheSec = config.get('settings:job_status_cache_min') * 60;
@@ -89,6 +90,15 @@ router.post(
     // authenticate before creating an push job
     const isAuthenticated = await syncer.verifyCredentials({ token: req.token });
     if (!isAuthenticated) {
+      logger.info(`Forbidden error: Invalid credentials,
+        Token: ${JSON.stringify(req.token)},
+        Headers: ${JSON.stringify(req.headers)},
+        IP Address: ${req.ip},
+        Request Details: ${JSON.stringify({
+    method: req.method,
+    url: req.originalUrl,
+    query: req.query,
+  })}`);
       res.status(403).json({
         status: 403,
         message: 'Forbidden',
