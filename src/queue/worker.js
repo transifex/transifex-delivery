@@ -14,8 +14,6 @@ const autoSyncJitterMin = config.get('settings:autosync_jitter_min') * 1;
 
 /**
  * Pull content from API syncer job
- *
- * @param {*} job
  */
 async function syncerPull(job) {
   const {
@@ -25,6 +23,7 @@ async function syncerPull(job) {
     syncFunc,
     syncFuncParams,
   } = job.data;
+
   try {
     const data = await syncer[syncFunc](
       {
@@ -33,10 +32,12 @@ async function syncerPull(job) {
       },
       ...syncFuncParams,
     );
+
     const stringData = JSON.stringify(data);
     const etag = md5(stringData);
     const cacheKey = `${key}:${etag}`;
     const { location } = await cache.setContent(cacheKey, stringData);
+
     await Promise.all([
       registry.set(`cache:${key}`, {
         status: 'success',
@@ -62,12 +63,8 @@ async function syncerPull(job) {
       && statusCode !== 401
       && statusCode !== 404
     ) {
-      // if we already have successful data in cache, then
-      // do not override them with an error state.
-      // Just log the error and bail-out.
       logger.error(err);
     } else {
-      // gracefully handle errors and store them in cache
       await Promise.all([
         registry.set(`cache:${key}`, {
           status: 'error',
@@ -89,18 +86,14 @@ async function syncerPull(job) {
 
 /**
  * Push content to API syncer job
- *
- * @param {*} job
  */
 async function syncerPush(job) {
   const {
-    // key,
     jobId,
     token,
     payload,
   } = job.data;
 
-  // update job status
   await registry.set(`job:status:${jobId}`, {
     data: {
       status: 'processing',
@@ -108,10 +101,8 @@ async function syncerPush(job) {
   }, jobStatusCacheSec);
 
   try {
-    const data = await syncer
-      .pushSourceContent({ token }, payload);
+    const data = await syncer.pushSourceContent({ token }, payload);
 
-    // update job status
     await registry.set(`job:status:${jobId}`, {
       data: {
         details: {
@@ -128,7 +119,6 @@ async function syncerPush(job) {
       },
     }, jobStatusCacheSec);
 
-    // send to telemetry
     sendToTelemetry('/native/collect/action', {
       token: token.project_token,
       action: 'push',
@@ -143,7 +133,6 @@ async function syncerPush(job) {
       source: _.isObject(e.source) ? e.source : {},
     }];
 
-    // update job status
     await registry.set(`job:status:${jobId}`, {
       data: {
         details: {
@@ -160,22 +149,23 @@ async function syncerPush(job) {
   }
 }
 
-module.exports = (job) => {
-  const proc = async () => {
-    const now = Date.now();
-    logger.info(`Processing job ${job.id}`);
-    try {
-      if (job.data.type === 'syncer:pull') {
-        await syncerPull(job);
-      } else if (job.data.type === 'syncer:push') {
-        await syncerPush(job);
-      }
-    } catch (e) {
-      logger.warn(`Failed to process job ${job.id}`);
-      logger.error(e);
-      throw e; // throw error to restart the job
+/**
+ * Exported worker function compatible with Bull’s child process mode.
+ */
+module.exports = async function (job) {
+  const now = Date.now();
+  logger.info(`Processing job ${job.id}`);
+
+  try {
+    if (job.data.type === 'syncer:pull') {
+      await syncerPull(job);
+    } else if (job.data.type === 'syncer:push') {
+      await syncerPush(job);
     }
-    logger.info(`Processed job ${job.id} in ${(Date.now() - now) / 1000}sec`);
-  };
-  return proc();
+    logger.info(`Processed job ${job.id} in ${(Date.now() - now) / 1000} sec`);
+  } catch (e) {
+    logger.warn(`Failed to process job ${job.id}`);
+    logger.error(e);
+    throw e; // let Bull retry based on `attempts` config
+  }
 };

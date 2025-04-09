@@ -40,6 +40,12 @@ async function addJob(jobId, payload) {
     jobId,
     removeOnComplete: true,
     removeOnFail: true,
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 5000,
+    },
+    timeout: 15000, // optional: help kill hung jobs
   });
 }
 
