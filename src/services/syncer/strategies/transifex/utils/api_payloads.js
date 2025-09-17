@@ -47,16 +47,9 @@ function getDeleteTranslationsPayload(stringId) {
   };
 }
 
-// If the string extracted from the codebase is unknown to Transifex (ie is
-// neither the latest upstream version nor any of the previous revisions), we
-// must update the string on Transifex
-function stringContentChanged(attributes, existingString, revisions) {
+function stringContentChanged(attributes, existingString) {
   return (
     !_.isEqual(attributes.strings, existingString.attributes.strings)
-    && !_.some(
-      revisions,
-      (revision) => _.isEqual(attributes.strings, revision),
-    )
   );
 }
 function stringMetadataChanged(attributes, existingAttributes) {

@@ -30,9 +30,6 @@ const urls = {
     + 'o:oslug:p:pslug:r:rslug&'
     + `limit=${config.get('transifex:page_limit')}`,
   resource_strings: '/resource_strings',
-  source_strings_revisions: '/resource_strings_revisions?'
-    + 'filter[resource_string][resource]=o:oslug:p:pslug:r:rslug&'
-    + 'limit=1000',
 };
 
 function sleep(ms) {
@@ -293,9 +290,6 @@ describe('POST /content', () => {
     nock(urls.api)
       .get(urls.source_strings)
       .reply(200, { data: [], links: {} });
-    nock(urls.api)
-      .get(urls.source_strings_revisions)
-      .reply(200, { data: [], links: {} });
 
     nock(urls.api).post(urls.resource_strings)
       .reply(200, {
@@ -349,9 +343,6 @@ describe('POST /content', () => {
   it('should discard empty keys of strings', async () => {
     nock(urls.api)
       .get(urls.source_strings)
-      .reply(200, { data: [], links: {} });
-    nock(urls.api)
-      .get(urls.source_strings_revisions)
       .reply(200, { data: [], links: {} });
 
     nock(urls.api).post(urls.resource_strings)
@@ -419,9 +410,6 @@ describe('POST /content', () => {
     nock(urls.api)
       .get(urls.source_strings)
       .reply(200, { data: [], links: {} });
-    nock(urls.api)
-      .get(urls.source_strings_revisions)
-      .reply(200, { data: [], links: {} });
 
     nock(urls.api).post(urls.resource_strings)
       .reply(400, {
@@ -488,9 +476,6 @@ describe('POST /content', () => {
     nock(urls.api)
       .get(urls.source_strings)
       .reply(200, sourceData);
-    nock(urls.api)
-      .get(urls.source_strings_revisions)
-      .reply(200, { data: [], links: {} });
 
     nock(urls.api).post(urls.resource_strings)
       .reply(200, {});
@@ -537,9 +522,6 @@ describe('POST /content', () => {
     nock(urls.api)
       .get(urls.source_strings)
       .reply(200, sourceData);
-    nock(urls.api)
-      .get(urls.source_strings_revisions)
-      .reply(200, { data: [], links: {} });
 
     nock(urls.api)
       .post(urls.resource_strings)
@@ -589,9 +571,6 @@ describe('POST /content', () => {
     nock(urls.api)
       .get(urls.source_strings)
       .reply(200, sourceData);
-    nock(urls.api)
-      .get(urls.source_strings_revisions)
-      .reply(200, { data: [], links: {} });
 
     nock(urls.api)
       .post(urls.resource_strings)
@@ -620,67 +599,6 @@ describe('POST /content', () => {
         details: {
           created: 0,
           updated: 0,
-          skipped: 0,
-          deleted: 0,
-          failed: 0,
-        },
-        errors: [],
-        status: 'completed',
-      },
-    });
-  });
-
-  it('should patch source strings if new', async () => {
-    const sourceData = dataHelper.getSourceString();
-    nock(urls.api)
-      .get(urls.source_strings)
-      .reply(200, sourceData);
-    nock(urls.api)
-      .get(urls.source_strings_revisions)
-      .reply(200, { data: [], links: {} });
-    nock(urls.api)
-      .patch(`${urls.resource_strings}/${sourceData.data[0].id}`)
-      .reply(200, {
-        data: [{
-          someotherkey: 'someothervalue',
-        }],
-      });
-    const data = {
-      hello_world: {
-        string: '{cnt, plural, one {Hello} other {World}}',
-        meta: {
-          context: 'frontpage:footer:verb',
-          character_limit: 100,
-          tags: ['foo', 'bar'],
-          developer_comment: 'Wrapped in a 30px width div',
-          occurrences: ['/my_project/templates/frontpage/hello.html:30'],
-        },
-      },
-    };
-    let res = await request(app)
-      .post('/content')
-      .set('Accept-version', 'v2')
-      .set('Authorization', `Bearer ${token}:secret`)
-      .send({ data });
-    expect(res.status).to.eql(202);
-
-    // poll
-    let status = '';
-    const jobUrl = res.body.data.links.job;
-    while (status !== 'completed') {
-      await sleep(100);
-      res = await request(app)
-        .get(jobUrl)
-        .set('Authorization', `Bearer ${token}:secret`);
-      expect(res.status).to.eql(200);
-      status = res.body.data.status;
-    }
-
-    expect(res.body).to.eqls({
-      data: {
-        details: {
-          created: 0,
-          updated: 1,
           skipped: 0,
           deleted: 0,
           failed: 0,
