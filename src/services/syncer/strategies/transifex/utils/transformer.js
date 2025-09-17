@@ -186,20 +186,6 @@ function parseSourceStringForKeyLookup(payload) {
   return data;
 }
 
-function parseSourceStringRevisionForIdLookup(payload) {
-  const data = {};
-  if (!payload) return data;
-  payload.forEach((resourceStringRevision) => {
-    const {
-      attributes: { strings },
-      relationships: { resource_string: { data: { id: resourceStringId } } },
-    } = resourceStringRevision;
-    data[resourceStringId] = data[resourceStringId] || [];
-    data[resourceStringId].push(strings);
-  });
-  return data;
-}
-
 /**
  * Transform a payload to a Transifex API V3 string push
  *
@@ -255,5 +241,4 @@ module.exports = {
   parseSourceStringForKeyLookup,
   parseSourceStringForIdLookup,
   getStringFromSourceEntity,
-  parseSourceStringRevisionForIdLookup,
 };
