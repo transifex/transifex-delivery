@@ -37,6 +37,9 @@ const urls = {
     + 'o:oslug:p:pslug:r:rslug&'
     + `limit=${config.get('transifex:page_limit')}`,
   resource_strings: '/resource_strings',
+  source_strings_revisions: '/resource_strings_revisions?'
+    + 'filter[resource_string][resource]=o:oslug:p:pslug:r:rslug&'
+    + 'limit=1000',
 };
 
 describe('Get token information', () => {
@@ -430,6 +433,9 @@ describe('Push source Content', () => {
     nock(urls.api)
       .get(urls.source_strings)
       .reply(200, { data: [], links: {} });
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, { data: [], links: {} });
 
     nock(urls.api).post(urls.resource_strings)
       .reply(200, {
@@ -459,6 +465,9 @@ describe('Push source Content', () => {
     nock(urls.api)
       .get(urls.source_strings)
       .reply(200, { data: [], links: {} });
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, { data: [], links: {} });
 
     const data = dataHelper.getPushSourceContent();
     const result = await transifexData.pushSourceContent(options, data, {
@@ -478,6 +487,9 @@ describe('Push source Content', () => {
   it('should return correct report on errors', async () => {
     nock(urls.api)
       .get(urls.source_strings)
+      .reply(200, { data: [], links: {} });
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
       .reply(200, { data: [], links: {} });
 
     nock(urls.api).post(urls.resource_strings)
@@ -522,6 +534,9 @@ describe('Push source Content', () => {
     nock(urls.api)
       .get(urls.source_strings)
       .reply(200, sourceData);
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, { data: [], links: {} });
 
     // mock from cds -> api
     nock(urls.api).post(urls.resource_strings)
@@ -560,6 +575,9 @@ describe('Push source Content', () => {
     nock(urls.api)
       .get(urls.source_strings)
       .reply(200, sourceData);
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, { data: [], links: {} });
 
     nock(urls.api).post(urls.resource_strings)
       .reply(200, {
@@ -588,6 +606,9 @@ describe('Push source Content', () => {
     nock(urls.api)
       .get(urls.source_strings)
       .reply(200, sourceData);
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, { data: [], links: {} });
 
     nock(urls.api)
       .post(urls.resource_strings)
@@ -626,6 +647,9 @@ describe('Push source Content', () => {
     nock(urls.api)
       .get(urls.source_strings)
       .reply(200, sourceData);
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, { data: [], links: {} });
 
     nock(urls.api).post(urls.resource_strings)
       .reply(200, {
@@ -668,6 +692,9 @@ describe('Push source Content', () => {
     nock(urls.api)
       .get(urls.source_strings)
       .reply(200, sourceData);
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, { data: [], links: {} });
 
     // cds -> api
     nock(urls.api)
@@ -710,6 +737,9 @@ describe('Push source Content', () => {
       .get(urls.source_strings)
       .reply(200, sourceData);
     nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, { data: [], links: {} });
+    nock(urls.api)
       .patch(`${urls.resource_strings}/${sourceData.data[0].id}`)
       .reply(200, {
         data: [{
@@ -742,11 +772,56 @@ describe('Push source Content', () => {
     });
   });
 
+  it('should skip patch source strings if in revisions', async () => {
+    const sourceData = dataHelper.getSourceString();
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, sourceData);
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, {
+        data: [{
+          attributes: { strings: { one: 'Hello', other: 'World' } },
+          relationships: {
+            resource_string: { data: { id: sourceData.data[0].id } },
+          },
+        }],
+        links: {},
+      });
+    const result = await transifexData.pushSourceContent(
+      options,
+      {
+        hello_world: {
+          string: '{cnt, plural, one {Hello} other {World}}',
+          meta: {
+            context: 'frontpage:footer:verb',
+            character_limit: 100,
+            tags: ['foo', 'bar'],
+            developer_comment: 'Wrapped in a 30px width div',
+            occurrences: ['/my_project/templates/frontpage/hello.html:30'],
+          },
+        },
+      },
+      {},
+    );
+    expect(result).to.eql({
+      created: 0,
+      updated: 0,
+      skipped: 1,
+      deleted: 0,
+      failed: 0,
+      errors: [],
+    });
+  });
+
   it('should patch source strings if new with purge', async () => {
     const sourceData = dataHelper.getSourceString();
     nock(urls.api)
       .get(urls.source_strings)
       .reply(200, sourceData);
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, { data: [], links: {} });
     nock(urls.api)
       .patch(`${urls.resource_strings}/${sourceData.data[0].id}`)
       .reply(200, {
@@ -834,7 +909,14 @@ describe('Push source Content (per string key strategy)', () => {
       .get(`${urls.source_strings}&filter[key]=somekey`)
       .reply(200, { data: [], links: {} });
     nock(urls.api)
+      .get(`${urls.source_strings_revisions}&filter[resource_string][key]=somekey`)
+      .reply(200, { data: [], links: {} });
+
+    nock(urls.api)
       .get(`${urls.source_strings}&filter[key]=hello_world`)
+      .reply(200, { data: [], links: {} });
+    nock(urls.api)
+      .get(`${urls.source_strings_revisions}&filter[resource_string][key]=hello_world`)
       .reply(200, { data: [], links: {} });
 
     nock(urls.api).post(urls.resource_strings)
@@ -867,6 +949,9 @@ describe('Push source Content (per string key strategy)', () => {
       .get(`${urls.source_strings}&filter[key]=hello_world`)
       .reply(200, sourceData);
     nock(urls.api)
+      .get(`${urls.source_strings_revisions}&filter[resource_string][key]=hello_world`)
+      .reply(200, { data: [], links: {} });
+    nock(urls.api)
       .patch(`${urls.resource_strings}/${sourceData.data[0].id}`)
       .reply(200, {
         data: [{
@@ -893,6 +978,48 @@ describe('Push source Content (per string key strategy)', () => {
       created: 0,
       updated: 1,
       skipped: 0,
+      deleted: 0,
+      failed: 0,
+      errors: [],
+    });
+  });
+
+  it('should skip patch source strings if in revisions', async () => {
+    const sourceData = dataHelper.getSourceString();
+    nock(urls.api)
+      .get(`${urls.source_strings}&filter[key]=hello_world`)
+      .reply(200, sourceData);
+    nock(urls.api)
+      .get(`${urls.source_strings_revisions}&filter[resource_string][key]=hello_world`)
+      .reply(200, {
+        data: [{
+          attributes: { strings: { one: 'Hello', other: 'World' } },
+          relationships: {
+            resource_string: { data: { id: sourceData.data[0].id } },
+          },
+        }],
+        links: {},
+      });
+    const result = await transifexData.pushSourceContent(
+      options,
+      {
+        hello_world: {
+          string: '{cnt, plural, one {Hello} other {World}}',
+          meta: {
+            context: 'frontpage:footer:verb',
+            character_limit: 100,
+            tags: ['foo', 'bar'],
+            developer_comment: 'Wrapped in a 30px width div',
+            occurrences: ['/my_project/templates/frontpage/hello.html:30'],
+          },
+        },
+      },
+      {},
+    );
+    expect(result).to.eql({
+      created: 0,
+      updated: 0,
+      skipped: 1,
       deleted: 0,
       failed: 0,
       errors: [],
