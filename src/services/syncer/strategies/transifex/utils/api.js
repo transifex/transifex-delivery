@@ -598,7 +598,7 @@ async function pushSourceContent(token, options) {
         preparePayloadForPost(attributes);
       } else {
         const revisions = existingRevisions[existingString.id] || [];
-        const mustPatchStrings = apiPayloads.stringContentChanged(
+        let mustPatchStrings = apiPayloads.stringContentChanged(
           attributes,
           existingString,
           revisions,
@@ -607,6 +607,11 @@ async function pushSourceContent(token, options) {
           attributes,
           existingString.attributes,
         );
+        // Temporary fix for tikogames org to always update strings
+        // until we implement the update_previous_source_strings flag
+        if (options.organization_slug === 'tikogames') {
+          mustPatchStrings = true;
+        }
         if (mustPatchStrings || mustPatchMetadata) {
           preparePayloadForPatch(key, attributes, mustPatchStrings);
           if (mustPatchStrings && meta.keep_translations === false) {
