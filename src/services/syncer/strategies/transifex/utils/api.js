@@ -516,11 +516,6 @@ async function pushSourceContent(token, options) {
     deletePayloads.push(payload);
   }
 
-  function preparePayloadForDeleteTranslations(key) {
-    const payload = apiPayloads.getDeleteTranslationsPayload(existingStrings[key].id);
-    deleteTranslationPayloads.push(payload);
-  }
-
   const payloadKeys = _.keys(strings);
   // check for optimal strategy to update content, reducing API calls
   const resource = await getResource(token, options);
@@ -592,6 +587,8 @@ async function pushSourceContent(token, options) {
             ),
           )).join(',');
         }
+
+        attributes.keep_translations = meta.keep_translations;
       }
 
       if (!existingString) {
@@ -625,9 +622,6 @@ async function pushSourceContent(token, options) {
 
         if (mustPatchStrings || mustPatchMetadata) {
           preparePayloadForPatch(key, attributes, mustPatchStrings);
-          if (mustPatchStrings && meta.keep_translations === false) {
-            preparePayloadForDeleteTranslations(key);
-          }
         } else {
           skipped += 1;
         }

@@ -1,6 +1,12 @@
 const _ = require('lodash');
 
-const PATCH_ATTRIBUTES = ['character_limit', 'tags', 'developer_comment', 'occurrences'];
+const PATCH_ATTRIBUTES = [
+  'character_limit',
+  'tags',
+  'developer_comment',
+  'occurrences',
+  'keep_translations',
+];
 
 function getPushStringPayload(resourceId, attributes) {
   return {
@@ -34,16 +40,6 @@ function getDeleteStringPayload(stringId) {
   return {
     id: stringId,
     type: 'resource_strings',
-  };
-}
-
-function getDeleteTranslationsPayload(stringId) {
-  return {
-    attributes: {
-      strings: null,
-    },
-    id: stringId,
-    type: 'resource_translations',
   };
 }
 
@@ -85,7 +81,6 @@ module.exports = {
   getPushStringPayload,
   getPatchStringPayload,
   getDeleteStringPayload,
-  getDeleteTranslationsPayload,
   stringMetadataChanged,
   stringContentChanged,
 };
