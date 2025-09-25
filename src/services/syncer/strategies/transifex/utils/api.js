@@ -612,6 +612,17 @@ async function pushSourceContent(token, options) {
         if (options.organization_slug === 'tikogames') {
           mustPatchStrings = true;
         }
+
+        // Log the organization accessing the revision list
+        // This helps us track usage and identify which orgs are actively using it
+        // so we can reach out if we plan to disable this feature in the future
+        if (_.some(
+          revisions,
+          (revision) => _.isEqual(attributes.strings, revision),
+        )) {
+          logger.info(`Accessed revision list, org: ${options.organization_slug}`);
+        }
+
         if (mustPatchStrings || mustPatchMetadata) {
           preparePayloadForPatch(key, attributes, mustPatchStrings);
           if (mustPatchStrings && meta.keep_translations === false) {
