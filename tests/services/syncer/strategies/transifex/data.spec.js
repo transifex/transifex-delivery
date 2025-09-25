@@ -772,6 +772,88 @@ describe('Push source Content', () => {
     });
   });
 
+  it('should patch source strings if new with keep_translations', async () => {
+    const sourceData = dataHelper.getSourceString();
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, sourceData);
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, { data: [], links: {} });
+    nock(urls.api)
+      .patch(`${urls.resource_strings}/${sourceData.data[0].id}`)
+      .reply(200, {
+        data: [{
+          someotherkey: 'someothervalue',
+        }],
+      });
+    const result = await transifexData.pushSourceContent(
+      options,
+      {
+        hello_world: {
+          string: '{cnt, plural, one {Hello} other {World}}',
+          meta: {
+            context: 'frontpage:footer:verb',
+            character_limit: 100,
+            tags: ['foo', 'bar'],
+            developer_comment: 'Wrapped in a 30px width div',
+            occurrences: ['/my_project/templates/frontpage/hello.html:30'],
+          },
+        },
+      },
+      { meta: { keep_translations: true } },
+    );
+    expect(result).to.eql({
+      created: 0,
+      updated: 1,
+      skipped: 0,
+      deleted: 0,
+      failed: 0,
+      errors: [],
+    });
+  });
+
+  it('should patch source strings if new without keep_translations', async () => {
+    const sourceData = dataHelper.getSourceString();
+    nock(urls.api)
+      .get(urls.source_strings)
+      .reply(200, sourceData);
+    nock(urls.api)
+      .get(urls.source_strings_revisions)
+      .reply(200, { data: [], links: {} });
+    nock(urls.api)
+      .patch(`${urls.resource_strings}/${sourceData.data[0].id}`)
+      .reply(200, {
+        data: [{
+          someotherkey: 'someothervalue',
+        }],
+      });
+    const result = await transifexData.pushSourceContent(
+      options,
+      {
+        hello_world: {
+          string: '{cnt, plural, one {Hello} other {World}}',
+          meta: {
+            context: 'frontpage:footer:verb',
+            character_limit: 100,
+            tags: ['foo', 'bar'],
+            developer_comment: 'Wrapped in a 30px width div',
+            occurrences: ['/my_project/templates/frontpage/hello.html:30'],
+          },
+        },
+      },
+      { meta: { keep_translations: false } },
+    );
+    expect(result).to.eql({
+      created: 0,
+      updated: 1,
+      skipped: 0,
+      deleted: 0,
+      failed: 0,
+      errors: [],
+    });
+  });
+
   it('should skip patch source strings if in revisions', async () => {
     const sourceData = dataHelper.getSourceString();
     nock(urls.api)
