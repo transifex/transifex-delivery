@@ -58,7 +58,7 @@ function stringContentChanged(attributes, existingString, revisions) {
 function stringMetadataChanged(attributes, existingAttributes) {
   const filteredAttrs = _.filter(
     PATCH_ATTRIBUTES,
-    (attr) => !_.isUndefined(attributes[attr]),
+    (attr) => attr !== 'keep_translations' && !_.isUndefined(attributes[attr]),
   );
 
   const cleanAttributes = _.pick(attributes, filteredAttrs);
