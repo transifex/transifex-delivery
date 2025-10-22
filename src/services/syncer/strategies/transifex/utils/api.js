@@ -382,7 +382,7 @@ async function deleteSourceContent(token, options) {
   const headers = apiUrls.getHeaders(token, true);
   const payloads = _.chunk(options.payload, 150);
 
-  let count = 0;
+  let data = [];
   let errors = [];
 
   for (const payload in payloads) {
@@ -396,7 +396,7 @@ async function deleteSourceContent(token, options) {
           },
           ...headers,
         });
-        count += payloads[payload].length;
+        data = payloads[payload];
       } catch (e) {
         errors = _.concat(errors, e.response.data.errors);
       }
@@ -404,7 +404,7 @@ async function deleteSourceContent(token, options) {
   }
 
   return {
-    count,
+    data,
     errors,
   };
 }
@@ -488,10 +488,12 @@ async function pushSourceContent(token, options) {
 
   let existingStrings = {};
   let existingRevisions = {};
-  let created = 0;
-  let updated = 0;
-  let skipped = 0;
-  let deleted = 0;
+  let created = [];
+  let updated = [];
+  let updateDryRun = [];
+  let deletedDryRun = [];
+  let skipped = [];
+  let deleted = [];
   let errors = [];
 
   function preparePayloadForPost(attributes) {
@@ -508,11 +510,25 @@ async function pushSourceContent(token, options) {
       attributes,
       mustPatchStrings,
     );
+    updateDryRun.push(
+      {
+        "string": attributes.strings,
+        "key": key,
+        "context": attributes.context,
+        "occurrences": attributes.occurrences
+      }
+    )
     updatePayloads.push(payload);
   }
 
   function preparePayloadForDelete(key) {
     const payload = apiPayloads.getDeleteStringPayload(existingStrings[key].id);
+    deletedDryRun.push({
+      "key": key,
+      "string": existingStrings[key]["attributes"]["strings"],
+      "context": existingStrings[key]["attributes"]["context"],
+      "occurrences": existingStrings[key]["attributes"]["occurrences"]
+    });
     deletePayloads.push(payload);
   }
 
@@ -623,7 +639,14 @@ async function pushSourceContent(token, options) {
         if (mustPatchStrings || mustPatchMetadata) {
           preparePayloadForPatch(key, attributes, mustPatchStrings);
         } else {
-          skipped += 1;
+          skipped.push(
+            {
+              "key": key,
+              "string": strings[key]["string"],
+              "context": strings[key]["meta"]["context"],
+              "occurrences": strings[key]["meta"]["occurrences"],
+            }
+          )
         }
       }
     }
@@ -643,29 +666,37 @@ async function pushSourceContent(token, options) {
   }
 
   if (meta.dry_run) {
-    deleted += deletePayloads.length;
-    created += createPayloads.length;
-    updated += updatePayloads.length;
+    const createDryRun = createPayloads.map((u) => {
+      return {
+          "key": u.attributes.key,
+          "string": u.attributes.strings,
+          "context": u.attributes.context,
+          "occurrences": u.attributes.occurrences,
+      }
+    });
+    deleted = deletedDryRun;
+    created = createDryRun;
+    updated = updateDryRun;
   } else {
     // Send for Delete and return errors
     const deletedStrings = await deleteSourceContent(token, {
       payload: deletePayloads,
     });
-    deleted += deletedStrings.count;
+    deleted = deletedStrings.data;
     errors = _.concat(errors, deletedStrings.errors);
 
     // Send for post and return created and errors
     const postedStrings = await postSourceContent(token, {
       payload: createPayloads,
     });
-    created += postedStrings.createdStrings.length;
+    created = postedStrings.createdStrings;
     errors = _.concat(errors, postedStrings.errors);
 
     // Send for Patch and return updated and errors
     const patchedStrings = await patchSourceContent(token, {
       payload: updatePayloads,
     });
-    updated += patchedStrings.updatedStrings.length;
+    updated = patchedStrings.updatedStrings;
     errors = _.concat(errors, patchedStrings.errors);
 
     // Send for delete translations
@@ -694,16 +725,22 @@ async function pushSourceContent(token, options) {
     }
   }
 
+  const failed = createPayloads.length
+    + updatePayloads.length
+    + deletePayloads.length
+    - (created.length + updated.length + deleted.length);
+  
+  created = JSON.stringify(created);
+  updated = JSON.stringify(updated);
+  skipped = JSON.stringify(skipped);
+  deleted = JSON.stringify(deleted);
+
   return {
     created,
     updated,
     skipped,
     deleted,
-    failed:
-      createPayloads.length
-      + updatePayloads.length
-      + deletePayloads.length
-      - (created + updated + deleted),
+    failed,
     errors,
   };
 }
