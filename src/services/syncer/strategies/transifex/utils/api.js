@@ -304,29 +304,30 @@ async function getRevisionsOnKeys(token, options) {
 async function postSourceContent(token, options) {
   const url = apiUrls.getUrl('RESOURCE_STRINGS');
   const headers = apiUrls.getHeaders(token, true);
-  const payloads = _.chunk(options.payload, 150);
+  const chunks = _.chunk(options.payload || [], 150);
 
   let createdStrings = [];
   let errors = [];
+  const successPayloads = [];
+  const failedPayloads = [];
 
-  for (const payload in payloads) {
-    if (Object.prototype.hasOwnProperty.call(payloads, payload)) {
-      try {
-        logger.info(`POST ${url}`);
-        const { data } = await axios.post(
-          url,
-          { data: payloads[payload] },
-          headers,
-        );
-        createdStrings = _.concat(createdStrings, data.data);
-      } catch (e) {
-        errors = _.concat(errors, e.response.data.errors);
-      }
+  for (const originalChunk of chunks) {
+    const cleanChunk = originalChunk.map((p) => _.omit(p, ['metaKey', 'metaAttrs']));
+    try {
+      logger.info(`POST ${url}`);
+      const { data } = await axios.post(url, { data: cleanChunk }, headers);
+      createdStrings = _.concat(createdStrings, data.data);
+      successPayloads.push(...originalChunk);
+    } catch (e) {
+      errors = _.concat(errors, _.get(e, 'response.data.errors', [e.message]));
+      failedPayloads.push(...originalChunk);
     }
   }
   return {
     createdStrings,
     errors,
+    successPayloads,
+    failedPayloads,
   };
 }
 
@@ -342,29 +343,34 @@ async function postSourceContent(token, options) {
 async function patchSourceContent(token, options) {
   const url = apiUrls.getUrl('RESOURCE_STRINGS');
   const headers = apiUrls.getHeaders(token);
-  const payloads = options.payload;
+  const payloads = options.payload || [];
 
   let updatedStrings = [];
   let errors = [];
+  const successPayloads = [];
+  const failedPayloads = [];
 
-  for (const payload in payloads) {
-    if (Object.prototype.hasOwnProperty.call(payloads, payload)) {
-      try {
-        logger.info(`PATCH ${url}`);
-        const { data } = await axios.patch(
-          `${url}/${payloads[payload].id}`,
-          { data: payloads[payload] },
-          headers,
-        );
-        updatedStrings = _.concat(updatedStrings, data.data);
-      } catch (e) {
-        errors = _.concat(errors, e.response.data.errors);
-      }
+  for (const original of payloads) {
+    const clean = _.omit(original, ['metaKey', 'metaAttrs']);
+    try {
+      logger.info(`PATCH ${url}`);
+      const { data } = await axios.patch(
+        `${url}/${clean.id}`,
+        { data: clean },
+        headers,
+      );
+      updatedStrings = _.concat(updatedStrings, data.data);
+      successPayloads.push(original);
+    } catch (e) {
+      errors = _.concat(errors, _.get(e, 'response.data.errors', [e.message]));
+      failedPayloads.push(original);
     }
   }
   return {
     updatedStrings,
     errors,
+    successPayloads,
+    failedPayloads,
   };
 }
 
@@ -380,32 +386,35 @@ async function patchSourceContent(token, options) {
 async function deleteSourceContent(token, options) {
   const url = apiUrls.getUrl('RESOURCE_STRINGS');
   const headers = apiUrls.getHeaders(token, true);
-  const payloads = _.chunk(options.payload, 150);
+  const chunks = _.chunk(options.payload || [], 150);
 
   let count = 0;
   let errors = [];
+  const successPayloads = [];
+  const failedPayloads = [];
 
-  for (const payload in payloads) {
-    if (Object.prototype.hasOwnProperty.call(payloads, payload)) {
-      try {
-        await axios({
-          url,
-          method: 'delete',
-          data: {
-            data: payloads[payload],
-          },
-          ...headers,
-        });
-        count += payloads[payload].length;
-      } catch (e) {
-        errors = _.concat(errors, e.response.data.errors);
-      }
+  for (const originalChunk of chunks) {
+    const cleanChunk = originalChunk.map((p) => _.omit(p, ['metaKey', 'metaAttrs']));
+    try {
+      await axios({
+        url,
+        method: 'delete',
+        data: { data: cleanChunk },
+        ...headers,
+      });
+      count += originalChunk.length;
+      successPayloads.push(...originalChunk);
+    } catch (e) {
+      errors = _.concat(errors, _.get(e, 'response.data.errors', [e.message]));
+      failedPayloads.push(...originalChunk);
     }
   }
 
   return {
     count,
     errors,
+    successPayloads,
+    failedPayloads,
   };
 }
 
@@ -426,19 +435,17 @@ async function deleteTranslationContent(token, options) {
   let deletedTranslations = [];
   let errors = [];
 
-  for (const payload in payloads) {
-    if (Object.prototype.hasOwnProperty.call(payloads, payload)) {
-      try {
-        logger.info(`PATCH ${url}`);
-        const { data } = await axios.patch(
-          url,
-          { data: payloads[payload] },
-          headers,
-        );
-        deletedTranslations = _.concat(deletedTranslations, data.data);
-      } catch (e) {
-        errors = _.concat(errors, e.response.data.errors);
-      }
+  for (const payload of payloads) {
+    try {
+      logger.info(`PATCH ${url}`);
+      const { data } = await axios.patch(
+        url,
+        { data: payload },
+        headers,
+      );
+      deletedTranslations = _.concat(deletedTranslations, data.data);
+    } catch (e) {
+      errors = _.concat(errors, _.get(e, 'response.data.errors', [e.message]));
     }
   }
 
@@ -476,7 +483,6 @@ async function deleteTranslationContent(token, options) {
  *   errors: <an array with all the errors>,
  * }
  */
-
 async function pushSourceContent(token, options) {
   const strings = options.payload;
   const meta = options.meta || {};
@@ -494,11 +500,56 @@ async function pushSourceContent(token, options) {
   let deleted = 0;
   let errors = [];
 
-  function preparePayloadForPost(attributes) {
+  const verbose = {
+    created: [],
+    updated: [],
+    deleted: [],
+    skipped: [],
+    failed: [],
+  };
+
+  function toArray(val) {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    return String(val)
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+
+  function toVerboseEntry(key, attrs) {
+    const a = attrs || {};
+    const ctx = Array.isArray(a.context) ? a.context : [];
+    const occurrences = toArray(a.occurrences || []);
+    let stringValue = '';
+
+    const { strings: str } = a;
+
+    if (typeof str === 'string') {
+      stringValue = str;
+    } else if (str && typeof str === 'object') {
+      if (typeof str.other !== 'undefined' && str.other !== null) {
+        stringValue = str.other;
+      } else {
+        stringValue = Object.values(str).filter(Boolean).join(' ');
+      }
+    }
+
+    return {
+      string: stringValue || '',
+      key,
+      occurrences,
+      context: ctx,
+    };
+  }
+
+  function preparePayloadForPost(attributes, key) {
     const resourceId = `o:${options.organization_slug}`
       + `:p:${options.project_slug}:r:${options.resource_slug}`;
 
     const payload = apiPayloads.getPushStringPayload(resourceId, attributes);
+    payload.metaKey = key;
+    payload.metaAttrs = attributes;
     createPayloads.push(payload);
   }
 
@@ -508,11 +559,17 @@ async function pushSourceContent(token, options) {
       attributes,
       mustPatchStrings,
     );
+    payload.metaKey = key;
+    payload.metaAttrs = attributes;
     updatePayloads.push(payload);
   }
 
   function preparePayloadForDelete(key) {
-    const payload = apiPayloads.getDeleteStringPayload(existingStrings[key].id);
+    const existing = existingStrings[key] || {};
+    if (!existing.id) return;
+    const payload = apiPayloads.getDeleteStringPayload(existing.id);
+    payload.metaKey = key;
+    payload.metaAttrs = existing.attributes ? existing.attributes : {};
     deletePayloads.push(payload);
   }
 
@@ -592,7 +649,7 @@ async function pushSourceContent(token, options) {
       }
 
       if (!existingString) {
-        preparePayloadForPost(attributes);
+        preparePayloadForPost(attributes, key);
       } else {
         const revisions = existingRevisions[existingString.id] || [];
         let mustPatchStrings = apiPayloads.stringContentChanged(
@@ -624,6 +681,7 @@ async function pushSourceContent(token, options) {
           preparePayloadForPatch(key, attributes, mustPatchStrings);
         } else {
           skipped += 1;
+          verbose.skipped.push(toVerboseEntry(key, attributes));
         }
       }
     }
@@ -646,6 +704,16 @@ async function pushSourceContent(token, options) {
     deleted += deletePayloads.length;
     created += createPayloads.length;
     updated += updatePayloads.length;
+
+    verbose.created.push(
+      ...createPayloads.map((p) => toVerboseEntry(p.metaKey, p.metaAttrs)),
+    );
+    verbose.updated.push(
+      ...updatePayloads.map((p) => toVerboseEntry(p.metaKey, p.metaAttrs)),
+    );
+    verbose.deleted.push(
+      ...deletePayloads.map((p) => toVerboseEntry(p.metaKey, p.metaAttrs)),
+    );
   } else {
     // Send for Delete and return errors
     const deletedStrings = await deleteSourceContent(token, {
@@ -654,6 +722,12 @@ async function pushSourceContent(token, options) {
     deleted += deletedStrings.count;
     errors = _.concat(errors, deletedStrings.errors);
 
+    const successDeleted = new Set(deletedStrings.successPayloads || []);
+    deletePayloads.forEach((p) => {
+      const entry = toVerboseEntry(p.metaKey, p.metaAttrs);
+      (successDeleted.has(p) ? verbose.deleted : verbose.failed).push(entry);
+    });
+
     // Send for post and return created and errors
     const postedStrings = await postSourceContent(token, {
       payload: createPayloads,
@@ -661,12 +735,24 @@ async function pushSourceContent(token, options) {
     created += postedStrings.createdStrings.length;
     errors = _.concat(errors, postedStrings.errors);
 
+    const successCreated = new Set(postedStrings.successPayloads || []);
+    createPayloads.forEach((p) => {
+      const entry = toVerboseEntry(p.metaKey, p.metaAttrs);
+      (successCreated.has(p) ? verbose.created : verbose.failed).push(entry);
+    });
+
     // Send for Patch and return updated and errors
     const patchedStrings = await patchSourceContent(token, {
       payload: updatePayloads,
     });
-    updated += patchedStrings.updatedStrings.length;
+    updated += (patchedStrings.successPayloads || []).length;
     errors = _.concat(errors, patchedStrings.errors);
+
+    const successUpdated = new Set(patchedStrings.successPayloads || []);
+    updatePayloads.forEach((p) => {
+      const entry = toVerboseEntry(p.metaKey, p.metaAttrs);
+      (successUpdated.has(p) ? verbose.updated : verbose.failed).push(entry);
+    });
 
     // Send for delete translations
     if (!_.isEmpty(deleteTranslationPayloads)) {
@@ -705,6 +791,7 @@ async function pushSourceContent(token, options) {
       + deletePayloads.length
       - (created + updated + deleted),
     errors,
+    verbose,
   };
 }
 
