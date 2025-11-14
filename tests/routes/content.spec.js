@@ -12,6 +12,11 @@ const { resetRegistry } = require('../lib');
 const app = require('../../src/server')();
 require('../../src/queue').initialize();
 
+// show full (non-truncated) diffs for deep equal
+// and print difs
+chai.config.truncateThreshold = 0;
+chai.config.showDiff = true;
+
 chai.use(chaiHttp);
 const { expect } = chai;
 
@@ -339,6 +344,28 @@ describe('POST /content', () => {
           skipped: 0,
           deleted: 0,
           failed: 0,
+          verbose: {
+            created: [
+              {
+                context: [],
+                key: 'somekey',
+                occurrences: [],
+                string: 'I am a string',
+              },
+              {
+                context: [],
+                key: 'hello_world',
+                occurrences: [
+                  '/my_project/templates/frontpage/hello.html:30',
+                ],
+                string: 'world',
+              },
+            ],
+            updated: [],
+            deleted: [],
+            skipped: [],
+            failed: [],
+          },
         },
         errors: [],
         status: 'completed',
@@ -408,6 +435,34 @@ describe('POST /content', () => {
           skipped: 0,
           deleted: 0,
           failed: 0,
+          verbose: {
+            created: [
+              {
+                context: [],
+                key: 'somekey',
+                occurrences: [],
+                string: 'I am a string',
+              },
+              {
+                context: [],
+                key: 'hello_world',
+                occurrences: [
+                  '/my_project/templates/frontpage/hello.html:30',
+                ],
+                string: 'world',
+              },
+              {
+                context: [],
+                key: 'hello\n你好世\n',
+                occurrences: [],
+                string: 'somevalue',
+              },
+            ],
+            updated: [],
+            deleted: [],
+            skipped: [],
+            failed: [],
+          },
         },
         errors: [],
         status: 'completed',
@@ -468,6 +523,28 @@ describe('POST /content', () => {
           skipped: 0,
           deleted: 0,
           failed: 2,
+          verbose: {
+            created: [],
+            deleted: [],
+            failed: [
+              {
+                context: [],
+                key: 'somekey',
+                occurrences: [],
+                string: 'I am a string',
+              },
+              {
+                context: [],
+                key: 'hello_world',
+                occurrences: [
+                  '/my_project/templates/frontpage/hello.html:30',
+                ],
+                string: 'world',
+              },
+            ],
+            skipped: [],
+            updated: [],
+          },
         },
         errors: [{
           status: '400',
@@ -525,6 +602,29 @@ describe('POST /content', () => {
           deleted: 0,
           skipped: 1,
           failed: 0,
+          verbose: {
+            created: [
+              {
+                context: [],
+                key: 'somekey',
+                occurrences: [],
+                string: 'I am a string',
+              },
+            ],
+            deleted: [],
+            failed: [],
+            skipped: [
+              {
+                context: [],
+                key: 'hello_world',
+                occurrences: [
+                  '/my_project/templates/frontpage/hello.html:30',
+                ],
+                string: 'world',
+              },
+            ],
+            updated: [],
+          },
         },
         errors: [],
         status: 'completed',
@@ -571,6 +671,7 @@ describe('POST /content', () => {
           skipped: 0,
           deleted: 0,
           failed: 0,
+          verbose: {},
         },
         errors: [{
           code: 'invalid',
@@ -623,6 +724,13 @@ describe('POST /content', () => {
           skipped: 0,
           deleted: 0,
           failed: 0,
+          verbose: {
+            created: [],
+            deleted: [],
+            failed: [],
+            skipped: [],
+            updated: [],
+          },
         },
         errors: [],
         status: 'completed',
@@ -684,6 +792,22 @@ describe('POST /content', () => {
           skipped: 0,
           deleted: 0,
           failed: 0,
+          verbose: {
+            created: [],
+            deleted: [],
+            updated: [
+              {
+                context: [],
+                key: 'hello_world',
+                occurrences: [
+                  '/my_project/templates/frontpage/hello.html:30',
+                ],
+                string: 'World',
+              },
+            ],
+            skipped: [],
+            failed: [],
+          },
         },
         errors: [],
         status: 'completed',
