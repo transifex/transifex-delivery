@@ -83,7 +83,15 @@ async function addJob(jobId, payload) {
         '[queue] Removing existing job before enqueuing new one',
         JSON.stringify({ jobId, state, ageMs }),
       );
-      await existing.remove();
+      try {
+        await existing.remove();
+      } catch (error) {
+        logger.error('[queue] Error removing existing job', {
+          jobId,
+          state,
+          ageMs,
+        });
+      }
     }
   }
 
