@@ -64,8 +64,11 @@ async function addJob(jobId, payload) {
       }),
     );
 
-    let shouldReplace = TERMINAL_STATES.includes(state);
-    if (!shouldReplace && ageMs !== null && ageMs > MAX_JOB_AGE_MS) {
+    const shouldRemove = (
+      TERMINAL_STATES.includes(state)
+      && ageMs !== null && ageMs > MAX_JOB_AGE_MS
+    );
+    if (shouldRemove) {
       logger.error(
         '[queue] Existing job considered zombie (too old)',
         JSON.stringify({
@@ -75,10 +78,6 @@ async function addJob(jobId, payload) {
           maxAgeMs: MAX_JOB_AGE_MS,
         }),
       );
-      shouldReplace = true;
-    }
-
-    if (shouldReplace) {
       logger.info(
         '[queue] Removing existing job before enqueuing new one',
         JSON.stringify({ jobId, state, ageMs }),
