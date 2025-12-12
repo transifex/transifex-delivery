@@ -28,8 +28,7 @@ async function initialize(subProcess) {
   }
 }
 
-const TERMINAL_STATES = ['completed', 'failed'];
-const MAX_JOB_AGE_MS = 60 * 60 * 1000; // 1 hour
+const MAX_JOB_AGE_MS = 2 * 60 * 60 * 1000; // 2 hours
 
 /**
  * Add a job to the queue system.
@@ -37,7 +36,7 @@ const MAX_JOB_AGE_MS = 60 * 60 * 1000; // 1 hour
  * Behavior:
  * - If no job with this jobId exists, create a new job.
  * - If a job with this jobId exists:
- *    - If it's in a terminal state (completed/failed) OR older than MAX_JOB_AGE_MS,
+ *    - If older than MAX_JOB_AGE_MS,
  *      treat it as "zombie/stalled-like", remove it, and create a new job.
  *    - Otherwise, reuse the existing job (no new job is created).
  *
@@ -54,42 +53,25 @@ async function addJob(jobId, payload) {
     const now = Date.now();
     const ageMs = createdAt ? (now - createdAt) : null;
 
-    logger.info(
-      '[queue] Found existing job',
-      JSON.stringify({
-        jobId,
-        state,
-        createdAt,
-        ageMs,
-      }),
-    );
-
     const shouldRemove = (
-      TERMINAL_STATES.includes(state)
-      && ageMs !== null && ageMs > MAX_JOB_AGE_MS
+      ageMs !== null && ageMs > MAX_JOB_AGE_MS
     );
     if (shouldRemove) {
-      logger.error(
-        '[queue] Existing job considered zombie (too old)',
-        JSON.stringify({
-          jobId,
-          state,
-          ageMs,
-          maxAgeMs: MAX_JOB_AGE_MS,
-        }),
-      );
       logger.info(
-        '[queue] Removing existing job before enqueuing new one',
-        JSON.stringify({ jobId, state, ageMs }),
+        `[queue] Existing job considered zombie (too old): ${jobId},
+        state: ${state}, createdAt: ${createdAt}, ageMs: ${ageMs},
+        maxAgeMs: ${ageMs}`,
       );
       try {
         await existing.remove();
       } catch (error) {
-        logger.error('[queue] Error removing existing job', {
-          jobId,
-          state,
-          ageMs,
-        });
+        logger.error(
+          '[queue] Failed to remove existing job',
+          {
+            jobId,
+            message: error.message,
+          },
+        );
       }
     }
   }
