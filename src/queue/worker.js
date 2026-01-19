@@ -12,6 +12,21 @@ const pullErrorExpireSec = config.get('settings:pull_error_cache_min') * 60;
 const jobStatusCacheSec = config.get('settings:job_status_cache_min') * 60;
 const autoSyncJitterMin = config.get('settings:autosync_jitter_min') * 1;
 
+const MAX_ITEM_SIZE = 300 * 1024; // 350KB (400KB is the limit of dynamodb)
+
+function omitOversizedPayload(payload) {
+  if (!payload || !_.isObject(payload)) return {};
+
+  const size = Buffer.byteLength(JSON.stringify(payload), 'utf8');
+
+  if (size > MAX_ITEM_SIZE) {
+    logger.info(`Omitting oversized payload: ${size} bytes`);
+    return {};
+  }
+
+  return payload;
+}
+
 /**
  * Pull content from API syncer job
  *
@@ -115,14 +130,12 @@ async function syncerPush(job) {
     await registry.set(`job:status:${jobId}`, {
       data: {
         details: {
-          ...(_.pick(data, [
-            'created',
-            'updated',
-            'skipped',
-            'deleted',
-            'failed',
-            'verbose',
-          ])),
+          created: data.created,
+          updated: data.updated,
+          skipped: data.skipped,
+          deleted: data.deleted,
+          failed: data.failed,
+          verbose: omitOversizedPayload(data.verbose || {}),
         },
         errors: data.errors,
         status: 'completed',
