@@ -9,7 +9,7 @@ To contribute to Transifex Content Delivery Service, please check out the [contr
 
 ## Installation
 
-To run CDS you need to have Docker and docker-compose installed. All functionality is wrapped around a Makefile that handles building the docker image, running tests and launching the service:
+To run CDS you need to have Docker and docker compose installed. All functionality is wrapped around a Makefile that handles building the docker image, running tests and launching the service:
 
 ```
 make build
@@ -31,7 +31,7 @@ curl -X GET -H "Authorization: Bearer 1/066926bd75f0d9e52fce00c2208ac791ca0cd2c1
 1. First, make sure the main container is not running:
 
    ```sh
-   docker-compose -f docker-compose.yml -f docker-compose.dev.yml down
+   docker compose -f docker-compose.yml -f docker-compose.dev.yml down
    ```
 
 2. Then, run `make debug`.
