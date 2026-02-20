@@ -17,7 +17,33 @@ if (commonConfig || dynamodbConfig) {
 }
 
 const tableName = config.get('dynamodb:table_name');
-const docClient = new AWS.DynamoDB.DocumentClient(awsConfig);
+const docClient = new AWS.DynamoDB.DocumentClient({
+  ...awsConfig,
+  maxRetries: 5,
+  retryDelayOptions: {
+    customBackoff: (retryCount) => Math.min(2 ** retryCount * 50, 3000),
+  },
+});
+
+const parsedShards = parseInt(config.get('dynamodb:key_shards'), 10);
+const NUM_SHARDS = Number.isFinite(parsedShards) && parsedShards > 0 ? parsedShards : 5;
+
+/**
+ * Simple string hash to deterministically assign a value to a shard.
+ *
+ * @param {String} str
+ * @returns {Number} shard index (0 to NUM_SHARDS-1)
+ */
+function getShardIndex(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i += 1) {
+    // eslint-disable-next-line no-bitwise
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    // eslint-disable-next-line no-bitwise
+    hash |= 0; // Convert to 32bit integer
+  }
+  return Math.abs(hash) % NUM_SHARDS;
+}
 
 /**
  * Convert a user key to DynamoDB key with prefix included
@@ -148,9 +174,14 @@ async function incr(key, increment, expireSec) {
 }
 
 /**
- * @implements {addToSet}
+ * Internal addToSet that operates on a single DynamoDB key (no sharding).
+ *
+ * @param {String} key
+ * @param {String} value
+ * @param {Number} expireSec
+ * @returns {Promise<Boolean>}
  */
-async function addToSet(key, value, expireSec) {
+async function addToSetSingle(key, value, expireSec) {
   const ttl = expireSec > 0
     ? Math.round(Date.now() / 1000) + expireSec
     : undefined;
@@ -167,7 +198,7 @@ async function addToSet(key, value, expireSec) {
         '#ttl': 'ttl',
       },
       ExpressionAttributeValues: {
-        ':set': docClient.createSet([value]),
+        ':set': docClient.createSet([`${value}`]),
         ':ttl': ttl,
       },
       UpdateExpression: 'ADD #value :set SET #ttl = :ttl',
@@ -196,9 +227,13 @@ async function addToSet(key, value, expireSec) {
 }
 
 /**
- * @implements {delFromSet}
+ * Internal delFromSet that operates on a single DynamoDB key (no sharding).
+ *
+ * @param {String} key
+ * @param {String} value
+ * @returns {Promise<Boolean>}
  */
-async function delFromSet(key, value) {
+async function delFromSetSingle(key, value) {
   const params = {
     TableName: tableName,
     Key: {
@@ -220,11 +255,76 @@ async function delFromSet(key, value) {
 }
 
 /**
- * @implements {listSet}
+ * Internal listSet that reads a single DynamoDB key (no sharding).
+ *
+ * @param {String} key
+ * @returns {Promise<Array>}
  */
-async function listSet(key) {
+async function listSetSingle(key) {
   const value = await get(key);
   return (value || {}).values || [];
+}
+
+/**
+ * @implements {addToSet}
+ *
+ * Writes to a sharded key based on a hash of the value.
+ * This distributes writes across NUM_SHARDS DynamoDB partitions
+ * to avoid hot key throttling.
+ */
+async function addToSet(key, value, expireSec) {
+  const shard = getShardIndex(`${value}`);
+  const shardKey = `${key}:${shard}`;
+  const [legacyValues, shardResult] = await Promise.all([
+    listSetSingle(key),
+    addToSetSingle(shardKey, value, expireSec),
+  ]);
+  const existsInLegacy = legacyValues.indexOf(`${value}`) !== -1;
+  return !existsInLegacy && shardResult;
+}
+
+/**
+ * @implements {delFromSet}
+ *
+ * Deletes from the correct shard (determined by hashing the value).
+ * Also deletes from the legacy unsharded key if the value is present there,
+ * for backward compatibility with pre-sharding data. The legacy delete is
+ * conditional to avoid recreating an empty DynamoDB item after the legacy
+ * key's TTL has expired.
+ */
+async function delFromSet(key, value) {
+  const shard = getShardIndex(`${value}`);
+  const shardKey = `${key}:${shard}`;
+
+  const legacyValues = await listSetSingle(key);
+  const legacyHasValue = legacyValues.indexOf(`${value}`) !== -1;
+
+  const ops = [delFromSetSingle(shardKey, value)];
+  if (legacyHasValue) {
+    ops.push(delFromSetSingle(key, value));
+  }
+
+  const results = await Promise.all(ops);
+  return results.some(Boolean);
+}
+
+/**
+ * @implements {listSet}
+ *
+ * Reads from all shards in parallel and merges results.
+ * Also reads the legacy unsharded key for backward compatibility
+ * with pre-sharding data.
+ */
+async function listSet(key) {
+  const shardKeys = [];
+  for (let i = 0; i < NUM_SHARDS; i += 1) {
+    shardKeys.push(`${key}:${i}`);
+  }
+  const results = await Promise.all([
+    listSetSingle(key), // legacy unsharded key
+    ..._.map(shardKeys, (sk) => listSetSingle(sk)),
+  ]);
+  return _.uniq(_.flatten(results));
 }
 
 /**

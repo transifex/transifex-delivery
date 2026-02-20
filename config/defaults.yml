@@ -108,6 +108,12 @@ dynamodb:
   # TX__DYNAMODB__TABLE_NAME=mytable
   table_name: transifex-delivery
 
+  # Number of shards for distributing set keys across DynamoDB partitions.
+  # This prevents hot key throttling by spreading writes to
+  # cache:${token}:keys across multiple partition keys.
+  # TX__DYNAMODB__KEY_SHARDS=5
+  key_shards: 5
+
 registry:
   # Prefix namespace for registry in Redis. Modify if you want to separate
   # data, between multiple environments (e.g. beta, staging) that are using

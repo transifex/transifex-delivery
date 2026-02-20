@@ -3,6 +3,8 @@
 const { expect } = require('chai');
 const _ = require('lodash');
 const registry = require('../../../../../src/services/registry/strategies/dynamodb-redis');
+const redisStrategy = require('../../../../../src/services/registry/strategies/redis');
+const dynamodbStrategy = require('../../../../../src/services/registry/strategies/dynamodb');
 
 describe('DynamoDB-Redis registry', () => {
   before(async () => {
@@ -10,10 +12,13 @@ describe('DynamoDB-Redis registry', () => {
   });
 
   beforeEach(async () => {
-    const keys = await registry.findAll();
-    await Promise.all(_.map(keys, (key) => (async () => {
-      await registry.del(key);
-    })()));
+    // Clean DynamoDB keys (includes shard keys like key:0..4)
+    const dynamoKeys = await registry.findAll();
+    // Clean Redis keys — Set base keys are not tracked in DynamoDB due to sharding,
+    // so they must be cleaned separately to prevent cross-test contamination.
+    const redisKeys = await redisStrategy._find('*');
+    const allKeys = _.uniq([...dynamoKeys, ...redisKeys]);
+    await Promise.all(allKeys.map((key) => registry.del(key)));
   });
 
   it('should write to registry', async () => {
@@ -93,10 +98,45 @@ describe('DynamoDB-Redis registry', () => {
     expect(await registry.delFromSet('test:del_from_set', 'a')).to.equal(false);
 
     let values = await registry.listSet('test:del_from_set');
-    expect(values).to.deep.equal(['b']);
+    expect(values.sort()).to.deep.equal(['b']);
 
     expect(await registry.delFromSet('test:del_from_set', 'b')).to.equal(true);
     values = await registry.listSet('test:del_from_set');
     expect(values).to.deep.equal([]);
+  });
+
+  it('listSet returns empty array for a key that has never been written', async () => {
+    // Arrange - no setup, key does not exist in DynamoDB or any shard
+    // Act
+    const values = await registry.listSet('test:nonexistent_sharded_set');
+    // Assert
+    expect(values).to.deep.equal([]);
+  });
+
+  it('addToSet and listSet handle a set spanning all shards including duplicate shards', async () => {
+    // Arrange
+    // Shard assignments (NUM_SHARDS=5): a→2, b→3, c→4, d→0, e→1, f→2
+    // 'a' and 'f' share shard 2 — exercises multi-value-per-shard behavior
+    const entries = ['a', 'b', 'c', 'd', 'e', 'f'];
+    // Act
+    await Promise.all(entries.map((v) => registry.addToSet('test:all_shards_set', v)));
+    const result = await registry.listSet('test:all_shards_set');
+    // Assert
+    expect(result.sort()).to.deep.equal(entries.sort());
+  });
+
+  it('listSet falls back to DynamoDB and populates Redis on cache miss', async () => {
+    // Arrange - write directly to DynamoDB, bypassing Redis
+    await dynamodbStrategy.addToSet('test:dynamo_fallback', 'a');
+    await dynamodbStrategy.addToSet('test:dynamo_fallback', 'b');
+
+    // Act - listSet should fall back to DynamoDB (Redis has no entry)
+    const result = await registry.listSet('test:dynamo_fallback');
+    // Assert
+    expect(result.sort()).to.deep.equal(['a', 'b']);
+
+    // Subsequent call should be served from Redis (DynamoDB not needed)
+    const cached = await registry.listSet('test:dynamo_fallback');
+    expect(cached.sort()).to.deep.equal(['a', 'b']);
   });
 });
