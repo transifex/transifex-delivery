@@ -16,7 +16,7 @@ describe('DynamoDB-Redis registry', () => {
     const dynamoKeys = await registry.findAll();
     // Clean Redis keys — Set base keys are not tracked in DynamoDB due to sharding,
     // so they must be cleaned separately to prevent cross-test contamination.
-    const redisKeys = await redisStrategy._find('*');
+    const redisKeys = await redisStrategy.findAll();
     const allKeys = _.uniq([...dynamoKeys, ...redisKeys]);
     await Promise.all(allKeys.map((key) => registry.del(key)));
   });
