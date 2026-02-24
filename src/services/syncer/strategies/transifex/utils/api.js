@@ -663,7 +663,7 @@ async function pushSourceContent(token, options) {
         );
         // Temporary fix for tikogames org to always update strings
         // until we implement the update_previous_source_strings flag
-        if (options.organization_slug === 'tikogames') {
+        if (options.organization_slug === 'tikogames' || meta.force_source_update === true) {
           mustPatchStrings = true;
         }
 

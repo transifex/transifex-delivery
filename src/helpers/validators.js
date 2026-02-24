@@ -18,6 +18,7 @@ const PUSH_SOURCE_CONTENT_META_SCHEMA = joi.object().keys({
   override_occurrences: joi.boolean(),
   keep_translations: joi.boolean(),
   dry_run: joi.boolean(),
+  force_source_update: joi.boolean(),
 });
 
 /**

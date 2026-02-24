@@ -203,6 +203,9 @@ if `keep_translations: false` in `meta` object, then delete translations on sour
 
 If `dry_run: true` in `meta` object, then emulate a content push, without doing actual changes.
 
+**Force update source**
+if `force_source_update: true` in `meta` the source will always be updated regardless of the revisions
+
 ```
 POST /content
 
