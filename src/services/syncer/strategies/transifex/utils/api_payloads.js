@@ -45,10 +45,15 @@ function getDeleteStringPayload(stringId) {
 
 // If the string extracted from the codebase is unknown to Transifex (ie is
 // neither the latest upstream version nor any of the previous revisions), we
-// must update the string on Transifex
-function stringContentChanged(attributes, existingString, revisions) {
+// must update the string on Transifex.
+// When ignoreRevisions is true (e.g. force_source_update), we bypass the
+// revision guard and update whenever the content differs from the current
+// version, regardless of whether it matches a previous revision.
+function stringContentChanged(attributes, existingString, revisions, ignoreRevisions = false) {
+  const contentDiffers = !_.isEqual(attributes.strings, existingString.attributes.strings);
+  if (ignoreRevisions) return contentDiffers;
   return (
-    !_.isEqual(attributes.strings, existingString.attributes.strings)
+    contentDiffers
     && !_.some(
       revisions,
       (revision) => _.isEqual(attributes.strings, revision),

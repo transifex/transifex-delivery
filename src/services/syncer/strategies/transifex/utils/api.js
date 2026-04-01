@@ -652,20 +652,18 @@ async function pushSourceContent(token, options) {
         preparePayloadForPost(attributes, key);
       } else {
         const revisions = existingRevisions[existingString.id] || [];
-        let mustPatchStrings = apiPayloads.stringContentChanged(
+        const forceUpdate = options.organization_slug === 'tikogames'
+          || meta.force_source_update === true;
+        const mustPatchStrings = apiPayloads.stringContentChanged(
           attributes,
           existingString,
           revisions,
+          forceUpdate,
         );
         const mustPatchMetadata = apiPayloads.stringMetadataChanged(
           attributes,
           existingString.attributes,
         );
-        // Temporary fix for tikogames org to always update strings
-        // until we implement the update_previous_source_strings flag
-        if (options.organization_slug === 'tikogames' || meta.force_source_update === true) {
-          mustPatchStrings = true;
-        }
 
         // Log the organization accessing the revision list
         // This helps us track usage and identify which orgs are actively using it
