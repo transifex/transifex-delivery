@@ -668,7 +668,7 @@ async function pushSourceContent(token, options) {
         // Log the organization accessing the revision list
         // This helps us track usage and identify which orgs are actively using it
         // so we can reach out if we plan to disable this feature in the future
-        if (_.some(
+        if (!forceUpdate && _.some(
           revisions,
           (revision) => _.isEqual(attributes.strings, revision),
         )) {
