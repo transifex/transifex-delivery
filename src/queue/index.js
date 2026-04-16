@@ -28,19 +28,60 @@ async function initialize(subProcess) {
   }
 }
 
+const MAX_JOB_AGE_MS = 2 * 60 * 60 * 1000; // 2 hours
+
 /**
- * Add a job in the queue system. If jobId already exists, job will be
- * discarded.
+ * Add a job to the queue system.
+ *
+ * Behavior:
+ * - If no job with this jobId exists, create a new job.
+ * - If a job with this jobId exists:
+ *    - If older than MAX_JOB_AGE_MS,
+ *      treat it as "zombie/stalled-like", remove it, and create a new job.
+ *    - Otherwise, reuse the existing job (no new job is created).
  *
  * @param {String} jobId
  * @param {Object} payload
+ * @returns {Promise<Job>} Bull Job instance
  */
 async function addJob(jobId, payload) {
-  await queue.add(payload, {
+  const existing = await queue.getJob(jobId);
+
+  if (existing) {
+    const state = await existing.getState();
+    const createdAt = existing.timestamp || 0;
+    const now = Date.now();
+    const ageMs = createdAt ? (now - createdAt) : null;
+
+    const shouldRemove = (
+      ageMs !== null && ageMs > MAX_JOB_AGE_MS
+    );
+    if (shouldRemove) {
+      logger.info(
+        `[queue] Existing job considered zombie (too old): ${jobId},
+        state: ${state}, createdAt: ${createdAt}, ageMs: ${ageMs},
+        maxAgeMs: ${ageMs}`,
+      );
+      try {
+        await existing.remove();
+      } catch (error) {
+        logger.error(
+          '[queue] Failed to remove existing job',
+          {
+            jobId,
+            message: error.message,
+          },
+        );
+      }
+    }
+  }
+
+  const job = await queue.add(payload, {
     jobId,
     removeOnComplete: true,
     removeOnFail: true,
   });
+  return job;
 }
 
 /**

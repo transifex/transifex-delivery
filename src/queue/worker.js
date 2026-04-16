@@ -12,6 +12,21 @@ const pullErrorExpireSec = config.get('settings:pull_error_cache_min') * 60;
 const jobStatusCacheSec = config.get('settings:job_status_cache_min') * 60;
 const autoSyncJitterMin = config.get('settings:autosync_jitter_min') * 1;
 
+const MAX_ITEM_SIZE = 380 * 1024; // 380KB (400KB is the limit of dynamodb)
+
+function omitOversizedPayload(payload) {
+  if (!payload || !_.isObject(payload)) return {};
+
+  const size = Buffer.byteLength(JSON.stringify(payload), 'utf8');
+
+  if (size > MAX_ITEM_SIZE) {
+    logger.info(`Omitting oversized payload: ${size} bytes`);
+    return true;
+  }
+
+  return false;
+}
+
 /**
  * Pull content from API syncer job
  *
@@ -111,22 +126,24 @@ async function syncerPush(job) {
     const data = await syncer
       .pushSourceContent({ token }, payload);
 
-    // update job status
-    await registry.set(`job:status:${jobId}`, {
-      data: {
-        details: {
-          ...(_.pick(data, [
-            'created',
-            'updated',
-            'skipped',
-            'deleted',
-            'failed',
-          ])),
-        },
-        errors: data.errors,
-        status: 'completed',
+    const payloadDetails = {
+      details: {
+        created: data.created,
+        updated: data.updated,
+        skipped: data.skipped,
+        deleted: data.deleted,
+        failed: data.failed,
+        verbose: data.verbose,
       },
-    }, jobStatusCacheSec);
+      errors: data.errors,
+      status: 'completed',
+    };
+
+    if (omitOversizedPayload(payloadDetails)) {
+      payloadDetails.details.verbose = {};
+    }
+    // update job status
+    await registry.set(`job:status:${jobId}`, { data: payloadDetails }, jobStatusCacheSec);
 
     // send to telemetry
     sendToTelemetry('/native/collect/action', {
@@ -151,6 +168,7 @@ async function syncerPush(job) {
           updated: 0,
           skipped: 0,
           deleted: 0,
+          verbose: {},
           failed: _.keys((payload || {}).data || []).length,
         },
         errors,

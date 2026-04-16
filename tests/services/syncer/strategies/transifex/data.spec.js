@@ -458,6 +458,28 @@ describe('Push source Content', () => {
       deleted: 0,
       failed: 0,
       errors: [],
+      verbose: {
+        created: [
+          {
+            context: [],
+            key: 'somekey',
+            occurrences: [],
+            string: 'I am a string',
+          },
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'world',
+          },
+        ],
+        deleted: [],
+        failed: [],
+        skipped: [],
+        updated: [],
+      },
     });
   });
 
@@ -481,6 +503,28 @@ describe('Push source Content', () => {
       deleted: 0,
       failed: 0,
       errors: [],
+      verbose: {
+        created: [
+          {
+            context: [],
+            key: 'somekey',
+            occurrences: [],
+            string: 'I am a string',
+          },
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'world',
+          },
+        ],
+        deleted: [],
+        failed: [],
+        skipped: [],
+        updated: [],
+      },
     });
   });
 
@@ -516,6 +560,28 @@ describe('Push source Content', () => {
       skipped: 0,
       deleted: 0,
       failed: 2,
+      verbose: {
+        created: [],
+        deleted: [],
+        failed: [
+          {
+            context: [],
+            key: 'somekey',
+            occurrences: [],
+            string: 'I am a string',
+          },
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'world',
+          },
+        ],
+        skipped: [],
+        updated: [],
+      },
       errors: [{
         status: '400',
         code: 'invalid',
@@ -567,6 +633,29 @@ describe('Push source Content', () => {
       deleted: 1,
       failed: 0,
       errors: [],
+      verbose: {
+        created: [
+          {
+            context: [],
+            key: 'somekey',
+            occurrences: [],
+            string: 'I am a string',
+          },
+        ],
+        deleted: [
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'world',
+          },
+        ],
+        failed: [],
+        skipped: [],
+        updated: [],
+      },
     });
   });
 
@@ -598,6 +687,29 @@ describe('Push source Content', () => {
       deleted: 0,
       failed: 0,
       errors: [],
+      verbose: {
+        created: [
+          {
+            context: [],
+            key: 'somekey',
+            occurrences: [],
+            string: 'I am a string',
+          },
+        ],
+        deleted: [],
+        failed: [],
+        skipped: [
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'world',
+          },
+        ],
+        updated: [],
+      },
     });
   });
 
@@ -639,6 +751,29 @@ describe('Push source Content', () => {
       skipped: 0,
       failed: 0,
       errors: [],
+      verbose: {
+        created: [
+          {
+            context: [],
+            key: 'somekey',
+            occurrences: [],
+            string: 'I am a string',
+          },
+        ],
+        deleted: [],
+        updated: [
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'world',
+          },
+        ],
+        skipped: [],
+        failed: [],
+      },
     });
   });
 
@@ -684,6 +819,29 @@ describe('Push source Content', () => {
       skipped: 0,
       failed: 0,
       errors: [],
+      verbose: {
+        created: [
+          {
+            context: [],
+            key: 'somekey',
+            occurrences: [],
+            string: 'I am a string',
+          },
+        ],
+        deleted: [],
+        failed: [],
+        skipped: [],
+        updated: [
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: '{???, plural, one {hello} other {world}}',
+          },
+        ],
+      },
     });
   });
 
@@ -728,6 +886,28 @@ describe('Push source Content', () => {
         { message: 'something2' },
         { message: 'something1' },
       ],
+      verbose: {
+        created: [],
+        deleted: [],
+        failed: [
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'world',
+          },
+          {
+            context: [],
+            key: 'somekey',
+            occurrences: [],
+            string: 'I am a string',
+          },
+        ],
+        skipped: [],
+        updated: [],
+      },
     });
   });
 
@@ -769,6 +949,22 @@ describe('Push source Content', () => {
       deleted: 0,
       failed: 0,
       errors: [],
+      verbose: {
+        created: [],
+        deleted: [],
+        updated: [
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'World',
+          },
+        ],
+        skipped: [],
+        failed: [],
+      },
     });
   });
 
@@ -810,6 +1006,22 @@ describe('Push source Content', () => {
       deleted: 0,
       failed: 0,
       errors: [],
+      verbose: {
+        created: [],
+        deleted: [],
+        updated: [
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'World',
+          },
+        ],
+        skipped: [],
+        failed: [],
+      },
     });
   });
 
@@ -851,6 +1063,22 @@ describe('Push source Content', () => {
       deleted: 0,
       failed: 0,
       errors: [],
+      verbose: {
+        created: [],
+        deleted: [],
+        updated: [
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'World',
+          },
+        ],
+        skipped: [],
+        failed: [],
+      },
     });
   });
 
@@ -893,6 +1121,22 @@ describe('Push source Content', () => {
       deleted: 0,
       failed: 0,
       errors: [],
+      verbose: {
+        created: [],
+        deleted: [],
+        failed: [],
+        skipped: [
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'World',
+          },
+        ],
+        updated: [],
+      },
     });
   });
 
@@ -934,6 +1178,22 @@ describe('Push source Content', () => {
       deleted: 0,
       failed: 0,
       errors: [],
+      verbose: {
+        created: [],
+        deleted: [],
+        updated: [
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'World',
+          },
+        ],
+        skipped: [],
+        failed: [],
+      },
     });
   });
 });
@@ -1022,6 +1282,28 @@ describe('Push source Content (per string key strategy)', () => {
       deleted: 0,
       failed: 0,
       errors: [],
+      verbose: {
+        created: [
+          {
+            context: [],
+            key: 'somekey',
+            occurrences: [],
+            string: 'I am a string',
+          },
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'world',
+          },
+        ],
+        deleted: [],
+        failed: [],
+        skipped: [],
+        updated: [],
+      },
     });
   });
 
@@ -1063,6 +1345,22 @@ describe('Push source Content (per string key strategy)', () => {
       deleted: 0,
       failed: 0,
       errors: [],
+      verbose: {
+        created: [],
+        deleted: [],
+        updated: [
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'World',
+          },
+        ],
+        skipped: [],
+        failed: [],
+      },
     });
   });
 
@@ -1105,6 +1403,22 @@ describe('Push source Content (per string key strategy)', () => {
       deleted: 0,
       failed: 0,
       errors: [],
+      verbose: {
+        created: [],
+        deleted: [],
+        failed: [],
+        skipped: [
+          {
+            context: [],
+            key: 'hello_world',
+            occurrences: [
+              '/my_project/templates/frontpage/hello.html:30',
+            ],
+            string: 'World',
+          },
+        ],
+        updated: [],
+      },
     });
   });
 });

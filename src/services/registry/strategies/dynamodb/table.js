@@ -42,7 +42,7 @@ async function createTable(TableName) {
     logger.info(`DynamoDB: Table ${TableName} already exists`);
   } catch (e) {
     // create table on development mode
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') {
       await dynamodb.createTable({
         TableName,
         KeySchema,
