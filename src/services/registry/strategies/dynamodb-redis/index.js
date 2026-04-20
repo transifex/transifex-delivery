@@ -114,25 +114,50 @@ async function incr(key, increment, expireSec) {
 
 /**
  * @implements {addToSet}
+ *
+ * Writes to both Redis and DynamoDB in parallel.
+ * Redis eliminates read pressure; DynamoDB provides persistence.
+ * Redis result is authoritative for the return value.
  */
 async function addToSet(key, value, expireSec) {
-  const retVal = await dynamodb.addToSet(key, value, expireSec);
-  return retVal;
+  const [redisResult] = await Promise.all([
+    redis.addToSet(key, value, expireSec),
+    dynamodb.addToSet(key, value, expireSec),
+  ]);
+  return redisResult;
 }
 
 /**
  * @implements {delFromSet}
+ *
+ * Deletes from both Redis and DynamoDB in parallel.
+ * Redis result is authoritative for the return value.
  */
 async function delFromSet(key, value) {
-  const retVal = await dynamodb.delFromSet(key, value);
-  return retVal;
+  const [redisResult] = await Promise.all([
+    redis.delFromSet(key, value),
+    dynamodb.delFromSet(key, value),
+  ]);
+  return redisResult;
 }
 
 /**
  * @implements {listSet}
+ *
+ * Reads from Redis first. On a miss (cold start or Redis restart),
+ * falls back to DynamoDB and populates Redis for subsequent reads.
  */
-function listSet(key) {
-  return dynamodb.listSet(key);
+async function listSet(key) {
+  const redisValues = await redis.listSet(key);
+  if (redisValues.length > 0) {
+    return redisValues;
+  }
+  // Redis miss — fall back to DynamoDB and warm Redis
+  const dynamoValues = await dynamodb.listSet(key);
+  if (dynamoValues.length > 0) {
+    await Promise.all(dynamoValues.map((v) => redis.addToSet(key, v)));
+  }
+  return dynamoValues;
 }
 
 /**
