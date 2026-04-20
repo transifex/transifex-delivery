@@ -1,7 +1,7 @@
 #####################
 ### builder image ###
 
-FROM node:20.12.2-alpine as builder
+FROM node:20.12.2-alpine AS builder
 
 ARG USER_ID
 ARG GROUP_ID
@@ -24,7 +24,7 @@ EXPOSE 10300 9090
 
 ##########################
 #### production image ###
-FROM builder as transifex-delivery
+FROM builder AS transifex-delivery
 
 ENV NODE_ENV=production
 
@@ -40,7 +40,7 @@ CMD ["npm", "start"]
 
 ##########################
 #### devel image ###
-FROM builder as transifex-delivery-devel
+FROM builder AS transifex-delivery-devel
 
 ENV NODE_ENV=development
 
