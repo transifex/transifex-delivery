@@ -3072,6 +3072,12 @@ const LANGUAGES = {
     localized_name: 'English (Republika Srpska)',
     rtl: false,
   },
+  mfe: {
+    code: 'mfe',
+    name: 'Maurician Creole',
+    localized_name: 'Morisien',
+    rtl: false,
+  },
 };
 
 /**
