@@ -1,12 +1,13 @@
 #####################
 ### builder image ###
 
-FROM node:20.12.2-alpine as builder
+FROM node:20.20.2-alpine as builder
 
 ARG USER_ID
 ARG GROUP_ID
 
 RUN apk update && \
+    npm install -g npm@11.19.0 && \
     apk upgrade && \
     rm -rf /var/cache/apk/* && \
     if [ ${USER_ID:-0} -ne 0 ] && [ ${GROUP_ID:-0} -ne 0 ]; then \
