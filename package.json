@@ -22,7 +22,7 @@
     "test": "NODE_ENV=test nyc --reporter=text --all --reporter=html mocha --timeout 5000 --exit \"./tests/**/*.spec.js\""
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=24.22.1"
   },
   "author": "Transifex",
   "homepage": "https://github.com/transifex/transifex-delivery",
